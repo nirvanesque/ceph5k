@@ -22,8 +22,7 @@ Detailed Usage:
        ceph-deploy.rb [options]
 where [options] are:
   -i, --ignore          Ignore incorrect values
-  -s, --site=<s>        Grid 5000 site for deploying Ceph cluster (default:
-                        sophia)
+  -s, --site=<s>        Grid 5000 site for deploying Ceph cluster (default: sophia)
   -r, --release=<s>     Ceph Release name (default: firefly)
   -c, --cluster=<s>     Ceph cluster name (default: ceph)
   -n, --numNodes=<i>    Nodes in Ceph cluster (default: 5)
