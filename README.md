@@ -4,6 +4,8 @@ ceph-deploy.rb is a script for deploying a Ceph DFS on reserved nodes.
 
 ## Installation & Execution
 At the CLI in a frontend:
+
+       ceph-deploy.rb [options]
        export http_proxy=http://proxy:3128 && export https_proxy=https://proxy:3128
        gem install --user-install ruby-cute trollop
        export PATH=$PATH:$(ruby -e 'puts "#{Gem.user_dir}/bin"')
