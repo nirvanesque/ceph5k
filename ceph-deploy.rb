@@ -365,11 +365,12 @@ puts "Config & keyrings distributed throughout cluster.\n"
 
 
 # Finally check if Ceph Cluster was correctly deployed - result should be "active+clean"
-result = ""
+end_result = ""
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
      result = tak.exec!("ceph status")
      puts result[monitor]
-     if result[:output].include? "active+clean"
+     end_result = result[monitor][:output]
+     if end_result.include? "active+clean"
         puts "Ceph cluster up and running. In state 'active+clean'.\n"
      end
      tak.loop()
