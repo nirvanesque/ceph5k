@@ -32,6 +32,8 @@ where [options] are:
 
 
 If interested in using the PRy shell interface, type at CLI
+
 cute
+
 And then simply copy & paste the lines of ceph-deploy.rb in the PRy shell.
 
