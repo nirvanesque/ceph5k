@@ -55,7 +55,7 @@ end
 
 # Show parameters for creating Ceph cluster
 puts "Deploying Ceph cluster with the following parameters"
-puts "site: #{argSite}"
+puts "Grid 5000 site: #{opts[:site]}"
 puts "Ceph Release: #{argRelease}"
 puts "Ceph cluster name: #{argCluster}"
 puts "Total nodes in Ceph cluster: #{argNumNodes}"
@@ -81,7 +81,7 @@ if jobCephCluster == nil
 end
 
 # At this point job was created or fetched
-puts "Ceph deployment job details recovered"
+puts "Ceph deployment job details recovered."
 
 # Change to be read/write from YAML file
 nodes = jobCephCluster["assigned_nodes"]
@@ -92,7 +92,10 @@ radosGW = monitor # as of now the machine is the same for monitor & rados GW
 monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
 
 # At this point job was created or fetched
-puts "Deploying Ceph cluster #{argCluster} on nodes #{nodes} with monitor node on #{monitor}"
+puts "Deploying Ceph cluster #{argCluster} as follows:"
+puts "On nodes: #{nodes}" 
+puts "Monitor node on: #{monitor}"
+puts "OSD on: #{osdNodes}"
 
 
 #1 Preflight Checklist
