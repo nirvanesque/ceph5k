@@ -159,6 +159,7 @@ Net::SFTP.start(monitor, 'root') do |sftp|
 end
 
 # Read the following important parameters from file & keep in memory
+fsid = ""
 confFile = File.open("ceph.conf", "r") do |file|
    file.each_line do |line|
       if line.include? "fsid"
