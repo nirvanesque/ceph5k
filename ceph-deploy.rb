@@ -369,7 +369,7 @@ result = ""
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
      result = tak.exec!("ceph status")
      puts result[monitor]
-     if result.include? "active+clean"
+     if result[:output].include? "active+clean"
         puts "Ceph cluster up and running. In state 'active+clean'.\n"
      end
      tak.loop()
