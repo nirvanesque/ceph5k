@@ -368,28 +368,10 @@ puts "Config & keyrings distributed throughout cluster.\n"
 result = ""
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
      result = tak.exec!("ceph status")
-     puts result[0]
+     puts result[monitor]
      if result.include? "active+clean"
         puts "Ceph cluster up and running. In state 'active+clean'.\n"
      end
      tak.loop()
 end
-
-
-
-
-
-
-
-# To check how many disks are there in each OSD
-final_result = ""
-Cute::TakTuk.start([monitor], :user => "root") do |tak|
-     result = tak.exec!("lsblk -l")
-     final_result = result.each_value.map{ |v| v[:output]}
-     puts final_result
-     tak.loop()
-end
-next_step = final_result[0].split("\n")
-
-
 
