@@ -1,4 +1,17 @@
 #!/usr/bin/env ruby
+# Copyright (c) 2015-16 Anirvan BASU, INRIA Rennes - Bretagne Atlantique
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License. 
 
 require 'cute'
 require 'logger'
@@ -10,6 +23,7 @@ require 'socket'
 
 g5k = Cute::G5K::API.new()
 
+
 # CLI arguments - currently hard-coded. 
 # Later change to CLI arguments or read from config data.
 argSite = "sophia" # site name currently hard-coded. 
@@ -17,6 +31,8 @@ argRelease = "firefly" # Ceph release name currently hard-coded.
 argCluster = "ceph" # Ceph cluster name currently hard-coded.
 argNumNodes = 5 # number of nodes to reserve currently hard-coded.
 argWallTime = "01:00:00" # walltime for the reservation, currently hard-coded.
+
+
 
 # Get all jobs submitted in a cluster
 jobs = g5k.get_my_jobs(argSite) 
