@@ -368,7 +368,7 @@ puts "Config & keyrings distributed throughout cluster.\n"
 end_result = ""
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
      result = tak.exec!("ceph status")
-     puts result[monitor]
+     puts result[monitor][:output]
      end_result = result[monitor][:output]
      if end_result.include? "active+clean"
         puts "Ceph cluster up and running. In state 'active+clean'.\n"
