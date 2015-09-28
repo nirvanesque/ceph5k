@@ -21,14 +21,14 @@ chmod +x dss5k/ceph-deploy.rb
 Detailed Usage:
        ceph-deploy.rb [options]
 where [options] are:
-  -i, --ignore          Ignore incorrect values
-  -s, --site=sitename   Grid 5000 site for deploying Ceph cluster (default: sophia)
-  -r, --release=<s>     Ceph Release name (default: firefly)
-  -c, --cluster=<s>     Ceph cluster name (default: ceph)
-  -n, --numNodes=<i>    Nodes in Ceph cluster (default: 5)
-  -w, --walltime=<s>    Wall time for Ceph cluster deployed (default: 01:00:00)
-  -v, --version         Print version and exit
-  -h, --help            Show this message
+  -i, --ignore                   Ignore incorrect values
+  -s, --site=sitename            Grid 5000 site for deploying Ceph cluster (default: sophia)
+  -r, --release=ceph-release     Ceph Release name (default: firefly)
+  -c, --cluster=name             Ceph cluster name (default: ceph)
+  -n, --numNodes=number          Nodes in Ceph cluster (default: 5)
+  -w, --walltime=xx:yy:zz        Wall time for Ceph cluster deployed (default: 01:00:00)
+  -v, --version                  Print version and exit
+  -h, --help                     Show this message
 
 
 If interested in using the PRy shell interface, type at CLI
