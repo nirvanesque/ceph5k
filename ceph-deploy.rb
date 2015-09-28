@@ -33,6 +33,13 @@ argNumNodes = 5 # number of nodes to reserve currently hard-coded.
 argWallTime = "01:00:00" # walltime for the reservation, currently hard-coded.
 
 
+# Show parameters for creating Ceph cluster
+puts "Deploying Ceph cluster with the following parameters"
+puts "site: #{argSite}"
+puts "Ceph Release: #{argRelease}"
+puts "Ceph cluster name: #{argCluster}"
+puts "Total nodes in Ceph cluster: #{argNumNodes}"
+puts "Deployment time: #{argWallTime}"
 
 # Get all jobs submitted in a cluster
 jobs = g5k.get_my_jobs(argSite) 
@@ -53,6 +60,8 @@ if jobCephCluster == nil
    jobCephCluster = g5k.reserve(:name => "cephCluster", :nodes => argNumNodes, :site => argSite, :walltime => argWallTime, :env => "wheezy-x64-nfs", :keys => "~/public/id_rsa")
 end
 
+# At this point job was created or fetched
+puts "Ceph deployment job details received"
 
 # Change to be read/write from YAML file
 nodes = jobCephCluster["assigned_nodes"]
