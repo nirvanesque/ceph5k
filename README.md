@@ -13,7 +13,7 @@ git clone https://github.com/nirvanesque/dss5k.git
 
 chmod +x dss5k/ceph-deploy.rb
 
-./dss5k/ceph-deploy-rb
+./dss5k/ceph-deploy.rb
 
 If interested in using the PRy shell interface, type at CLI
 cute
