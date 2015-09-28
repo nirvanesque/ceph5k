@@ -84,7 +84,7 @@ puts "Ceph deployment job details recovered."
 
 # Change to be read/write from YAML file
 nodes = jobCephCluster["assigned_nodes"]
-monitor = nodes[0] # Make multiple masters/monitors
+monitor = nodes[0] # Currently single monitor. Later make multiple monitors.
 osdNodes = nodes - [monitor]
 dataDir = "/tmp"
 radosGW = monitor # as of now the machine is the same for monitor & rados GW
@@ -93,8 +93,8 @@ monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
 # At this point job was created or fetched
 puts "Deploying Ceph cluster #{argCluster} as follows:"
 puts "Cluster on nodes: #{nodes}" 
-puts "Monitor node on: #{monitor}"
-puts "OSD on: #{osdNodes}"
+puts "Monitor(s) node on: #{monAllNodes}"
+puts "OSDs on: #{osdNodes}"
 
 
 #1 Preflight Checklist
