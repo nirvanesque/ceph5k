@@ -21,19 +21,6 @@ require 'erb'
 require 'socket'
 require 'trollop'
 
-# banner for script
-opts = Trollop::options do
-  version "ceph-deploy 0.0.1 (c) 2015-16 Anirvan BASU, INRIA RBA"
-  banner <<-EOS
-ceph-deploy.rb is a script for deploying a Ceph DFS on reserved nodes.
-
-Usage:
-       ceph-deploy.rb [options] <filenames>+
-where [options] are:
-EOS
-
-
-
 g5k = Cute::G5K::API.new()
 
 
@@ -44,6 +31,26 @@ argRelease = "firefly" # Ceph release name currently hard-coded.
 argCluster = "ceph" # Ceph cluster name currently hard-coded.
 argNumNodes = 5 # number of nodes to reserve currently hard-coded.
 argWallTime = "01:00:00" # walltime for the reservation, currently hard-coded.
+
+# banner for script
+opts = Trollop::options do
+  version "ceph-deploy 0.0.1 (c) 2015-16 Anirvan BASU, INRIA RBA"
+  banner <<-EOS
+ceph-deploy.rb is a script for deploying a Ceph DFS on reserved nodes.
+
+Usage:
+       ceph-deploy.rb [options]
+where [options] are:
+EOS
+
+  opt :ignore, "Ignore incorrect values"
+  opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => argSite
+  opt :release, "Ceph Release name", :type => String, :default => argRelease
+  opt :cluster, "Ceph cluster name", :type => String, :default => argCluster
+  opt :numNodes, "Nodes in Ceph cluster", :default => argNumNodes
+  opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => argWallTime
+end
+
 
 
 # Show parameters for creating Ceph cluster
