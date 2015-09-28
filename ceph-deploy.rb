@@ -19,6 +19,19 @@ require 'cute/taktuk'
 require 'net/sftp'
 require 'erb'
 require 'socket'
+require 'trollop'
+
+# banner for script
+opts = Trollop::options do
+  version "ceph-deploy 0.0.1 (c) 2015-16 Anirvan BASU, INRIA RBA"
+  banner <<-EOS
+ceph-deploy.rb is a script for deploying a Ceph DFS on reserved nodes.
+
+Usage:
+       ceph-deploy.rb [options] <filenames>+
+where [options] are:
+EOS
+
 
 
 g5k = Cute::G5K::API.new()
@@ -61,7 +74,7 @@ if jobCephCluster == nil
 end
 
 # At this point job was created or fetched
-puts "Ceph deployment job details received"
+puts "Ceph deployment job details recovered"
 
 # Change to be read/write from YAML file
 nodes = jobCephCluster["assigned_nodes"]
@@ -70,6 +83,9 @@ osdNodes = nodes - [monitor]
 dataDir = "/tmp"
 radosGW = monitor # as of now the machine is the same for monitor & rados GW
 monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
+
+# At this point job was created or fetched
+puts "Deploying Ceph cluster #{argCluster} on nodes #{nodes} with monitor node on #{monitor}"
 
 
 #1 Preflight Checklist
