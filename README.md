@@ -34,3 +34,13 @@ If interested in using the PRy shell interface, type at CLI
 
 And then simply copy & paste the lines of ceph-deploy.rb in the PRy shell.
 
+##Additional information
+If using the Rados Block Device (RBD), use the following commands first to avoid errors while mounting RBDs (this happens in the case of release firefly).
+
+       ceph osd getcrushmap -o /tmp/crush
+       crushtool -i /tmp/crush --set-chooseleaf_vary_r 0 -o /tmp/crush.new
+       ceph osd setcrushmap -i /tmp/crush.new
+
+
+
+
