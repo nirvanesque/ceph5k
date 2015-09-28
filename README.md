@@ -2,7 +2,7 @@
 New version of dfs5k being developed - Ceph (Lustre, Gluster - coming soon)
 ceph-deploy.rb is a script for deploying a Ceph DFS on reserved nodes.
 
-
+## Installation & Execution
 At the CLI in a frontend :
 export http_proxy=http_proxy=http://proxy:3128 && export https_proxy=https://proxy:3128
 
@@ -18,7 +18,7 @@ chmod +x dss5k/ceph-deploy.rb
 
 ./dss5k/ceph-deploy.rb
 
-Detailed Usage:
+##Detailed Usage
        ceph-deploy.rb [options]
 where [options] are:
 
