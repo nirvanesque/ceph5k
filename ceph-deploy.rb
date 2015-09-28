@@ -53,12 +53,12 @@ argWallTime = opts[:walltime] # walltime for the reservation.
 
 
 # Show parameters for creating Ceph cluster
-puts "Deploying Ceph cluster with the following parameters"
+puts "Deploying Ceph cluster with the following parameters:"
 puts "Grid 5000 site: #{argSite}"
 puts "Ceph Release: #{argRelease}"
 puts "Ceph cluster name: #{argCluster}"
 puts "Total nodes in Ceph cluster: #{argNumNodes}"
-puts "Deployment time: #{argWallTime}"
+puts "Deployment time: #{argWallTime}\n"
 
 # Get all jobs submitted in a cluster
 jobs = g5k.get_my_jobs(argSite) 
@@ -90,15 +90,15 @@ dataDir = "/tmp"
 radosGW = monitor # as of now the machine is the same for monitor & rados GW
 monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
 
-# At this point job was created or fetched
+# At this point job was created / fetched
 puts "Deploying Ceph cluster #{argCluster} as follows:"
 puts "Cluster on nodes: #{nodes}" 
 puts "Monitor(s) node on: #{monAllNodes}"
-puts "OSDs on: #{osdNodes}"
+puts "OSDs on: #{osdNodes}\n"
 
 
 #1 Preflight Checklist
-
+puts "Doing pre-flight checklist..."
 # Add (release) Keys to each Ceph node
 # rls_key_url = 'https://git.ceph.com/?p=ceph.git;a=blob_plain;f=keys/release.asc'
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
@@ -161,9 +161,12 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.loop()
 end
 
+# Preflight checklist completed.
+puts "Pre-flight checklist completed.\n"
 
 
-clusterName = "ceph" # Get from CLI argument & also read from initial ceph.conf
+# Creating & installing Ceph cluster.
+puts "Creating & installing Ceph cluster..."
 
 nodesShort = nodes.map do |node|  # array of short names of nodes
      node.split(".").first
@@ -248,6 +251,12 @@ nodes.each do |node|
      end
 end
 
+# Ceph installation on all nodes completed.
+puts "Ceph cluster installation completed.\n"
+
+
+# Adding & preparing monitor.
+puts "Adding monitor #{monitor} to cluster..."
 
 # Add initial monitor/master
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
@@ -270,6 +279,12 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.loop()
 end
 
+# Monitor added and prepared.
+puts "Monitor added to Ceph cluster.\n"
+
+
+# Prepare & Activate OSDs.
+puts "Preparing & activating OSDs..."
 
 # mkdir, Prepare & Activate each OSD
 osdIndex = 0 # change to check if osdIndex file exists, then initialise from there
@@ -314,6 +329,13 @@ Cute::TakTuk.start([monitor], :user => "root") do |tak|
      tak.loop()
 end
 
+# OSDs prepared & activated.
+puts "Prepared & Activated following OSDs: #{osdNodes}\n"
+
+
+
+# Distribute config & keyrings for cluster.
+puts "Distributing config and keyrings for cluster..."
 
 # Pull config and keyrings for cluster
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
@@ -338,11 +360,17 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.loop()
 end
 
+# Config & keyrings distributed.
+puts "Config & keyrings distributed throughout cluster.\n"
+
 
 # Finally check if Ceph Cluster was correctly deployed - result should be "active+clean"
+result = ""
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
      result = tak.exec!("ceph status")
-     puts result
+     if result.include? "active+clean"
+        puts "Ceph cluster up and running. In state 'active+clean'.\n"
+     end
      tak.loop()
 end
 
