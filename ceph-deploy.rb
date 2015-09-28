@@ -24,14 +24,6 @@ require 'trollop'
 g5k = Cute::G5K::API.new()
 
 
-# CLI arguments - currently hard-coded. 
-# Later change to CLI arguments or read from config data.
-argSite = "sophia" # site name currently hard-coded. 
-argRelease = "firefly" # Ceph release name currently hard-coded. 
-argCluster = "ceph" # Ceph cluster name currently hard-coded.
-argNumNodes = 5 # number of nodes to reserve currently hard-coded.
-argWallTime = "01:00:00" # walltime for the reservation, currently hard-coded.
-
 # banner for script
 opts = Trollop::options do
   version "ceph-deploy 0.0.1 (c) 2015-16 Anirvan BASU, INRIA RBA"
@@ -44,18 +36,25 @@ where [options] are:
 EOS
 
   opt :ignore, "Ignore incorrect values"
-  opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => argSite
-  opt :release, "Ceph Release name", :type => String, :default => argRelease
-  opt :cluster, "Ceph cluster name", :type => String, :default => argCluster
-  opt :numNodes, "Nodes in Ceph cluster", :default => argNumNodes
-  opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => argWallTime
+  opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => "sophia"
+  opt :release, "Ceph Release name", :type => String, :default => "firefly"
+  opt :cluster, "Ceph cluster name", :type => String, :default => "ceph"
+  opt :numNodes, "Nodes in Ceph cluster", :default => 5
+  opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => "01:00:00"
 end
+
+# Move CLI arguments into variables. Later change to class attributes.
+argSite = opts[:site] # site name. 
+argRelease = opts[:release] # Ceph release name. 
+argCluster = opts[:cluster] # Ceph cluster name.
+argNumNodes = opts[:numNodes] # number of nodes in Ceph cluster.
+argWallTime = opts[:walltime] # walltime for the reservation.
 
 
 
 # Show parameters for creating Ceph cluster
 puts "Deploying Ceph cluster with the following parameters"
-puts "Grid 5000 site: #{opts[:site]}"
+puts "Grid 5000 site: #{argSite}"
 puts "Ceph Release: #{argRelease}"
 puts "Ceph cluster name: #{argCluster}"
 puts "Total nodes in Ceph cluster: #{argNumNodes}"
@@ -93,7 +92,7 @@ monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
 
 # At this point job was created or fetched
 puts "Deploying Ceph cluster #{argCluster} as follows:"
-puts "On nodes: #{nodes}" 
+puts "Cluster on nodes: #{nodes}" 
 puts "Monitor node on: #{monitor}"
 puts "OSD on: #{osdNodes}"
 
