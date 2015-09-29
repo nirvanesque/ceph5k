@@ -290,12 +290,13 @@ puts "Preparing & activating OSDs..."
 # mkdir, Prepare & Activate each OSD
 osdIndex = 0 # change to check if osdIndex file exists, then initialise from there
 osdNodes.each_with_index do |node, index|
-     nodeShort = node.split(".").first
      Cute::TakTuk.start([node], :user => "root") do |tak|
           tak.exec!("rm -rf /osd#{index}")
           tak.exec!("mkdir /osd#{index}")
           tak.loop()
      end
+
+     nodeShort = node.split(".").first
 
      Cute::TakTuk.start([monitor], :user => "root") do |tak|
           tak.exec!("ceph-deploy osd prepare #{nodeShort}:/osd#{index}")
@@ -304,6 +305,7 @@ osdNodes.each_with_index do |node, index|
      end
      osdIndex = index
 end
+
 
 
 # Write to osdIndex & osdList files locally
