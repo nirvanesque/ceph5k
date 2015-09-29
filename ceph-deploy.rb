@@ -390,15 +390,19 @@ osdNodes.each_with_index do |node, index|
           output = result[node][:output]
           parsedOutput = JSON.parse(output)
           storageDevices = parsedOutput["storage_devices"]
-          puts "#{output} \n\n\n #{parsedOutput} \n\n\n #{storageDevices}"
+#         puts "#{output} \n\n\n #{parsedOutput} \n\n\n #{storageDevices}"
+          storageDevices.do | storageDev |
+             device = storageDev["device"]
+             if device == "sda" # deploy OSD only on partition /dev/sda5
+                tak.exec!("ceph-deploy osd prepare #{nodeShort}:/dev/#{device}5")
+                tak.exec!("ceph-deploy osd activate #{nodeShort}:/dev/#{device}5")
+             else  # deploy OSD on all discs as /dev/sdb, /dev/sdc, ...
+                tak.exec!("ceph-deploy osd prepare #{nodeShort}:/dev/#{device}")
+                tak.exec!("ceph-deploy osd activate #{nodeShort}:/dev/#{device}")
+             end
+          end
           tak.loop()
      end
-
-#     Cute::TakTuk.start([monitor], :user => "root") do |tak|
-#          tak.exec!("ceph-deploy osd prepare #{nodeShort}:/osd#{index}")
-#          tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd#{index}")
-#          tak.loop()
-#     end
      osdIndex = index
 end
 
