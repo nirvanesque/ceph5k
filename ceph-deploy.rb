@@ -302,6 +302,7 @@ osdNodes.each do |node|    # loop over all OSD nodes
           tak.loop()
      end # Cute::TakTuk.start([node]
 
+=begin
      storageDevices.each do |storageDev| # loop over each physical disc
         device = storageDev["device"]
         Cute::TakTuk.start([monitor], :user => "root") do |tak|
@@ -319,6 +320,7 @@ osdNodes.each do |node|    # loop over all OSD nodes
         osdIndex += 1
 
      end # loop over each physical disc
+=end
 end # loop over all OSD nodes
 
 
