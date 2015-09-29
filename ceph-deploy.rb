@@ -330,7 +330,7 @@ Cute::TakTuk.start([monitor], :user => "root") do |tak|
 end
 
 # OSDs prepared & activated.
-puts "Prepared & Activated following OSDs: #{osdNodes}\n"
+puts "Prepared & Activated following OSDs: #{osdNodes}\r\n"
 
 
 
@@ -373,4 +373,31 @@ Cute::TakTuk.start([monitor], :user => "root") do |tak|
      end
      tak.loop()
 end
+
+
+
+
+
+
+# mkdir, Prepare & Activate each OSD
+osdIndex = 0 # change to check if osdIndex file exists, then initialise from there
+osdNodes.each_with_index do |node, index|
+     nodeShort = node.split(".").first       # the shortname of the node
+     g5kCluster = nodeShort.split("-").first # the G5K cluster of the node
+     Cute::TakTuk.start([node], :user => "root") do |tak|
+          result = tak.exec!("curl -kn 'https://api.grid5000.fr/sid/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}'")
+          puts result
+          storageDevices = result[:storage_devices]
+          puts storageDevices
+          tak.loop()
+     end
+
+#     Cute::TakTuk.start([monitor], :user => "root") do |tak|
+#          tak.exec!("ceph-deploy osd prepare #{nodeShort}:/osd#{index}")
+#          tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd#{index}")
+#          tak.loop()
+#     end
+     osdIndex = index
+end
+
 
