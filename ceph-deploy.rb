@@ -287,7 +287,6 @@ puts "Monitor added to Ceph cluster.\n"
 # Prepare & Activate OSDs.
 puts "Preparing & activating OSDs..."
 
-=begin
 # mkdir, Prepare & Activate each OSD
 osdIndex = 0 # change to check if osdIndex file exists, then initialise from there
 osdNodes.each_with_index do |node, index|
@@ -305,36 +304,6 @@ osdNodes.each_with_index do |node, index|
      end
      osdIndex = index
 end
-=end
-
-# mkdir, Prepare & Activate each OSD
-osdIndex = 0 # change to check if osdIndex file exists, then initialise from there
-osdNodes.each do |node| # loop over all OSD nodes
-     nodeShort = node.split(".").first       # the shortname of the node
-     g5kCluster = nodeShort.split("-").first # the G5K cluster of the node
-     Cute::TakTuk.start([node], :user => "root") do |tak|
-          result = tak.exec!("curl -kn 'https://api.grid5000.fr/sid/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}'")
-          output = result[node][:output]
-          parsedOutput = JSON.parse(output)
-          storageDevices = parsedOutput["storage_devices"]
-          storageDevices.each do |storageDev| # loop over each physical disc
-             device = storageDev["device"]
-             unless device == "sda" # deploy OSD only on partition /dev/sda5
-                tak.exec!("ceph-deploy osd prepare #{nodeShort}:/dev/#{device}5")
-                tak.exec!("ceph-deploy osd activate #{nodeShort}:/dev/#{device}5")
-                puts "Prepared & activated OSD: #{nodeShort}:/dev/#{device}5\n\n"
-             else  # deploy OSD on all discs as /dev/sdb, /dev/sdc, ...
-                tak.exec!("ceph-deploy osd prepare #{nodeShort}:/dev/#{device}")
-                tak.exec!("ceph-deploy osd activate #{nodeShort}:/dev/#{device}")
-                puts "Prepared & activated OSD: #{nodeShort}:/dev/#{device}\n\n"
-             end
-             osdIndex += 1
-          end # loop over each physical disc
-          tak.loop()
-     end
-end # loop over all OSD nodes
-
-
 
 # Write to osdIndex & osdList files locally
 confFile = File.open("osdIndex", "w"){ |file|
@@ -362,7 +331,7 @@ Cute::TakTuk.start([monitor], :user => "root") do |tak|
 end
 
 # OSDs prepared & activated.
-puts "Prepared & activated #{osdIndex} OSDs on the following nodes: #{osdNodes}\r\n"
+puts "Prepared & Activated following OSDs: #{osdNodes}\r\n"
 
 
 
@@ -409,5 +378,34 @@ end
 
 
 
+
+
+# mkdir, Prepare & Activate each OSD
+osdIndex = 0 # change to check if osdIndex file exists, then initialise from there
+osdNodes.each_with_index do |node, index|
+     nodeShort = node.split(".").first       # the shortname of the node
+     g5kCluster = nodeShort.split("-").first # the G5K cluster of the node
+     Cute::TakTuk.start([node], :user => "root") do |tak|
+          result = tak.exec!("curl -kn 'https://api.grid5000.fr/sid/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}'")
+          output = result[node][:output]
+          parsedOutput = JSON.parse(output)
+          storageDevices = parsedOutput["storage_devices"]
+#         puts "#{output} \n\n\n #{parsedOutput} \n\n\n #{storageDevices}"
+          storageDevices.each do | storageDev |
+             device = storageDev["device"]
+             if device == "sda" # deploy OSD only on partition /dev/sda5
+                tak.exec!("ceph-deploy osd prepare #{nodeShort}:/dev/#{device}5")
+                tak.exec!("ceph-deploy osd activate #{nodeShort}:/dev/#{device}5")
+                puts "Prepared & activated OSD: #{nodeShort}:/dev/#{device}5\n\n"
+             else  # deploy OSD on all discs as /dev/sdb, /dev/sdc, ...
+                tak.exec!("ceph-deploy osd prepare #{nodeShort}:/dev/#{device}")
+                tak.exec!("ceph-deploy osd activate #{nodeShort}:/dev/#{device}")
+                puts "Prepared & activated OSD: #{nodeShort}:/dev/#{device}\n\n"
+             end
+          end
+          tak.loop()
+     end
+     osdIndex = index
+end
 
 
