@@ -317,9 +317,9 @@ osdNodes.each do |node| # loop over all OSD nodes
           output = result[node][:output]
           parsedOutput = JSON.parse(output)
           storageDevices = parsedOutput["storage_devices"]
-          storageDevices.do | storageDev | # loop over each physical disc
+          storageDevices.do |storageDev| # loop over each physical disc
              device = storageDev["device"]
-             if device == "sda" # deploy OSD only on partition /dev/sda5
+             unless device == "sda" # deploy OSD only on partition /dev/sda5
                 tak.exec!("ceph-deploy osd prepare #{nodeShort}:/dev/#{device}5")
                 tak.exec!("ceph-deploy osd activate #{nodeShort}:/dev/#{device}5")
                 puts "Prepared & activated OSD: #{nodeShort}:/dev/#{device}5\n\n"
