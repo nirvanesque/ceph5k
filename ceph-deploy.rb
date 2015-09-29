@@ -293,8 +293,9 @@ osdNodes.each do |node|    # loop over all OSD nodes
      nodeShort = node.split(".").first       # the shortname of the node
      g5kCluster = nodeShort.split("-").first # the G5K cluster of the node
      storageDevices = []
-puts node
-     Cute::TakTuk.start([node], :user => "root") do |tak|
+     nodeArray = [node]
+
+     Cute::TakTuk.start(nodeArray, :user => "root") do |tak|
           result = tak.exec!("curl -kn 'https://api.grid5000.fr/sid/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}'")
           output = result[node][:output]
           parsedOutput = JSON.parse(output)
