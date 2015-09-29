@@ -386,7 +386,9 @@ osdNodes.each_with_index do |node, index|
      g5kCluster = nodeShort.split("-").first # the G5K cluster of the node
      Cute::TakTuk.start([node], :user => "root") do |tak|
           result = tak.exec!("curl -kn 'https://api.grid5000.fr/sid/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}'")
-          storageDevices = result[node][:output][:storage_devices]
+          output = result[node][:output]
+          puts output
+          storageDevices = output[:storage_devices]
           puts storageDevices
           tak.loop()
      end
