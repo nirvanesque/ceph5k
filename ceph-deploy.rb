@@ -389,9 +389,8 @@ osdNodes.each_with_index do |node, index|
           result = tak.exec!("curl -kn 'https://api.grid5000.fr/sid/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}'")
           output = result[node][:output]
           parsedOutput = JSON.parse(output)
-          puts parsedOutput
-          storageDevices = parsedOutput[:architecture]
-          puts storageDevices
+          storageDevices = parsedOutput[:storage_devices]
+          puts output "\n\n\n" parsedOutput "\n\n\n" storageDevices
           tak.loop()
      end
 
