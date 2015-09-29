@@ -390,7 +390,7 @@ osdNodes.each_with_index do |node, index|
           output = result[node][:output]
           parsedOutput = JSON.parse(output)
           storageDevices = parsedOutput[:storage_devices]
-          puts output "\n\n\n" parsedOutput "\n\n\n" storageDevices
+          puts "#{output} \n\n\n #{parsedOutput} \n\n\n #{storageDevices}"
           tak.loop()
      end
 
