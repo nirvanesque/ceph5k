@@ -20,6 +20,7 @@ require 'net/sftp'
 require 'erb'
 require 'socket'
 require 'trollop'
+require 'json'
 
 g5k = Cute::G5K::API.new()
 
@@ -387,8 +388,8 @@ osdNodes.each_with_index do |node, index|
      Cute::TakTuk.start([node], :user => "root") do |tak|
           result = tak.exec!("curl -kn 'https://api.grid5000.fr/sid/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}'")
           output = result[node][:output]
-          puts output
-          storageDevices = output[:architecture]
+          parsedOutput = JSON.parse(output)
+          storageDevices = parsedOutput[:architecture]
           puts storageDevices
           tak.loop()
      end
