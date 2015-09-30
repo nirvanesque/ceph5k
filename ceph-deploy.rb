@@ -42,6 +42,7 @@ EOS
   opt :cluster, "Ceph cluster name", :type => String, :default => "ceph"
   opt :numNodes, "Nodes in Ceph cluster", :default => 5
   opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => "01:00:00"
+  opt :multiOSD, "Multiple OSDs on each node", :default => False
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
@@ -50,7 +51,7 @@ argRelease = opts[:release] # Ceph release name.
 argCluster = opts[:cluster] # Ceph cluster name.
 argNumNodes = opts[:numNodes] # number of nodes in Ceph cluster.
 argWallTime = opts[:walltime] # walltime for the reservation.
-
+argMultiOSD = opts[:multiOSD] # Multiple OSDs on each node.
 
 
 # Show parameters for creating Ceph cluster
@@ -60,6 +61,7 @@ puts "Ceph Release: #{argRelease}"
 puts "Ceph cluster name: #{argCluster}"
 puts "Total nodes in Ceph cluster: #{argNumNodes}"
 puts "Deployment time: #{argWallTime}\n"
+puts "Option for multiple OSDs per node: #{argMultiOSD}\n"
 
 # Get all jobs submitted in a cluster
 jobs = g5k.get_my_jobs(argSite) 
@@ -113,9 +115,6 @@ end
 # Add Ceph & Extras to each Ceph node ('firefly' is the most complete, later use CLI argument)
 ceph_extras =  'http://ceph.com/packages/ceph-extras/debian wheezy main'
 ceph_update =  'http://ceph.com/debian-#{argRelease}/ wheezy main'
-# ceph_version = 'http://ceph.com/debian-firefly/pool/main/c/ceph/ceph-common_0.80.9-1precise_amd64.deb'
-# ceph_version = 'http://ceph.com/debian-hammer/pool/main/c/ceph-deploy/ceph-deploy_1.5.27precise_all.deb'
-
 
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
@@ -288,8 +287,10 @@ puts "Monitor added to Ceph cluster.\n"
 puts "Preparing & activating OSDs..."
 
 # mkdir, Prepare & Activate each OSD
-osdIndex = 1 # change to check if osdIndex file exists, then initialise from there
-osdNodes.each do |node|    # loop over all OSD nodes
+if argMultiOSD # Option for activating multiple OSDs per node
+
+   osdIndex = 1 # change to check if osdIndex file exists, then initialise from there
+   osdNodes.each do |node|    # loop over all OSD nodes
      nodeShort = node.split(".").first       # the shortname of the node
      g5kCluster = nodeShort.split("-").first # the G5K cluster of the node
      storageDevices = []
@@ -302,7 +303,6 @@ osdNodes.each do |node|    # loop over all OSD nodes
           tak.loop()
      end # Cute::TakTuk.start([node]
 
-=begin
      storageDevices.each do |storageDev| # loop over each physical disc
         device = storageDev["device"]
         Cute::TakTuk.start([monitor], :user => "root") do |tak|
@@ -320,9 +320,28 @@ osdNodes.each do |node|    # loop over all OSD nodes
         osdIndex += 1
 
      end # loop over each physical disc
-=end
-end # loop over all OSD nodes
+   end # loop over all OSD nodes
 
+else # Option for single OSD per node
+   osdIndex = 0 # change to check if osdIndex file exists, then initialise from there
+   osdNodes.each_with_index do |node, index|
+        Cute::TakTuk.start([node], :user => "root") do |tak|
+          tak.exec!("rm -rf /osd#{index}")
+          tak.exec!("mkdir /osd#{index}")
+          tak.loop()
+        end
+
+        nodeShort = node.split(".").first
+
+        Cute::TakTuk.start([monitor], :user => "root") do |tak|
+          tak.exec!("ceph-deploy osd prepare #{nodeShort}:/osd#{index}")
+          tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd#{index}")
+          tak.loop()
+        end
+        osdIndex = index
+   end # Option for activating multiple OSDs per node
+
+end
 
 
 # Write to osdIndex & osdList files locally
