@@ -42,7 +42,7 @@ EOS
   opt :cluster, "Ceph cluster name", :type => String, :default => "ceph"
   opt :numNodes, "Nodes in Ceph cluster", :default => 5
   opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => "01:00:00"
-  opt :multiOSD, "Multiple OSDs on each node", :default => False
+  opt :multiOSD, "Multiple OSDs on each node", :default => false
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
