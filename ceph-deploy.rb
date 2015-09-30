@@ -39,6 +39,7 @@ EOS
   opt :ignore, "Ignore incorrect values"
   opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => "sophia"
   opt :release, "Ceph Release name", :type => String, :default => "firefly"
+  opt :env, "G5K environment to be deployed", :type => String, :default => "wheezy-x64-nfs"
   opt :cluster, "Ceph cluster name", :type => String, :default => "ceph"
   opt :numNodes, "Nodes in Ceph cluster", :default => 5
   opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => "01:00:00"
@@ -48,6 +49,7 @@ end
 # Move CLI arguments into variables. Later change to class attributes.
 argSite = opts[:site] # site name. 
 argRelease = opts[:release] # Ceph release name. 
+argEnv = opts[:env] # Grid'5000 environment to deploy. 
 argCluster = opts[:cluster] # Ceph cluster name.
 argNumNodes = opts[:numNodes] # number of nodes in Ceph cluster.
 argWallTime = opts[:walltime] # walltime for the reservation.
@@ -58,6 +60,7 @@ argMultiOSD = opts[:multiOSD] # Multiple OSDs on each node.
 puts "Deploying Ceph cluster with the following parameters:"
 puts "Grid 5000 site: #{argSite}"
 puts "Ceph Release: #{argRelease}"
+puts "grid'5000 deployment: #{argEnv}"
 puts "Ceph cluster name: #{argCluster}"
 puts "Total nodes in Ceph cluster: #{argNumNodes}"
 puts "Deployment time: #{argWallTime}\n"
@@ -72,14 +75,14 @@ jobs.each do |job|
    if job["name"] == "cephCluster" 
       jobCephCluster = job
       if jobCephCluster["deploy"] == nil # If undeployed, deploy it
-         depCeph = g5k.deploy(jobCephCluster, :env => "wheezy-x64-nfs", :keys => "~/public/id_rsa", :wait => true)
+         depCeph = g5k.deploy(jobCephCluster, :env => argEnv, :keys => "~/public/id_rsa", :wait => true)
       end
    end
 end
 
 # Finally, if job does not yet exist create with name "cephCluster"
 if jobCephCluster == nil
-   jobCephCluster = g5k.reserve(:name => "cephCluster", :nodes => argNumNodes, :site => argSite, :walltime => argWallTime, :env => "wheezy-x64-nfs", :keys => "~/public/id_rsa")
+   jobCephCluster = g5k.reserve(:name => "cephCluster", :nodes => argNumNodes, :site => argSite, :walltime => argWallTime, :env => argEnv, :keys => "~/public/id_rsa")
 end
 
 # At this point job was created or fetched
