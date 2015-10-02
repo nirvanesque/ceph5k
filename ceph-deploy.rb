@@ -404,7 +404,7 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Config & keyrings distributed.
-puts "Config & keyrings distributed throughout cluster.\n"
+puts "CCeph configuration & keyrings distributed throughout cluster.\n"
 
 
 # Finally check if Ceph Cluster was correctly deployed - result should be "active+clean"
