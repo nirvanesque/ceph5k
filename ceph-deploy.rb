@@ -299,9 +299,7 @@ if argMultiOSD # Option for activating multiple OSDs per node
      storageDevices = []
 
      Cute::TakTuk.start([monitor], :user => "root") do |tak|
-          url = "https://api.grid5000.fr/sid/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}"
-puts url
-          result = tak.exec!("curl -kn #{url}")
+          result = tak.exec!("curl -kn 'https://api.grid5000.fr/sid/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}'")
           output = result[node][:output]
           parsedOutput = JSON.parse(output)
           storageDevices = parsedOutput["storage_devices"]
@@ -422,4 +420,24 @@ Cute::TakTuk.start([monitor], :user => "root") do |tak|
      tak.loop()
 end
 
+
+# mkdir, Prepare & Activate each OSD
+osdIndex = 0 # change to check if osdIndex file exists, then initialise from there
+osdNodes.each_with_index do |node, index|
+     nodeShort = node.split(".").first       # the shortname of the node
+     g5kCluster = nodeShort.split("-").first # the G5K cluster of the node
+     Cute::TakTuk.start([node], :user => "root") do |tak|
+          result = tak.exec!("curl -kn 'https://api.grid5000.fr/sid/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}'")
+          storageDevices = result[node][:output]
+          puts storageDevices
+          tak.loop()
+     end
+
+#     Cute::TakTuk.start([monitor], :user => "root") do |tak|
+#          tak.exec!("ceph-deploy osd prepare #{nodeShort}:/osd#{index}")
+#          tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd#{index}")
+#          tak.loop()
+#     end
+     osdIndex = index
+end
 
