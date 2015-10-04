@@ -333,7 +333,9 @@ else # Option for single OSD per node
           tak.exec!("mkdir /osd#{index}")
           tak.loop()
         end
-
+puts node
+aNode = [node]
+puts aNode
         nodeShort = node.split(".").first
 
         Cute::TakTuk.start([monitor], :user => "root") do |tak|
