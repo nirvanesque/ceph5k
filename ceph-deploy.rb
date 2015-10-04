@@ -321,8 +321,9 @@ if argMultiOSD # Option for activating multiple OSDs per node
              tak.loop()
         end # Cute::TakTuk.start([monitor]
         osdIndex += 1
-=end
+
      end # loop over each physical disc
+=end
    end # loop over all OSD nodes
 
 else # Option for single OSD per node
