@@ -297,15 +297,17 @@ if argMultiOSD # Option for activating multiple OSDs per node
      nodeShort = node.split(".").first       # the shortname of the node
      g5kCluster = nodeShort.split("-").first # the G5K cluster of the node
      storageDevices = []
-=begin
+
      Cute::TakTuk.start([monitor], :user => "root") do |tak|
           result = tak.exec!("curl -kn 'https://api.grid5000.fr/sid/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}'")
           output = result[node][:output]
           parsedOutput = JSON.parse(output)
           storageDevices = parsedOutput["storage_devices"]
+puts storageDevices
           tak.loop()
      end # Cute::TakTuk.start([node]
 
+=begin
      storageDevices.each do |storageDev| # loop over each physical disc
         device = storageDev["device"]
         Cute::TakTuk.start([monitor], :user => "root") do |tak|
@@ -405,7 +407,7 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Config & keyrings distributed.
-puts "CCeph configuration & keyrings distributed throughout cluster.\n"
+puts "Ceph configuration & keyrings distributed throughout cluster.\n"
 
 
 # Finally check if Ceph Cluster was correctly deployed - result should be "active+clean"
