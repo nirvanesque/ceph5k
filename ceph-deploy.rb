@@ -297,7 +297,7 @@ if argMultiOSD # Option for activating multiple OSDs per node
      nodeShort = node.split(".").first       # the shortname of the node
      g5kCluster = nodeShort.split("-").first # the G5K cluster of the node
      storageDevices = []
-
+=begin
      Cute::TakTuk.start([monitor], :user => "root") do |tak|
           result = tak.exec!("curl -kn 'https://api.grid5000.fr/sid/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}'")
           output = result[node][:output]
@@ -321,7 +321,7 @@ if argMultiOSD # Option for activating multiple OSDs per node
              tak.loop()
         end # Cute::TakTuk.start([monitor]
         osdIndex += 1
-
+=end
      end # loop over each physical disc
    end # loop over all OSD nodes
 
@@ -333,9 +333,7 @@ else # Option for single OSD per node
           tak.exec!("mkdir /osd#{index}")
           tak.loop()
         end
-puts node
-aNode = [node]
-puts aNode
+
         nodeShort = node.split(".").first
 
         Cute::TakTuk.start([monitor], :user => "root") do |tak|
