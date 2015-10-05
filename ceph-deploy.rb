@@ -427,7 +427,7 @@ end
 osdNodes.each do |node|    # loop over all OSD nodes
      Cute::TakTuk.start([node], :user => "root") do |tak|
           result = tak.exec!("ceph-disk list")
-          puts result
+          puts result[node][:output]
      end # Cute::TakTuk.start([node]
 =begin
      storageDevices.each do |storageDev| # loop over each physical disc
