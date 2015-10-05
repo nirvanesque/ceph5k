@@ -310,7 +310,7 @@ if argMultiOSD # Option for activating multiple OSDs per node
         device = storageDev["device"]
 
         Cute::TakTuk.start([monitor], :user => "root") do |tak|
-             unless device == "sda" # deploy OSD only on partition /dev/sda5
+             if device == "sda" # deploy OSD only on partition /dev/sda5
                 result1 = tak.exec!("ceph-deploy osd prepare #{nodeShort}:/dev/#{device}5")
 puts result1
                 result2 = tak.exec!("ceph-deploy osd activate #{nodeShort}:/dev/#{device}5")
