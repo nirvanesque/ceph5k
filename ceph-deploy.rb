@@ -308,16 +308,18 @@ if argMultiOSD # Option for activating multiple OSDs per node
 
      storageDevices.each do |storageDev| # loop over each physical disc
         device = storageDev["device"]
-puts device
+
         Cute::TakTuk.start([monitor], :user => "root") do |tak|
              unless device == "sda" # deploy OSD only on partition /dev/sda5
-                tak.exec!("ceph-deploy osd prepare #{nodeShort}:/dev/#{device}5")
-                tak.exec!("ceph-deploy osd activate #{nodeShort}:/dev/#{device}5")
-                puts "Prepared & activated OSD: #{nodeShort}:/dev/#{device}5 ...\n\n"
+                result1 = tak.exec!("ceph-deploy osd prepare #{nodeShort}:/dev/#{device}5")
+puts result1
+                result2 = tak.exec!("ceph-deploy osd activate #{nodeShort}:/dev/#{device}5")
+puts result2
+                puts "Prepared & activated OSD: #{nodeShort}:/dev/#{device}5 ..."
              else  # deploy OSD on all discs as /dev/sdb, /dev/sdc, ...
                 tak.exec!("ceph-deploy osd prepare #{nodeShort}:/dev/#{device}")
                 tak.exec!("ceph-deploy osd activate #{nodeShort}:/dev/#{device}")
-                puts "Prepared & activated OSD: #{nodeShort}:/dev/#{device} ... \n\n"
+                puts "Prepared & activated OSD: #{nodeShort}:/dev/#{device} ... "
              end
              tak.loop()
         end # Cute::TakTuk.start([monitor]
