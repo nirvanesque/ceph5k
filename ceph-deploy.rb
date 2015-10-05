@@ -43,7 +43,7 @@ EOS
   opt :cluster, "Ceph cluster name", :type => String, :default => "ceph"
   opt :numNodes, "Nodes in Ceph cluster", :default => 5
   opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => "01:00:00"
-  opt :multiOSD, "Multiple OSDs on each node", :default => false
+  opt :multiOSD, "Multiple OSDs on each node", :type => Boolean, :default => False
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
@@ -430,7 +430,7 @@ osdNodes.each_with_index do |node, index|
           result = tak.exec!("curl -kn 'https://api.grid5000.fr/sid/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}'")
           output = result[node][:output]
           parsedOutput = JSON.parse(output)
-          storageDevices = parsedOutput["storage_devices"]
+          storageDevices = parsedOutput["storage_devices"]["device"]
 puts storageDevices
 
           tak.loop()
