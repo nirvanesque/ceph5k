@@ -344,9 +344,7 @@ else # Option for single OSD per node
 
         Cute::TakTuk.start([monitor], :user => "root") do |tak|
           result1 = tak.exec!("ceph-deploy osd prepare #{nodeShort}:/osd#{index}")
-puts result1
           result2 = tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd#{index}")
-puts result2
           tak.loop()
         end
         osdIndex = index
@@ -426,20 +424,10 @@ Cute::TakTuk.start([monitor], :user => "root") do |tak|
 end
 
 
-   osdIndex = 1 # change to check if osdIndex file exists, then initialise from there
-   osdNodes.each do |node|    # loop over all OSD nodes
-     nodeShort = node.split(".").first       # the shortname of the node
-     g5kCluster = nodeShort.split("-").first # the G5K cluster of the node
-     storageDevices = []
-
+osdNodes.each do |node|    # loop over all OSD nodes
      Cute::TakTuk.start([node], :user => "root") do |tak|
           result = tak.exec!("ceph-deploy disk list node")
-          output = result[node][:output]
-          parsedOutput = JSON.parse(output)
-=begin
-          storageDevices = parsedOutput["storage_devices"] # Get list of storage devices in each node
-=end
-          tak.loop()
+          puts result
      end # Cute::TakTuk.start([node]
 =begin
      storageDevices.each do |storageDev| # loop over each physical disc
@@ -464,5 +452,5 @@ puts result2
 
      end # loop over each physical disc
 =end
-   end # loop over all OSD nodes
+end # loop over all OSD nodes
 
