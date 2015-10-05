@@ -426,7 +426,7 @@ end
 
 osdNodes.each do |node|    # loop over all OSD nodes
      Cute::TakTuk.start([node], :user => "root") do |tak|
-          result = tak.exec!("ceph-deploy disk list #{node}")
+          result = tak.exec!("ceph-disk list")
           puts result
      end # Cute::TakTuk.start([node]
 =begin
