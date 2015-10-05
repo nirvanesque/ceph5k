@@ -431,7 +431,7 @@ osdNodes.each_with_index do |node, index|
           output = result[node][:output]
           parsedOutput = JSON.parse(output)
           storageDevices = parsedOutput["storage_devices"]
-          device = storageDevices[:device]
+          device = storageDevices['device']
 puts storageDevices
 puts device
 
