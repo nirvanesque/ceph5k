@@ -299,7 +299,8 @@ if argMultiOSD # Option for activating multiple OSDs per node
      storageDevices = []
 
      Cute::TakTuk.start([node], :user => "root") do |tak|
-          result = tak.exec!("curl -kn 'https://api.grid5000.fr/sid/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}'")
+#          result = tak.exec!("curl -kn 'https://api.grid5000.fr/sid/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}'")
+          result = tak.exec!("ceph-deploy disk list node")
           output = result[node][:output]
           parsedOutput = JSON.parse(output)
           storageDevices = parsedOutput["storage_devices"] # Get list of storage devices in each node
@@ -425,4 +426,43 @@ Cute::TakTuk.start([monitor], :user => "root") do |tak|
 end
 
 
+   osdIndex = 1 # change to check if osdIndex file exists, then initialise from there
+   osdNodes.each do |node|    # loop over all OSD nodes
+     nodeShort = node.split(".").first       # the shortname of the node
+     g5kCluster = nodeShort.split("-").first # the G5K cluster of the node
+     storageDevices = []
+
+     Cute::TakTuk.start([node], :user => "root") do |tak|
+          result = tak.exec!("ceph-deploy disk list node")
+          output = result[node][:output]
+          parsedOutput = JSON.parse(output)
+=begin
+          storageDevices = parsedOutput["storage_devices"] # Get list of storage devices in each node
+=end
+          tak.loop()
+     end # Cute::TakTuk.start([node]
+=begin
+     storageDevices.each do |storageDev| # loop over each physical disc
+        device = storageDev["device"]
+
+        Cute::TakTuk.start([monitor], :user => "root") do |tak|
+             if device == "sda" # deploy OSD only on partition /dev/sda5
+                result1 = tak.exec!("ceph-deploy osd prepare #{nodeShort}:/dev/#{device}5")
+puts result1
+                result2 = tak.exec!("ceph-deploy osd activate #{nodeShort}:/dev/#{device}5")
+puts result2
+                puts "Prepared & activated OSD: #{nodeShort}:/dev/#{device}5 ..."
+             else  # deploy OSD on all discs as /dev/sdb, /dev/sdc, ...
+                tak.exec!("ceph-deploy osd prepare #{nodeShort}:/dev/#{device}")
+                tak.exec!("ceph-deploy osd activate #{nodeShort}:/dev/#{device}")
+                puts "Prepared & activated OSD: #{nodeShort}:/dev/#{device} ... "
+             end
+             tak.loop()
+        end # Cute::TakTuk.start([monitor]
+
+        osdIndex += 1
+
+     end # loop over each physical disc
+=end
+   end # loop over all OSD nodes
 
