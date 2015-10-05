@@ -22,7 +22,7 @@ where [options] are:
         -s, --site=sitename            Grid 5000 site for Ceph cluster (default: sophia)
         -r, --release=ceph-release     Ceph Release name (default: firefly)
         -c, --cluster=name             Ceph cluster name (default: ceph)
-        -m, --multiOSD                 Multiple OSDs on each node
+        -m, --multiOSD                 Multiple OSDs on each node (default: false)
         -n, --numNodes=number          Nodes in Ceph cluster (default: 5)
         -w, --walltime=xx:yy:zz        Wall time for reservation (default: 01:00:00)
         -v, --version                  Print version and exit
