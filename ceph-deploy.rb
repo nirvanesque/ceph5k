@@ -431,9 +431,10 @@ osdNodes.each_with_index do |node, index|
           output = result[node][:output]
           parsedOutput = JSON.parse(output)
           storageDevices = parsedOutput["storage_devices"]
+puts parsedOutput
 puts storageDevices
 puts storageDevices.keys
-          device = storageDevices['device']
+          device = storageDevices[:"device"]
 puts device
 
           tak.loop()
