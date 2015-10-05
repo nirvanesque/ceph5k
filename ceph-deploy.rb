@@ -86,7 +86,7 @@ if jobCephCluster == nil
 end
 
 # At this point job was created or fetched
-puts "Ceph deployment job details recovered."
+puts "Ceph deployment job details recovered." + "\n"
 
 # Change to be read/write from YAML file
 nodes = jobCephCluster["assigned_nodes"]
@@ -100,7 +100,7 @@ monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
 puts "Deploying Ceph cluster #{argCluster} as follows:"
 puts "Cluster on nodes: #{nodes}" 
 puts "Monitor(s) node on: #{monAllNodes}"
-puts "OSDs on: #{osdNodes}\n"
+puts "OSDs on: #{osdNodes}" + "\n"
 
 
 #1 Preflight Checklist
@@ -165,7 +165,7 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Preflight checklist completed.
-puts "Pre-flight checklist completed.\n"
+puts "Pre-flight checklist completed." + "\n"
 
 
 # Creating & installing Ceph cluster.
@@ -255,7 +255,7 @@ nodes.each do |node|
 end
 
 # Ceph installation on all nodes completed.
-puts "Ceph cluster installation completed.\n"
+puts "Ceph cluster installation completed." + "\n"
 
 
 # Adding & preparing monitor.
@@ -283,7 +283,7 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Monitor added and prepared.
-puts "Monitor added to Ceph cluster.\n"
+puts "Monitor added to Ceph cluster." + "\n"
 
 
 # Prepare & Activate OSDs.
@@ -376,7 +376,7 @@ Cute::TakTuk.start([monitor], :user => "root") do |tak|
 end
 
 # OSDs prepared & activated.
-puts "Prepared & Activated following OSDs: #{osdNodes}\r\n"
+puts "Prepared & Activated following OSDs: #{osdNodes}" + "\n"
 
 
 
@@ -407,7 +407,7 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Config & keyrings distributed.
-puts "Ceph configuration & keyrings distributed throughout cluster.\n"
+puts "Ceph configuration & keyrings distributed throughout cluster." + "\n"
 
 
 # Finally check if Ceph Cluster was correctly deployed - result should be "active+clean"
@@ -415,7 +415,7 @@ Cute::TakTuk.start([monitor], :user => "root") do |tak|
      result = tak.exec!("ceph status")
      end_result = result[monitor][:output]
      if end_result.include? "active+clean"
-        puts "Ceph cluster up and running. In state 'active+clean'.\n"
+        puts "Ceph cluster up and running. In state 'active+clean'." + "\n"
      end
      tak.loop()
 end
@@ -430,7 +430,7 @@ osdNodes.each_with_index do |node, index|
           result = tak.exec!("curl -kn 'https://api.grid5000.fr/sid/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}'")
           output = result[node][:output]
           parsedOutput = JSON.parse(output)
-          storageDevices = parsedOutput["storage_devices"]["device"]
+          storageDevices = parsedOutput["storage_devices"]
 puts storageDevices
 
           tak.loop()
