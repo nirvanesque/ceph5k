@@ -61,12 +61,13 @@ argMultiOSD = opts[:multiOSD] # Multiple OSDs on each node.
 # Show parameters for creating Ceph cluster
 puts "Deploying Ceph cluster with the following parameters:"
 puts "Grid 5000 site: #{argSite}"
+puts "Grid 5000 cluster: #{argG5KCluster}"
 puts "Ceph Release: #{argRelease}"
 puts "grid'5000 deployment: #{argEnv}"
-puts "Ceph cluster name: #{argCluster}"
+puts "Ceph cluster name: #{argCephCluster}"
 puts "Total nodes in Ceph cluster: #{argNumNodes}"
 puts "Deployment time: #{argWallTime}\n"
-puts "Option for multiple OSDs per node: #{argMultiOSD}\n"
+puts "Option for multiple OSDs per node: #{argMultiOSD}\n" + "\n"
 
 # Get all jobs submitted in a cluster
 jobs = g5k.get_my_jobs(argSite) 
