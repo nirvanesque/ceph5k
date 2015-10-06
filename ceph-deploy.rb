@@ -339,13 +339,14 @@ puts result2
 
 else # Option for single OSD per node
    osdNodes.each do |node|
+=begin
         Cute::TakTuk.start([node], :user => "root") do |tak|
           tak.exec!("rm -rf /osd#{index}")
           tak.exec!("mkdir /osd#{index}")
           tak.loop()
         end
-
-        nodeShort = node.split(".").first
+=end
+#        nodeShort = node.split(".").first
 
         Cute::TakTuk.start([monitor], :user => "root") do |tak|
 #          result1 = tak.exec!("ceph-deploy osd prepare #{nodeShort}:/dev//sda5")
