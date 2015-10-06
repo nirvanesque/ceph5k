@@ -38,9 +38,10 @@ EOS
 
   opt :ignore, "Ignore incorrect values"
   opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => "sophia"
+  opt :g5kCluster, "Grid 5000 cluster in specified site", :type => String, :default => ""
   opt :release, "Ceph Release name", :type => String, :default => "firefly"
   opt :env, "G5K environment to be deployed", :type => String, :default => "wheezy-x64-nfs"
-  opt :cluster, "Ceph cluster name", :type => String, :default => "ceph"
+  opt :cephCluster, "Ceph cluster name", :type => String, :default => "ceph"
   opt :numNodes, "Nodes in Ceph cluster", :default => 5
   opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => "01:00:00"
   opt :multiOSD, "Multiple OSDs on each node", :default => false
@@ -48,9 +49,10 @@ end
 
 # Move CLI arguments into variables. Later change to class attributes.
 argSite = opts[:site] # site name. 
+argG5KCluster = opts[:g5kCluster] # G5K cluster name if specified. 
 argRelease = opts[:release] # Ceph release name. 
 argEnv = opts[:env] # Grid'5000 environment to deploy. 
-argCluster = opts[:cluster] # Ceph cluster name.
+argCephCluster = opts[:cephCluster] # Ceph cluster name.
 argNumNodes = opts[:numNodes] # number of nodes in Ceph cluster.
 argWallTime = opts[:walltime] # walltime for the reservation.
 argMultiOSD = opts[:multiOSD] # Multiple OSDs on each node.
@@ -72,7 +74,7 @@ jobs = g5k.get_my_jobs(argSite)
 # get the job with name "cephCluster"
 jobCephCluster = nil
 jobs.each do |job|
-   if job["name"] == "cephCluster" 
+   if job["name"] == "cephDeploy" 
       jobCephCluster = job
       if jobCephCluster["deploy"] == nil # If undeployed, deploy it
          depCeph = g5k.deploy(jobCephCluster, :env => argEnv, :keys => "~/public/id_rsa", :wait => true)
@@ -82,7 +84,7 @@ end
 
 # Finally, if job does not yet exist create with name "cephCluster"
 if jobCephCluster == nil
-   jobCephCluster = g5k.reserve(:name => "cephCluster", :nodes => argNumNodes, :site => argSite, :walltime => argWallTime, :env => argEnv, :keys => "~/public/id_rsa")
+   jobCephCluster = g5k.reserve(:name => "cephDeploy", :cluster => argG5KCluster, :nodes => argNumNodes, :site => argSite, :walltime => argWallTime, :env => argEnv, :keys => "~/public/id_rsa", :properties => "cluster=1")
 end
 
 # At this point job was created or fetched
@@ -168,8 +170,8 @@ end
 puts "Pre-flight checklist completed." + "\n"
 
 
-# Creating & installing Ceph cluster.
-puts "Creating & installing Ceph cluster..."
+# Purging any previous Ceph installations.
+puts "Purging any previous Ceph installations..."
 
 nodesShort = nodes.map do |node|  # array of short names of nodes
      node.split(".").first
@@ -184,8 +186,14 @@ Cute::TakTuk.start([monitor], :user => "root") do |tak|
      tak.loop()
 end
 
+# Purged previous Ceph installations.
+puts "Purged previous Ceph installations." + "\n"
 
-# Create the ceph cluster
+
+# Creating & installing Ceph cluster.
+puts "Creating & installing Ceph cluster..."
+
+# Create the ceph cluster on the monitor node
 monitorShort = monitor.split(".").first
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
      tak.exec!("ceph-deploy new #{monitorShort}")
