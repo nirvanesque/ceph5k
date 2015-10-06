@@ -339,13 +339,13 @@ puts result2
 
 else # Option for single OSD per node
    osdNodes.each do |node|
-=begin
+
         Cute::TakTuk.start([node], :user => "root") do |tak|
-          tak.exec!("rm -rf /osd#{index}")
-          tak.exec!("mkdir /osd#{index}")
+          tak.exec!("umount /dev/sda5")
+#          tak.exec!("mkdir /osd#{index}")
           tak.loop()
         end
-=end
+
 #        nodeShort = node.split(".").first
 
         Cute::TakTuk.start([monitor], :user => "root") do |tak|
@@ -356,9 +356,9 @@ else # Option for single OSD per node
           tak.loop()
         end
 
-   end # Option for activating multiple OSDs per node
+   end
 
-end
+end # Option for single OSD per node
 
 
 confFile = File.open("osdList", "w"){ |file|
