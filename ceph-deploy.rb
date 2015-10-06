@@ -100,7 +100,7 @@ radosGW = monitor # as of now the machine is the same for monitor & rados GW
 monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
 
 # At this point job was created / fetched
-puts "Deploying Ceph cluster #{argCluster} as follows:"
+puts "Deploying Ceph cluster #{argCephCluster} as follows:"
 puts "Cluster on nodes: #{nodes}" 
 puts "Monitor(s) node on: #{monAllNodes}"
 puts "OSDs on: #{osdNodes}" + "\n"
