@@ -85,7 +85,7 @@ end
 
 # Finally, if job does not yet exist create with name "cephCluster"
 if jobCephCluster == nil
-   jobCephCluster = g5k.reserve(:name => "cephDeploy", :cluster => argG5KCluster, :nodes => argNumNodes, :site => argSite, :walltime => argWallTime, :env => argEnv, :keys => "~/public/id_rsa", :properties => "cluster=1")
+   jobCephCluster = g5k.reserve(:name => "cephDeploy", :cluster => argG5KCluster, :nodes => argNumNodes, :site => argSite, :walltime => argWallTime, :env => argEnv, :keys => "~/public/id_rsa")
 end
 
 # At this point job was created or fetched
