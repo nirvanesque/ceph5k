@@ -301,7 +301,6 @@ puts "Preparing & activating OSDs..."
 # mkdir, Prepare & Activate each OSD
 if argMultiOSD # Option for activating multiple OSDs per node
 
-   osdIndex = 1 # change to check if osdIndex file exists, then initialise from there
    osdNodes.each do |node|    # loop over all OSD nodes
      nodeShort = node.split(".").first       # the shortname of the node
      g5kCluster = nodeShort.split("-").first # the G5K cluster of the node
@@ -334,15 +333,12 @@ puts result2
              tak.loop()
         end # Cute::TakTuk.start([monitor]
 
-        osdIndex += 1
-
      end # loop over each physical disc
 
    end # loop over all OSD nodes
 
 else # Option for single OSD per node
-   osdIndex = 0 # change to check if osdIndex file exists, then initialise from there
-   osdNodes.each_with_index do |node, index|
+   osdNodes.each do |node|
         Cute::TakTuk.start([node], :user => "root") do |tak|
           tak.exec!("rm -rf /osd#{index}")
           tak.exec!("mkdir /osd#{index}")
@@ -352,22 +348,18 @@ else # Option for single OSD per node
         nodeShort = node.split(".").first
 
         Cute::TakTuk.start([monitor], :user => "root") do |tak|
-#          result1 = tak.exec!("ceph-deploy osd prepare #{nodeShort}:/sda5")
+#          result1 = tak.exec!("ceph-deploy osd prepare #{nodeShort}:/dev//sda5")
 #          result2 = tak.exec!("ceph-deploy osd activate #{nodeShort}:/dev/sda5")
-          result = tak.exec!("ceph-deploy create #{node}:sda:/sda5")
-
+          result = tak.exec!("ceph-deploy create #{node}:sda:/dev/sda5")
+          puts result
           tak.loop()
         end
-        osdIndex = index
+
    end # Option for activating multiple OSDs per node
 
 end
 
 
-# Write to osdIndex & osdList files locally
-confFile = File.open("osdIndex", "w"){ |file|
-   file.puts("#{osdIndex + 1}") # Incremental number of last OSD data path
-}
 confFile = File.open("osdList", "w"){ |file|
    osdNodes.each do |node|
       file.puts("#{node}") # Incremental list of OSD nodes in cluster      
@@ -380,10 +372,9 @@ confFile = File.open("monList", "w"){ |file|
 }
 
 
-# Then put osdIndex, osdList files to monitor
+# Then put osdList files to monitor
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
-     tak.exec!("rm osdIndex osdList monList") # Delete old files, if any
-     tak.put("osdIndex", "osdIndex")
+     tak.exec!("rm osdList monList") # Delete old files, if any
      tak.put("osdList", "osdList")
      tak.put("monList", "monList")
      tak.loop()
@@ -459,8 +450,6 @@ puts result2
              end
              tak.loop()
         end # Cute::TakTuk.start([monitor]
-
-        osdIndex += 1
 
      end # loop over each physical disc
 =end
