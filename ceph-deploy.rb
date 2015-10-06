@@ -352,10 +352,9 @@ else # Option for single OSD per node
         nodeShort = node.split(".").first
 
         Cute::TakTuk.start([monitor], :user => "root") do |tak|
-#          result1 = tak.exec!("ceph-deploy osd prepare #{nodeShort}:/osd#{index}")
-#          result2 = tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd#{index}")
-          result1 = tak.exec!("ceph-deploy osd prepare #{nodeShort}:/sda5")
-          result2 = tak.exec!("ceph-deploy osd activate #{nodeShort}:/sda5")
+#          result1 = tak.exec!("ceph-deploy osd prepare #{nodeShort}:/sda5")
+#          result2 = tak.exec!("ceph-deploy osd activate #{nodeShort}:/dev/sda5")
+          result = tak.exec!("ceph-deploy create #{node}:sda:/sda5")
 
           tak.loop()
         end
