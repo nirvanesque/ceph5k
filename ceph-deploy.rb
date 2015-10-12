@@ -43,7 +43,7 @@ EOS
   opt :env, "G5K environment to be deployed", :type => String, :default => "wheezy-x64-nfs"
   opt :jobName, "Name of Grid'5000 job if already created", :type => String, :default => "cephDeploy"
   opt :cephCluster, "Ceph cluster name", :type => String, :default => "ceph"
-  opt :numNodes, "Nodes in Ceph cluster", :default => 5
+  opt :numNodes, "Nodes in Ceph cluster", :default => 6
   opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => "01:00:00"
   opt :multiOSD, "Multiple OSDs on each node", :default => false
 end
@@ -52,7 +52,8 @@ end
 argSite = opts[:site] # site name. 
 argG5KCluster = opts[:g5kCluster] # G5K cluster name if specified. 
 argRelease = opts[:release] # Ceph release name. 
-argEnv = opts[:env] # Grid'5000 environment to deploy. 
+argEnv = opts[:env] # Grid'5000 environment to deploy Ceph cluster. 
+argEnvClient = "jessie-x64-nfs" # Grid'5000 environment to deploy Ceph client. 
 argJobName = opts[:jobName] # Grid'5000 ndoes reservation job. 
 argCephCluster = opts[:cephCluster] # Ceph cluster name.
 argNumNodes = opts[:numNodes] # number of nodes in Ceph cluster.
@@ -66,6 +67,7 @@ puts "Grid 5000 site: #{argSite}"
 puts "Grid 5000 cluster: #{argG5KCluster}"
 puts "Ceph Release: #{argRelease}"
 puts "Grid'5000 deployment: #{argEnv}"
+puts "Grid'5000 deployment for Ceph client: #{argEnvClient}"
 puts "Job name (for nodes reservation): #{argJobName}"
 puts "Ceph cluster name: #{argCephCluster}"
 puts "Total nodes in Ceph cluster: #{argNumNodes}"
@@ -78,21 +80,37 @@ jobs = g5k.get_my_jobs(argSite)
 # get the job with name "cephCluster"
 jobCephCluster = nil
 jobs.each do |job|
-   if job["name"] == argJobName 
+   if job["name"] == argJobName
       jobCephCluster = job
       if jobCephCluster["deploy"] == nil # If undeployed, deploy it
-         depCeph = g5k.deploy(jobCephCluster, :env => argEnv, :keys => "~/public/id_rsa", :wait => true)
+         nodesOrg = organiseNodes(jobCephCluster)
+         clientNode = nodesOrg["client"]
+         dfsNodes = nodesOrg["osdNodes"] + [nodesOrg["monitor"]]
+         depCeph = g5k.deploy(jobCephCluster, :nodes => dfsNodes, :env => argEnv, :keys => "~/public/id_rsa", :wait => true)
+         depCephClient = g5k.deploy(jobCephCluster, :nodes => [clientNode], :env => argEnvClient, :keys => "~/public/id_rsa", :wait => true)
       end
    end
 end
 
 # Finally, if job does not yet exist create with name "cephCluster"
 if jobCephCluster == nil
-   jobCephCluster = g5k.reserve(:name => argJobName, :cluster => argG5KCluster, :nodes => argNumNodes, :site => argSite, :walltime => argWallTime, :env => argEnv, :keys => "~/public/id_rsa")
+   jobCephCluster = g5k.reserve(:name => argJobName, :cluster => argG5KCluster, :nodes => argNumNodes, :site => argSite, :walltime => argWallTime, :keys => "~/public/id_rsa")
 end
 
 # At this point job was created or fetched
 puts "Ceph deployment job details recovered." + "\n"
+
+def organiseNodes(jobCephCluster)
+# Read the nods in a job and assign roles to each node : monitor, client, OSDs
+   nodes = jobCephCluster["assigned_nodes"]
+   nodeOrg = { "nodes" => nodes,
+               "monitor" => nodes[0], # Currently single monitor.
+               "radosGW" => nodes[0], # Currently same as monitor.
+               "client" => nodes[1],  # Currently single client.
+               "osdNodes" => nodes - [nodes[0]] - [nodes[1]]
+             }
+end
+
 
 # Change to be read/write from YAML file
 nodes = jobCephCluster["assigned_nodes"]
@@ -101,6 +119,7 @@ osdNodes = nodes - [monitor]
 dataDir = "/tmp"
 radosGW = monitor # as of now the machine is the same for monitor & rados GW
 monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
+
 
 # At this point job was created / fetched
 puts "Deploying Ceph cluster #{argCephCluster} as follows:"
