@@ -102,7 +102,9 @@ if jobCephCluster == nil
 
    if jobCephCluster["deploy"] == nil # If undeployed, deploy it
       depCeph = g5k.deploy(jobCephCluster, :nodes => dfsNodes, :env => argEnv, :keys => "~/public/id_rsa", :wait => true)
+puts "done dfs"
       depCephCluster = g5k.deploy(jobCephCluster, :nodes => [client], :env => argEnvClient, :keys => "~/public/id_rsa", :wait => true)
+puts "done client"
    end
 
 end
