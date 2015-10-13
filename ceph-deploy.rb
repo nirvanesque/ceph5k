@@ -53,6 +53,7 @@ argSite = opts[:site] # site name.
 argG5KCluster = opts[:g5kCluster] # G5K cluster name if specified. 
 argRelease = opts[:release] # Ceph release name. 
 argEnv = opts[:env] # Grid'5000 environment to deploy. 
+argEnvClient = "jessie-x64-nfs" # Grid'5000 environment to deploy Ceph client. 
 argJobName = opts[:jobName] # Grid'5000 ndoes reservation job. 
 argCephCluster = opts[:cephCluster] # Ceph cluster name.
 argNumNodes = opts[:numNodes] # number of nodes in Ceph cluster.
@@ -92,10 +93,9 @@ if jobCephCluster == nil
 
    clientNode = jobCephCluster["assigned_nodes"][1]
    dfsNodes = jobCephCluster["assigned_nodes"] - [clientNode]
-puts clientNode
-puts dfsNodes
+
    depCeph = g5k.deploy(jobCephCluster, :nodes => dfsNodes, :env => argEnv, :keys => "~/public/id_rsa", :wait => true)
-#   depCephClient = g5k.deploy(jobCephCluster, :nodes => [clientNode], :env => argEnvClient, :keys => "~/public/id_rsa", :wait => true)
+   depCephClient = g5k.deploy(jobCephCluster, :nodes => [clientNode], :env => argEnvClient, :keys => "~/public/id_rsa", :wait => true)
 
 end
 
@@ -105,7 +105,8 @@ puts "Ceph deployment job details recovered." + "\n"
 # Change to be read/write from YAML file
 nodes = jobCephCluster["assigned_nodes"]
 monitor = nodes[0] # Currently single monitor. Later make multiple monitors.
-osdNodes = nodes - [monitor]
+client = nodes[1] # Currently single client. Later make multiple clients.
+osdNodes = nodes - [monitor] - [client]
 dataDir = "/tmp"
 radosGW = monitor # as of now the machine is the same for monitor & rados GW
 monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
@@ -114,6 +115,7 @@ monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
 puts "Deploying Ceph cluster #{argCephCluster} as follows:"
 puts "Cluster on nodes: #{nodes}" 
 puts "Monitor(s) node on: #{monAllNodes}"
+puts "Client(s) node on: #{client}"
 puts "OSDs on: #{osdNodes}" + "\n"
 
 
