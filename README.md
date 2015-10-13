@@ -42,6 +42,22 @@ If interested in using the PRy shell interface, type at CLI
 And then simply copy & paste the lines of ceph-deploy.rb in the PRy shell.
 
 ##Additional information
+Once the Ceph cluster + client is deployed, you can create and use Block Devices. On your Ceph client node, do the following :
+- create and map Block Devices,
+       modprobe rbd
+       rbd create foo --size 4096 -k /path/to/ceph.client.admin.keyring
+       rbd map foo --name client.admin -k /path/to/ceph.client.admin.keyring
+
+- Format and install a File System on the block device (this may take some time),
+       mkfs.ext4 -m0 /dev/rbd/rbd/foo
+
+- Mount the file system on your Ceph client node and use it.
+       mkdir /mnt/ceph-block-device
+       mount /dev/rbd/rbd/foo /mnt/ceph-block-device
+       cd /mnt/ceph-block-device
+
+
+##In case of errors
 If using the Rados Block Device (RBD), use the following commands first to avoid errors while mounting RBDs (this happens in the case of release firefly). 
 
 Login as root@monitor-node. Then the following commands at shell CLI :
