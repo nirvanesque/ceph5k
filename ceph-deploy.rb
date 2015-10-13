@@ -53,6 +53,7 @@ argSite = opts[:site] # site name.
 argG5KCluster = opts[:g5kCluster] # G5K cluster name if specified. 
 argRelease = opts[:release] # Ceph release name. 
 argEnv = opts[:env] # Grid'5000 environment to deploy. 
+argEnvClient = "jessie-x64-nfs" # Grid'5000 environment to deploy Ceph client. 
 argJobName = opts[:jobName] # Grid'5000 ndoes reservation job. 
 argCephCluster = opts[:cephCluster] # Ceph cluster name.
 argNumNodes = opts[:numNodes] # number of nodes in Ceph cluster.
@@ -66,6 +67,7 @@ puts "Grid 5000 site: #{argSite}"
 puts "Grid 5000 cluster: #{argG5KCluster}"
 puts "Ceph Release: #{argRelease}"
 puts "Grid'5000 deployment: #{argEnv}"
+puts "Grid'5000 deployment for Ceph client: #{argEnvClient}"
 puts "Job name (for nodes reservation): #{argJobName}"
 puts "Ceph cluster name: #{argCephCluster}"
 puts "Total nodes in Ceph cluster: #{argNumNodes}"
@@ -81,6 +83,9 @@ jobs.each do |job|
    if job["name"] == argJobName 
       jobCephCluster = job
       if jobCephCluster["deploy"] == nil # If undeployed, deploy it
+         nodesOrg = organiseNodes(jobCephCluster)
+         clientNode = nodesOrg["client"]
+         dfsNodes = nodesOrg["osdNodes"] + [nodesOrg["monitor"]]
          depCeph = g5k.deploy(jobCephCluster, :env => argEnv, :keys => "~/public/id_rsa", :wait => true)
       end
    end
