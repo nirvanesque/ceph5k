@@ -94,8 +94,10 @@ if jobCephCluster == nil
    clientNode = jobCephCluster["assigned_nodes"][1]
    dfsNodes = jobCephCluster["assigned_nodes"] - [clientNode]
 
-   depCeph = g5k.deploy(jobCephCluster, :nodes => dfsNodes, :env => argEnv, :keys => "~/public/id_rsa", :wait => true)
-   depCephClient = g5k.deploy(jobCephCluster, :nodes => [clientNode], :env => argEnvClient, :keys => "~/public/id_rsa", :wait => true)
+   depCeph = g5k.deploy(jobCephCluster, :nodes => dfsNodes, :env => argEnv, :keys => "~/public/id_rsa")
+   depCephClient = g5k.deploy(jobCephCluster, :nodes => [clientNode], :env => argEnvClient, :keys => "~/public/id_rsa")
+
+   g5k.wait_for_deploy(jobCephCluster)
 
 end
 
