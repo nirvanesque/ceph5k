@@ -83,9 +83,10 @@ jobs.each do |job|
    if job["name"] == argJobName 
       jobCephCluster = job
       if jobCephCluster["deploy"] == nil # If undeployed, deploy it
-         nodesOrg = organiseNodes(jobCephCluster)
-         clientNode = nodesOrg["client"]
-         dfsNodes = nodesOrg["osdNodes"] + [nodesOrg["monitor"]]
+         clientNode = jobCephCluster["assigned_nodes"][1]
+         dfsNodes = jobCephCluster["assigned_nodes"] - [clientNode]
+puts clientNode
+puts dfsNodes
          depCeph = g5k.deploy(jobCephCluster, :env => argEnv, :keys => "~/public/id_rsa", :wait => true)
       end
    end
