@@ -95,7 +95,8 @@ end
 # Finally, if job does not yet exist create with name "cephCluster"
 if jobCephCluster == nil
 #   jobCephCluster = g5k.reserve(:name => argJobName, :cluster => argG5KCluster, :nodes => argNumNodes, :site => argSite, :walltime => argWallTime, :env => argEnv, :keys => "~/public/id_rsa")
-   jobCephCluster = g5k.reserve(:name => argJobName, :cluster => argG5KCluster, :nodes => argNumNodes, :site => argSite, :walltime => argWallTime, :keys => "~/public/id_rsa")
+   jobCephCluster = g5k.reserve(:name => argJobName, :nodes => argNumNodes, :site => argSite, :walltime => argWallTime, :keys => "~/public/id_rsa")
+
    if jobCephCluster["deploy"] == nil # If undeployed, deploy it
       clientNode = jobCephCluster["assigned_nodes"][1]
       dfsNodes = jobCephCluster["assigned_nodes"] - [clientNode]
