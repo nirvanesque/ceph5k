@@ -43,7 +43,7 @@ EOS
   opt :env, "G5K environment to be deployed", :type => String, :default => "wheezy-x64-nfs"
   opt :jobName, "Name of Grid'5000 job if already created", :type => String, :default => "cephDeploy"
   opt :cephCluster, "Ceph cluster name", :type => String, :default => "ceph"
-  opt :numNodes, "Nodes in Ceph cluster", :default => 5
+  opt :numNodes, "Nodes in Ceph cluster", :default => 6
   opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => "01:00:00"
   opt :multiOSD, "Multiple OSDs on each node", :default => false
 end
@@ -89,6 +89,16 @@ end
 # Finally, if job does not yet exist create with name "cephCluster"
 if jobCephCluster == nil
    jobCephCluster = g5k.reserve(:name => argJobName, :cluster => argG5KCluster, :nodes => argNumNodes, :site => argSite, :walltime => argWallTime, :env => argEnv, :keys => "~/public/id_rsa")
+
+   if jobCephCluster["deploy"] == nil # If undeployed, deploy it
+      clientNode = jobCephCluster["assigned_nodes"][1]
+      dfsNodes = jobCephCluster["assigned_nodes"] - [clientNode]
+puts clientNode
+puts dfsNodes
+      depCeph = g5k.deploy(jobCephCluster, :nodes => dfsNodes, :env => argEnv, :keys => "~/public/id_rsa", :wait => true)
+#      depCephClient = g5k.deploy(jobCephCluster, :nodes => [clientNode], :env => argEnvClient, :keys => "~/public/id_rsa", :wait => true)
+      end
+
 end
 
 # At this point job was created or fetched
@@ -234,7 +244,7 @@ end
 monAllNodesIPList = monAllNodesIP.join(', ') # text list of IP address separated by comma
 
 # Read template file ceph.conf.erb
-template = ERB.new File.new("ceph.conf.erb").read, nil, "%"
+template = ERB.new File.new("./dss5k/ceph.conf.erb").read, nil, "%"
 # Fill up variables
 mon_initial_members = monAllNodesList
 mon_host = monAllNodesIPList
