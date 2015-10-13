@@ -1,6 +1,10 @@
 # dss5k
 New version of dfs5k being developed - Ceph (Lustre, Gluster - coming soon)
-ceph-deploy.rb is a script for deploying a Ceph DFS on reserved nodes.
+ceph-deploy.rb is a script for deploying a Ceph DFS on reserved nodes. It deploys a Ceph cluster using the following :
+- 1 or more monitors, 
+- 1 or more clients (depending on which script is chosen),
+- multiple OSDs.
+The Ceph cluster itself is deployed using the "wheezy-x64-nfs" distribution of Linux while the Ceph clients use the "jessie-x64-nfs" deployment.
 
 ## Installation & Execution
 At the CLI in a frontend:
@@ -21,7 +25,6 @@ where [options] are:
         -i, --ignore                   Ignore incorrect values
         -s, --site=sitename            Grid 5000 site for Ceph cluster (default: sophia)
         -r, --release=ceph-release     Ceph Release name (default: firefly)
-        -g, --g5kCluster=<s>           Grid 5000 cluster in a site (default: none )
         -c, --cephCluster=<s>          Ceph cluster name (default: ceph)
         -m, --multiOSD                 Multiple OSDs on each node (default: false)
         -n, --numNodes=number          Nodes in Ceph cluster (default: 5)
