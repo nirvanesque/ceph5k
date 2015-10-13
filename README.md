@@ -4,6 +4,7 @@ ceph-deploy.rb is a script for deploying a Ceph DFS on reserved nodes. It deploy
 - 1 or more monitors, 
 - 1 or more clients (depending on which script is chosen),
 - multiple OSDs.
+
 The Ceph cluster itself is deployed using the "wheezy-x64-nfs" distribution of Linux while the Ceph clients use the "jessie-x64-nfs" deployment.
 
 ## Installation & Execution
