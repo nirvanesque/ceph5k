@@ -67,6 +67,7 @@ puts "Grid 5000 site: #{argSite}"
 puts "Grid 5000 cluster: #{argG5KCluster}"
 puts "Ceph Release: #{argRelease}"
 puts "Grid'5000 deployment: #{argEnv}"
+puts "Grid'5000 deployment for Ceph client: #{argEnvClient}"
 puts "Job name (for nodes reservation): #{argJobName}"
 puts "Ceph cluster name: #{argCephCluster}"
 puts "Total nodes in Ceph cluster: #{argNumNodes}"
@@ -311,7 +312,7 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Monitor added and prepared.
-puts "Monitor added to Ceph cluster." + "\n"
+puts "Monitor & Client added to Ceph cluster." + "\n"
 
 
 # Prepare & Activate OSDs.
