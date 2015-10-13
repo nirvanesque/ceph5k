@@ -43,7 +43,7 @@ EOS
   opt :env, "G5K environment to be deployed", :type => String, :default => "wheezy-x64-nfs"
   opt :jobName, "Name of Grid'5000 job if already created", :type => String, :default => "cephDeploy"
   opt :cephCluster, "Ceph cluster name", :type => String, :default => "ceph"
-  opt :numNodes, "Nodes in Ceph cluster", :default => 5
+  opt :numNodes, "Nodes in Ceph cluster", :default => 6
   opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => "01:00:00"
   opt :multiOSD, "Multiple OSDs on each node", :default => false
 end
@@ -52,7 +52,7 @@ end
 argSite = opts[:site] # site name. 
 argG5KCluster = opts[:g5kCluster] # G5K cluster name if specified. 
 argRelease = opts[:release] # Ceph release name. 
-argEnv = opts[:env] # Grid'5000 environment to deploy. 
+argEnv = opts[:env] # Grid'5000 environment to deploy Ceph cluster. 
 argEnvClient = "jessie-x64-nfs" # Grid'5000 environment to deploy Ceph client. 
 argJobName = opts[:jobName] # Grid'5000 ndoes reservation job. 
 argCephCluster = opts[:cephCluster] # Ceph cluster name.
@@ -67,7 +67,6 @@ puts "Grid 5000 site: #{argSite}"
 puts "Grid 5000 cluster: #{argG5KCluster}"
 puts "Ceph Release: #{argRelease}"
 puts "Grid'5000 deployment: #{argEnv}"
-puts "Grid'5000 deployment for Ceph client: #{argEnvClient}"
 puts "Job name (for nodes reservation): #{argJobName}"
 puts "Ceph cluster name: #{argCephCluster}"
 puts "Total nodes in Ceph cluster: #{argNumNodes}"
@@ -82,27 +81,30 @@ jobCephCluster = nil
 jobs.each do |job|
    if job["name"] == argJobName 
       jobCephCluster = job
+      nodes = jobCephCluster["assigned_nodes"]
+      client = nodes[1] # Currently single client.
+      dfsNodes = nodes - [client]
+
       if jobCephCluster["deploy"] == nil # If undeployed, deploy it
-         clientNode = jobCephCluster["assigned_nodes"][1]
-         dfsNodes = jobCephCluster["assigned_nodes"] - [clientNode]
-puts clientNode
-puts dfsNodes
-         depCeph = g5k.deploy(jobCephCluster, :env => argEnv, :keys => "~/public/id_rsa", :wait => true)
+         depCeph = g5k.deploy(jobCephCluster, :nodes => dfsNodes, :env => argEnv, :keys => "~/public/id_rsa", :wait => true)
+         depCephCluster = g5k.deploy(jobCephCluster, :nodes => [client], :env => argEnvClient, :keys => "~/public/id_rsa", :wait => true)
       end
    end
 end
 
-# Finally, if job does not yet exist create with name "cephCluster"
+# Finally, if job does not yet exist create with name "cephCluster" and deploy it
 if jobCephCluster == nil
-#   jobCephCluster = g5k.reserve(:name => argJobName, :cluster => argG5KCluster, :nodes => argNumNodes, :site => argSite, :walltime => argWallTime, :env => argEnv, :keys => "~/public/id_rsa")
-   jobCephCluster = g5k.reserve(:name => argJobName, :nodes => argNumNodes, :site => argSite, :walltime => argWallTime, :keys => "~/public/id_rsa")
+   jobCephCluster = g5k.reserve(:name => argJobName, :nodes => argNumNodes, :site => argSite, :walltime => argWallTime)
+
+   nodes = jobCephCluster["assigned_nodes"]
+   client = nodes[1] # Currently single client.
+   dfsNodes = nodes - [client]
 
    if jobCephCluster["deploy"] == nil # If undeployed, deploy it
-      clientNode = jobCephCluster["assigned_nodes"][1]
-      dfsNodes = jobCephCluster["assigned_nodes"] - [clientNode]
-puts clientNode
-puts dfsNodes
-      depCeph = g5k.deploy(jobCephCluster, :env => argEnv, :keys => "~/public/id_rsa", :wait => true)
+      depCeph = g5k.deploy(jobCephCluster, :nodes => dfsNodes, :env => argEnv, :wait => true)
+puts "done dfs"
+      depCephCluster = g5k.deploy(jobCephCluster, :nodes => [client], :env => argEnvClient, :wait => true)
+puts "done client"
    end
 
 end
@@ -450,3 +452,4 @@ Cute::TakTuk.start([monitor], :user => "root") do |tak|
      end
      tak.loop()
 end
+
