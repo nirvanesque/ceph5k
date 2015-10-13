@@ -81,9 +81,13 @@ jobCephCluster = nil
 jobs.each do |job|
    if job["name"] == argJobName 
       jobCephCluster = job
-      if jobCephCluster["deploy"] == nil # If undeployed, deploy it
-         depCeph = g5k.deploy(jobCephCluster, :env => argEnv, :keys => "~/public/id_rsa", :wait => true)
-      end
+      clientNode = jobCephCluster["assigned_nodes"][1]
+      dfsNodes = jobCephCluster["assigned_nodes"] - [clientNode]
+
+      depCeph = g5k.deploy(jobCephCluster, :nodes => dfsNodes, :env => argEnv, :keys => "~/public/id_rsa")
+      depCephClient = g5k.deploy(jobCephCluster, :nodes => [clientNode], :env => argEnvClient, :keys => "~/public/id_rsa")
+
+      g5k.wait_for_deploy(jobCephCluster)
    end
 end
 
@@ -323,7 +327,6 @@ if argMultiOSD # Option for activating multiple OSDs per node
      storageDevices = []
 
      Cute::TakTuk.start([node], :user => "root") do |tak|
-#          result = tak.exec!("curl -kn 'https://api.grid5000.fr/sid/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}'")
           result = tak.exec!("ceph-deploy disk list node")
           output = result[node][:output]
           parsedOutput = JSON.parse(output)
