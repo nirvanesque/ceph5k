@@ -55,9 +55,58 @@ Once the Ceph cluster + client is deployed, you can create and use Block Devices
 
 - Mount the file system on your Ceph client node and use it.
 
-        mkdir /mnt/ceph-block-device
-        mount /dev/rbd/rbd/foo /mnt/ceph-block-device
+        mkdir /mnt/ceph-depl
+        mount /dev/rbd/rbd/foo /mnt/ceph-depl
         cd /mnt/ceph-block-device
+
+
+##Copying data from production Ceph cluster to deployed Ceph cluster
+Once the Ceph cluster + client are deployed and block devices mapped and mounted, it is possible to copy data (normal files as well as objects) between the deployed Ceph cluster and the production Ceph. This is required during the initial phase of preparing data before the run of experiments.
+- Create an RBD pool on the production Ceph cluster,
+
+The UI for the cluster is at : https://api.grid5000.fr/sid/storage/ceph/ui/
+If required to create an account, follow instructions from Wiki : https://www.grid5000.fr/mediawiki/index.php/Ceph
+
+
+- Create a config file for the production Ceph with the following details. Store it in ~/prod/ directory on your frontend :
+
+        [global]
+          mon initial members = ceph0,ceph1,ceph2
+          mon host = 172.16.111.30,172.16.111.31,172.16.111.32
+
+
+- Get your keyring file for Ceph production and store it in local directory. The contents should look similar to the following:
+
+        [client.userid]
+          key = AQDgA8RUiPsIFBAAi6bzDP9s4MV0ZivQTy3FRA==
+
+
+- create and map Block Devices in the production cluster,
+
+        rbd create bar --size 4096 -c ~/prod/ceph.conf --id userid --pool userid_rbd
+        rbd map bar -c ~/prod/ceph.conf --id userid --pool userid_rbd
+
+
+- Format and install a File System on the block device (this may take some time),
+
+        mkfs.ext4 -m0 /dev/rbd/userid_rbd/bar
+
+
+- Mount the file system on your Ceph client node and use it.
+
+        mkdir /mnt/ceph-prod
+        mount /dev/rbd/userid_rbd/bar /mnt/ceph-prod
+
+
+- At the end of the above operations, there will be 2 subdirectories under /mnt as follows :
+        # cd /mnt
+        # ls -al /mnt
+        drwxr-xr-x  3 root root 4096 Oct 14 17:25 ceph-depl
+        drwxr-xr-x  3 root root 4096 Oct 14 17:44 ceph-prod
+
+
+- It is now possible to copy any file from one subdirectory (on deployed Ceph cluster) to the other subdirectory (on production Ceph cluster) and vice-versa :
+        # cp /mnt/ceph-depl/filename /mnt/prod/
 
 
 ##In case of errors
