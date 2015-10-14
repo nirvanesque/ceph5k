@@ -132,9 +132,7 @@ puts "Doing pre-flight checklist..."
 # rls_key_url = 'https://git.ceph.com/?p=ceph.git;a=blob_plain;f=keys/release.asc'
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
 #     tak.exec!("curl #{rls_key_url} > release.asc")
-puts "taktuk1"
      tak.put("/home/abasu/public/release.asc", "/root/release.asc")
-puts "taktuk2"
      tak.exec!("cat ./release.asc  | apt-key add -")
      tak.loop()
 end
