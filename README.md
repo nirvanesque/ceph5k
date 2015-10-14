@@ -101,6 +101,7 @@ Login as root@client-node. Then the following commands at shell CLI :
 
 
 - At the end of the above operations, there will be 2 subdirectories under /mnt as follows :
+
         # cd /mnt
         # ls -al /mnt
         drwxr-xr-x  3 root root 4096 Oct 14 17:25 ceph-depl
