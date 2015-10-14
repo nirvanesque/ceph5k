@@ -41,8 +41,9 @@ If interested in using the PRy shell interface, type at CLI
 
 And then simply copy & paste the lines of ceph-deploy.rb in the PRy shell.
 
-##Additional information
-Once the Ceph cluster + client is deployed, you can create and use Block Devices. On your Ceph client node, do the following :
+##Configuring and mounting a Rados Block Device
+Once the Ceph cluster + client is deployed, you can create and use Block Devices. On your Ceph client node, login as root@client-node. Then execute the following commands at shell CLI :
+
 - create and map Block Devices,
 
         modprobe rbd
@@ -61,11 +62,12 @@ Once the Ceph cluster + client is deployed, you can create and use Block Devices
 
 
 ##Copying data from production Ceph cluster to deployed Ceph cluster
-Once the Ceph cluster + client are deployed and block devices mapped and mounted, it is possible to copy data (normal files as well as objects) between the deployed Ceph cluster and the production Ceph. This is required during the initial phase of preparing data before the run of experiments.
+Once the Ceph cluster + client are deployed and block devices mapped and mounted, it is possible to copy data (normal files as well as objects) between the deployed Ceph cluster and the production Ceph. This is required during the initial phase of preparing data before the run of experiments. On your Ceph client node, login as root@client-node. Then execute the following commands at shell CLI :
 - Create an RBD pool on the production Ceph cluster,
 
 The UI for the cluster is at : https://api.grid5000.fr/sid/storage/ceph/ui/
 If required to create an account, follow instructions from Wiki : https://www.grid5000.fr/mediawiki/index.php/Ceph
+Login as root@client-node. Then the following commands at shell CLI :
 
 
 - Create a config file for the production Ceph with the following details. Store it in ~/prod/ directory on your frontend :
@@ -114,9 +116,9 @@ If using the Rados Block Device (RBD) with a different / lower distribution than
 
 Login as root@monitor-node. Then the following commands at shell CLI :
 
-       ceph osd getcrushmap -o /tmp/crush
-       crushtool -i /tmp/crush --set-chooseleaf_vary_r 0 -o /tmp/crush.new
-       ceph osd setcrushmap -i /tmp/crush.new
+        ceph osd getcrushmap -o /tmp/crush
+        crushtool -i /tmp/crush --set-chooseleaf_vary_r 0 -o /tmp/crush.new
+        ceph osd setcrushmap -i /tmp/crush.new
 
 
 
