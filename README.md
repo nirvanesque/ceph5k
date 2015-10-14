@@ -66,8 +66,8 @@ Once the Ceph cluster + client are deployed and block devices mapped and mounted
 - Create an RBD pool on the production Ceph cluster,
 
 The UI for the cluster is at : https://api.grid5000.fr/sid/storage/ceph/ui/
+
 If required to create an account, follow instructions from Wiki : https://www.grid5000.fr/mediawiki/index.php/Ceph
-Login as root@client-node. Then the following commands at shell CLI :
 
 
 - Create a config file for the production Ceph with the following details. Store it in ~/prod/ directory on your frontend :
