@@ -61,7 +61,7 @@ Once the Ceph cluster + client is deployed, you can create and use Block Devices
 
 
 ##In case of errors
-If using the Rados Block Device (RBD), use the following commands first to avoid errors while mounting RBDs (this happens in the case of release firefly). 
+If using the Rados Block Device (RBD) with a different / lower distribution than "jessie" problems may be encountered. In that case, use the following commands first to avoid errors while mounting RBDs (this happens in the case of release firefly). 
 
 Login as root@monitor-node. Then the following commands at shell CLI :
 
