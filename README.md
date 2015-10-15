@@ -108,8 +108,8 @@ If required to create an account, follow instructions from Wiki : https://www.gr
         drwxr-xr-x  3 root root 4096 Oct 14 17:44 ceph-prod
 
 
-- It is now possible to copy any file from one subdirectory (on deployed Ceph cluster) to the other subdirectory (on production Ceph cluster) and vice-versa :
-        # cp /mnt/ceph-depl/filename /mnt/prod/
+- It is now possible to copy any file from the production Ceph cluster (second subdirectory above) to the deployed Ceph cluster (first subdirectory above) and vice-versa :
+        # cp /mnt/ceph-prod/filename /mnt/ceph-depl/
 
 
 ##In case of errors
