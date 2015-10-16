@@ -82,7 +82,8 @@ jobs.each do |job|
       jobCephClient = job
    end
 end
-
+puts jobCephCluster
+puts jobCephClient
 monitor = nil
 unless jobCephCluster.nil? # No deployed cluster --> use client with Ceph production only
    nodes = jobCephCluster["assigned_nodes"] # get nodes for deployed Ceph cluster

@@ -16,7 +16,7 @@ At the CLI in a frontend:
        export PATH=$PATH:$(ruby -e 'puts "#{Gem.user_dir}/bin"')
        rm -rf dss5k
        git clone https://github.com/nirvanesque/dss5k.git
-       chmod +x dss5k/ceph-deploy.rb
+       chmod +x dss5k/*.rb
        ./dss5k/ceph-deploy.rb
 
 ##Detailed Usage
