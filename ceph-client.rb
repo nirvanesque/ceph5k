@@ -297,3 +297,29 @@ Cute::TakTuk.start([monitor], :user => "root") do |tak|
 end
 
 
+
+# Creating & pushing config file for Ceph production cluster.
+puts "Creating & pushing config file for Ceph production cluster ..."
+
+# Prepare ceph.conf file for production Ceph cluster
+configFile = File.open("/tmp/ceph.conf", "w") do |file|
+   file.puts("[global]")
+   file.puts("  mon initial members = ceph0,ceph1,ceph2")
+   file.puts("  mon host = 172.16.111.30,172.16.111.31,172.16.111.32")
+end
+
+# Then put ceph.conf file to all client nodes
+user = g5k.g5k_user
+Cute::TakTuk.start(clients, :user => "root") do |tak|
+     result = tak.exec!("curl -k https://api.grid5000.fr/sid/storage/ceph/auths/#{user}.keyring | cat - > /etc/ceph/ceph.client.#{user}.keyring")
+puts result
+     tak.exec!("rm -rf prod/")
+     tak.exec!("mkdir prod/; touch prod/ceph.conf")
+     tak.put("/tmp/ceph.conf", "prod/ceph.conf")
+     tak.loop()
+end
+
+# Created & pushed config file for Ceph production cluster.
+puts "Created & pushed config file for Ceph production cluster to all clients." + "\n"
+
+
