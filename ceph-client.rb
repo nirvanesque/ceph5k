@@ -158,6 +158,7 @@ end
 
 
 # Push ssh public key to all nodes
+ssh_key =  'id_rsa'
 Cute::TakTuk.start(clients, :user => "root") do |tak|
      tak.put(".ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub")
      tak.exec!("cat /root/.ssh/#{ssh_key}.pub >> /root/.ssh/authorized_keys")
