@@ -82,9 +82,7 @@ puts job["name"]
       jobCephClient = job
    end
 end
-puts jobCephCluster
-puts "next\n"
-puts jobCephClient
+
 nodes = nil
 unless jobCephCluster.nil? # No deployed cluster --> use client with Ceph production only
    nodes = jobCephCluster["assigned_nodes"] # get nodes for deployed Ceph cluster
@@ -110,7 +108,7 @@ clients = jobCephClient["assigned_nodes"] # Currently single client. Later make 
 osdNodes = nodes - [monitor]
 
 # At this point the necessary jobs were created / fetched.
-puts "Deploying Ceph client(s) on nodes: #{client}" + "\n"
+puts "Deploying Ceph client(s) on nodes: #{clients}" + "\n"
 
 
 #1 Preflight Checklist
