@@ -75,6 +75,7 @@ jobs = g5k.get_my_jobs(argSite)
 jobCephCluster = nil
 jobCephClient = nil
 jobs.each do |job|
+puts job["name"]
    if job["name"] == argDFSName # Get the Ceph cluster job, if it exists
       jobCephCluster = job
    end
@@ -83,8 +84,9 @@ jobs.each do |job|
    end
 end
 puts jobCephCluster
+puts "next\n"
 puts jobCephClient
-monitor = nil
+nodes = nil
 unless jobCephCluster.nil? # No deployed cluster --> use client with Ceph production only
    nodes = jobCephCluster["assigned_nodes"] # get nodes for deployed Ceph cluster
 else
