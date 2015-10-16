@@ -74,7 +74,6 @@ jobs = g5k.get_my_jobs(argSite)
 jobCephCluster = nil
 jobCephClient = nil
 jobs.each do |job|
-puts job["name"]
    if job["name"] == argDFSName # Get the Ceph cluster job, if it exists
       jobCephCluster = job
    end
@@ -192,12 +191,11 @@ puts "Purged previous Ceph installations." + "\n"
 puts "Installing Ceph client..."
 
 # Install ceph on all client nodes
-clients.each do |node|
-     Cute::TakTuk.start([node], :user => "root") do |tak|
+Cute::TakTuk.start([monitor], :user => "root") do |tak|
           tak.exec!("export https_proxy=\"https://proxy:3128\"; export http_proxy=\"http://proxy:3128\"; ceph-deploy install --release #{argRelease} #{clientsList}")
           tak.loop()
-     end
 end
+
 
 # Ceph installation on all client nodes completed.
 puts "Ceph client installation completed." + "\n"
