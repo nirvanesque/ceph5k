@@ -105,7 +105,6 @@ puts "Ceph Client job created / recovered." + "\n"
 nodes = jobCephCluster["assigned_nodes"]
 monitor = nodes[0] # Currently single monitor. Later make multiple monitors.
 clients = jobCephClient["assigned_nodes"] # Currently single client. Later make multiple clients.
-osdNodes = nodes - [monitor]
 
 # At this point the necessary jobs were created / fetched.
 puts "Deploying Ceph client(s) on nodes: #{clients}" + "\n"
@@ -189,91 +188,28 @@ end
 puts "Purged previous Ceph installations." + "\n"
 
 
-# Creating & installing Ceph cluster.
-puts "Creating & installing Ceph cluster..."
-
-# Create the ceph cluster on the monitor node
-monitorShort = monitor.split(".").first
-Cute::TakTuk.start([monitor], :user => "root") do |tak|
-     tak.exec!("ceph-deploy new #{monitorShort}")
-     tak.loop()
-end
-
-
-# Get initial config file from ceph master/monitor
-Net::SFTP.start(monitor, 'root') do |sftp|
-  sftp.download!("ceph.conf", "ceph.conf")
-end
-
-# Read the following important parameters from file & keep in memory
-fsid = ""
-confFile = File.open("ceph.conf", "r") do |file|
-   file.each_line do |line|
-      if line.include? "fsid"
-         fsid = line.split(" = ").last.split("\n").first
-      end
-   end
-end
-
-# Update lines for Ceph client in ceph.conf file
-# Prepare the list of short names of all monitors as a text string
-monAllNodesShort = monAllNodes.map do |node|  # array of short names of monitors
-     node.split(".").first
-end
-monAllNodesList = monAllNodesShort.join(', ') # text list of short names separated by comma
-
-# Prepare the list of IP addresses of all monitors as a text string
-monAllNodesIP = monAllNodes.map do |node|  # array of IP addresses of monitors
-     Socket.getaddrinfo(node, "http", nil, :STREAM)[0][2]
-end
-monAllNodesIPList = monAllNodesIP.join(', ') # text list of IP address separated by comma
-
-# Read template file ceph.conf.erb
-template = ERB.new File.new("./dss5k/ceph.conf.erb").read, nil, "%"
-# Fill up variables
-mon_initial_members = monAllNodesList
-mon_host = monAllNodesIPList
-public_network = monAllNodesIP[0]
-radosgw_host = monAllNodes[0]
-# Write result to config file ceph.conf
-cephFileText = template.result(binding)
-File.open("ceph.conf", 'w+') do |file|
-   file.write(cephFileText)
-end
-
-
-# Then put ceph.conf file to all nodes
-Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.exec!("rm ceph.conf")
-     tak.exec!("mkdir /etc/ceph; touch /etc/ceph/ceph.conf")
-     tak.put("ceph.conf", "ceph.conf")
-     tak.put("ceph.conf", "/etc/ceph/ceph.conf")
-     tak.loop()
-end
-
+# Installing Ceph client.
+puts "Installing Ceph client..."
 
 # Install ceph on all client nodes
-clientNodesShort = [] # array of short names for all client nodes
 clients.each do |node|
-     clientShort = node.split(".").first
-     clientNodesShort += clientShort
      Cute::TakTuk.start([node], :user => "root") do |tak|
-          tak.exec!("export https_proxy=\"https://proxy:3128\"; export http_proxy=\"http://proxy:3128\"; ceph-deploy install --release #{argRelease} #{clientShort}")
+          tak.exec!("export https_proxy=\"https://proxy:3128\"; export http_proxy=\"http://proxy:3128\"; ceph-deploy install --release #{argRelease} #{clientsList}")
           tak.loop()
      end
 end
 
-# Ceph installation on all nodes completed.
+# Ceph installation on all client nodes completed.
 puts "Ceph client installation completed." + "\n"
 
 
-# Monitor added and prepared.
+# Add Ceph client to deployed Ceph cluster.
 puts "Adding Ceph client(s) #{clients} to cluster ..."
 
 # Push config file and admin keys from monitor node to all ceph clients
-clientNodesList = clientNodesShort.join(' ') # short names of all nodes other than master
+monitorShort = monitor.split(".").first
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
-     tak.exec!("ceph-deploy --overwrite-conf admin #{monitorShort} #{clientNodesList}")
+     tak.exec!("ceph-deploy --overwrite-conf admin #{monitorShort} #{clientsList}")
      tak.loop()
 end
 
@@ -284,7 +220,7 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
 end
 
 # Clients added to cluster.
-puts "Client added to Ceph cluster." + "\n"
+puts "Clients #{clients} added to Ceph cluster." + "\n"
 
 
 # Finally check if Ceph Cluster was correctly deployed - result should be "active+clean"
