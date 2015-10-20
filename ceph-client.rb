@@ -113,6 +113,7 @@ puts "Deploying Ceph client(s) on nodes: #{clients}" + "\n"
 puts "Doing pre-flight checklist..."
 # Add (release) Keys to each Ceph node
 user = g5k.g5k_user
+puts user
 Cute::TakTuk.start(clients, :user => "root") do |tak|
      tak.put("/home/#{user}/dss5k/release.asc", "/root/release.asc")
      tak.exec!("cat /root/release.asc  | apt-key add -")
