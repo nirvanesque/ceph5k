@@ -115,7 +115,8 @@ puts "Doing pre-flight checklist..."
 user = g5k.g5k_user
 puts user
 Cute::TakTuk.start(clients, :user => "root") do |tak|
-     tak.put("/home/#{user}/dss5k/release.asc", "/root/release.asc")
+     result = tak.put("/home/#{user}/dss5k/release.asc", "/root/release.asc")
+puts result
      tak.exec!("cat /root/release.asc  | apt-key add -")
      tak.loop()
 end
