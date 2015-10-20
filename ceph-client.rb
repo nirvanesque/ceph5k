@@ -112,8 +112,9 @@ puts "Deploying Ceph client(s) on nodes: #{clients}" + "\n"
 #1 Preflight Checklist
 puts "Doing pre-flight checklist..."
 # Add (release) Keys to each Ceph node
+user = g5k.g5k_user
 Cute::TakTuk.start(clients, :user => "root") do |tak|
-     tak.put("dss5k/release.asc", "/root/release.asc")
+     tak.put("/home/#{user}/dss5k/release.asc", "/root/release.asc")
      tak.exec!("cat /root/release.asc  | apt-key add -")
      tak.loop()
 end
@@ -242,7 +243,6 @@ configFile = File.open("/tmp/ceph.conf", "w") do |file|
 end
 
 # Then put ceph.conf file to all client nodes
-user = g5k.g5k_user
 Cute::TakTuk.start(clients, :user => "root") do |tak|
      result = tak.exec!("curl -k https://api.grid5000.fr/sid/storage/ceph/auths/#{user}.keyring | cat - > /etc/ceph/ceph.client.#{user}.keyring")
 puts result

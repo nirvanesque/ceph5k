@@ -129,8 +129,9 @@ puts "OSDs on: #{osdNodes}" + "\n"
 #1 Preflight Checklist
 puts "Doing pre-flight checklist..."
 # Add (release) Keys to each Ceph node
+user = g5k.g5k_user
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.put("~/dss5k/release.asc", "/root/release.asc")
+     tak.put("/home/#{user}/public/release.asc", "/root/release.asc")
      tak.exec!("cat ./release.asc  | apt-key add -")
      tak.loop()
 end
