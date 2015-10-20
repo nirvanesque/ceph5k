@@ -40,7 +40,7 @@ EOS
   opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => "sophia"
   opt :g5kCluster, "Grid 5000 cluster in specified site", :type => String, :default => ""
   opt :release, "Ceph Release name", :type => String, :default => "firefly"
-  opt :env, "G5K environment to be deployed", :type => String, :default => "jessie-x64-nfs"
+  opt :env, "G5K environment to be deployed", :type => String, :default => "ubuntu-x64-1204"
   opt :dfsName, "Name of Grid'5000 job for Ceph DFS cluster", :type => String, :default => "cephDeploy"
   opt :clientName, "Name of Grid'5000 job for Ceph client", :type => String, :default => "cephClient"
   opt :numClients, "No. of Ceph clients to create", :default => 1
