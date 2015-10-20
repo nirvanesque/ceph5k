@@ -112,10 +112,8 @@ puts "Deploying Ceph client(s) on nodes: #{clients}" + "\n"
 #1 Preflight Checklist
 puts "Doing pre-flight checklist..."
 # Add (release) Keys to each Ceph node
-# rls_key_url = 'https://git.ceph.com/?p=ceph.git;a=blob_plain;f=keys/release.asc'
 Cute::TakTuk.start(clients, :user => "root") do |tak|
-#     tak.exec!("curl #{rls_key_url} > release.asc")
-     tak.put("/home/abasu/public/release.asc", "/root/release.asc")
+     tak.put("~/dss5k/release.asc", "/root/release.asc")
      tak.exec!("cat ./release.asc  | apt-key add -")
      tak.loop()
 end
