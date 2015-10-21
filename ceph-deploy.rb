@@ -463,11 +463,10 @@ end
 
 # Then put ceph.conf file to all client nodes
 Cute::TakTuk.start([client], :user => "root") do |tak|
-     result = tak.exec!("curl -k https://api.grid5000.fr/sid/storage/ceph/auths/#{user}.keyring | cat - > /etc/ceph/ceph.client.#{user}.keyring")
-puts result
      tak.exec!("rm -rf prod/")
      tak.exec!("mkdir prod/ && touch prod/ceph.conf")
-     tak.put("/tmp/ceph.conf", "prod/ceph.conf")
+     tak.put("/tmp/ceph.conf", "/root/prod/ceph.conf")
+     tak.put("/tmp/ceph.client.#{user}.keyring", "/etc/ceph/ceph.client.#{user}.keyring")
      tak.loop()
 end
 
