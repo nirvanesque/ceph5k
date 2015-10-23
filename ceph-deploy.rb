@@ -23,6 +23,7 @@ require 'trollop'
 require 'json'
 
 g5k = Cute::G5K::API.new()
+user = g5k.g5k_user
 
 
 # banner for script
@@ -46,6 +47,10 @@ EOS
   opt :numNodes, "Nodes in Ceph cluster", :default => 6
   opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => "01:00:00"
   opt :multiOSD, "Multiple OSDs on each node", :default => false
+  opt :poolName, "Name of pool to create on Ceph clusters", :type => String, :default => "pool"
+  opt :poolSize, "Size of pool to create on Ceph clusters", :default => 28800
+  opt :rbdName, "Name of rbd to create inside Ceph pool", :type => String, :default => "image"
+  opt :rbdSize, "Size of rbd to create inside Ceph pool", :default => 14400
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
@@ -59,7 +64,10 @@ argCephCluster = opts[:cephCluster] # Ceph cluster name.
 argNumNodes = opts[:numNodes] # number of nodes in Ceph cluster.
 argWallTime = opts[:walltime] # walltime for the reservation.
 argMultiOSD = opts[:multiOSD] # Multiple OSDs on each node.
-
+argPoolName = "#{user}_" + opts[:poolName] # Name of pool to create on clusters.
+argPoolSize = opts[:poolSize] # Size of pool to create on clusters.
+argRBDName = "#{user}_" + opts[:rbdName] # Name of pool to create on clusters.
+argRBDSize = opts[:rbdSize] # Size of pool to create on clusters.
 
 # Show parameters for creating Ceph cluster
 puts "Deploying Ceph cluster with the following parameters:"
@@ -129,7 +137,6 @@ puts "OSDs on: #{osdNodes}" + "\n"
 #1 Preflight Checklist
 puts "Doing pre-flight checklist..."
 # Add (release) Keys to each Ceph node
-user = g5k.g5k_user
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.put("/home/#{user}/public/release.asc", "/root/release.asc")
      tak.exec!("cat ./release.asc  | apt-key add -")
@@ -467,6 +474,30 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("mkdir prod/ && touch prod/ceph.conf")
      tak.put("/tmp/ceph.conf", "/root/prod/ceph.conf")
      tak.put("/tmp/ceph.client.#{user}.keyring", "/etc/ceph/ceph.client.#{user}.keyring")
+     tak.loop()
+end
+
+# Created & pushed config file for Ceph production cluster.
+puts "Created & pushed config file for Ceph production cluster to all clients." + "\n"
+
+
+
+# Creating Ceph pools on deployed and production clusters.
+puts "Creating Ceph pools on deployed and production clusters ..."
+
+# Create Ceph pools & RBD
+Cute::TakTuk.start([client], :user => "root") do |tak|
+     tak.exec!("modprobe rbd")
+     # Create pools & RBD on deployed cluster
+     tak.exec!("rbd mkpool #{argPoolName} --size #{argPoolSize}")
+     tak.exec!("rbd create #{argRBDName} --pool #{argPoolName} --size #{argRBDSize}")
+
+     # Create pools & RBD on production cluster
+#     tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} mkpool #{argPoolName} --size #{argPoolSize} --keyfile /etc/ceph/ceph.client.{#user}.keyring")
+     result1 = tak.exec!("rados -c /root/prod/ceph.conf --id #{user} lspools --keyfile /etc/ceph/ceph.client.{#user}.keyring")
+puts result1[client][:output]
+     result2 = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} create #{user}_rb/#{argPoolName} --size #{argPoolSize} --keyfile /etc/ceph/ceph.client.{#user}.keyring")
+puts result2[client][:output]
      tak.loop()
 end
 

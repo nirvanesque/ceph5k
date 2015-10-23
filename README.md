@@ -17,6 +17,7 @@ At the CLI in a frontend:
        rm -rf dss5k
        git clone https://github.com/nirvanesque/dss5k.git
        chmod +x dss5k/*.rb
+       chmod +x dss5k/*.sh
        ./dss5k/ceph-deploy.rb     # Creates & deploys the Ceph cluster
        ./dss5k/ceph-client.rb     # Creates & deploys the Ceph client
 
