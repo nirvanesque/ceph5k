@@ -496,7 +496,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
 #     tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} mkpool #{argPoolName} --size #{argPoolSize} --keyfile /etc/ceph/ceph.client.{#user}.keyring")
      result1 = tak.exec!("rados -c /root/prod/ceph.conf --id #{user} lspools --keyfile /etc/ceph/ceph.client.{#user}.keyring")
 puts result1
-     result2 = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} create #{user}_rb/#{argPoolName} --size #{argPoolSize} --keyfile /etc/ceph/ceph.client.{#user}.keyring")
+     result2 = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} create #{user}_rb/#{argPoolName} --size #{argPoolSize} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
 puts result2
      tak.loop()
 end
