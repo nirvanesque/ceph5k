@@ -495,16 +495,15 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      # Create pools & RBD on production cluster
 #     tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} mkpool #{argPoolName} --size #{argPoolSize} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
      result = tak.exec!("rados -c /root/prod/ceph.conf --id #{user} lspools")
-puts result
 poolsList = []
      if result[client][:output].include? "#{user}"
         poolsText = result[client][:output]
-        poolsList = poolsText.map do |pools|  # array of short names of pools present
-           pools.split("\n").first
+puts poolsText
+        poolsList = poolsText.split
         end
 puts poolsList
      end
-     result2 = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} create #{user}_rb/#{argPoolName} --size #{argPoolSize} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
+#     result2 = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} create #{user}_rb/#{argPoolName} --size #{argPoolSize} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
 puts result2
      tak.loop()
 end
