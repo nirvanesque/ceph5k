@@ -498,15 +498,15 @@ poolsList = []
 userPool = ""
      if result[client][:output].include? "#{user}"
         poolsList = result[client][:output].split("\n")
-puts poolsList
      end
      poolsList.each do |pool|  # logic: it will take the alphabetic-last pool from user
         if pool.include? "#{user}"
            userPool = pool
         end
      end
+puts userPool
      unless userPool == ""
-        result2 = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argPoolName} --size #{argPoolSize} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
+        result2 = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argPoolName} --size #{argPoolSize} -k /etc/ceph/ceph.client.#{user}.keyring")
 puts result2
      else
 #       tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} mkpool #{argPoolName} --size #{argPoolSize} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
