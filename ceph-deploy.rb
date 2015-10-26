@@ -503,7 +503,7 @@ puts poolsText
 puts poolsList
      end
 #     result2 = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} create #{user}_rb/#{argPoolName} --size #{argPoolSize} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
-puts result2
+#puts result2
      tak.loop()
 end
 
