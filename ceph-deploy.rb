@@ -484,7 +484,8 @@ puts "Created & pushed config file for Ceph production cluster to all clients." 
 
 # Creating Ceph pools on deployed and production clusters.
 puts "Creating Ceph pools on deployed and production clusters ..."
-
+poolsList = []
+userPool = ""
 # Create Ceph pools & RBD
 Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("modprobe rbd")
@@ -494,8 +495,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
 
      # Create pools & RBD on production cluster
      result = tak.exec!("rados -c /root/prod/ceph.conf --id #{user} lspools")
-poolsList = []
-userPool = ""
+
      if result[client][:output].include? "#{user}"
         poolsList = result[client][:output].split("\n")
      end
@@ -506,10 +506,10 @@ userPool = ""
      end
 puts userPool
      unless userPool == ""
-        result2 = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argPoolName} --size #{argPoolSize} -k /etc/ceph/ceph.client.#{user}.keyring")
+        result2 = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
 puts result2
      else
-#       tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} mkpool #{argPoolName} --size #{argPoolSize} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
+#       tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} mkpool #{argPoolName} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
         puts "Create at least one RBD pool from the Ceph production frontend\n\n"
         puts "Use this link to create pool: https://api.grid5000.fr/sid/storage/ceph/ui/"
         puts "Then rerun this script.\n"
@@ -518,7 +518,12 @@ puts result2
 end
 
 # Created & pushed config file for Ceph production cluster.
-puts "Created & pushed config file for Ceph production cluster to all clients." + "\n"
+puts "Created Ceph pools on deployed and production clusters as follows :" + "\n"
+puts "On deployed cluster:\n"
+puts "Pool name: #{argPoolName} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize} " + "\n"
+puts "Created Ceph pools on deployed and production clusters as follows :" + "\n"
+puts "On production cluster:\n"
+puts "Pool name: #{userPool} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize} " + "\n"
 
 
 
