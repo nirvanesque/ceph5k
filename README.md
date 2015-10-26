@@ -11,14 +11,14 @@ The Ceph cluster itself is deployed using the "wheezy-x64-nfs" distribution of L
 At the CLI in a frontend:
 
        
+        export http_proxy=http://proxy:3128 && export https_proxy=https://proxy:3128
+        gem install --user-install ruby-cute trollop
+        export PATH=$PATH:$(ruby -e 'puts "#{Gem.user_dir}/bin"')
         rm -rf dss5k
         git clone https://github.com/nirvanesque/dss5k.git
         chmod +x dss5k/*.rb
         chmod +x dss5k/*.sh
         ./dss5k/cephClient.sh
-        export http_proxy=http://proxy:3128 && export https_proxy=https://proxy:3128
-        gem install --user-install ruby-cute trollop
-        export PATH=$PATH:$(ruby -e 'puts "#{Gem.user_dir}/bin"')
         ./dss5k/ceph-deploy.rb     # Creates & deploys the Ceph cluster
         ./dss5k/ceph-client.rb     # Creates & deploys the Ceph client
 

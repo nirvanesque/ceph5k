@@ -493,17 +493,27 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("rbd create #{argRBDName} --pool #{argPoolName} --size #{argRBDSize}")
 
      # Create pools & RBD on production cluster
-#     tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} mkpool #{argPoolName} --size #{argPoolSize} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
      result = tak.exec!("rados -c /root/prod/ceph.conf --id #{user} lspools")
 poolsList = []
+userPool = ""
      if result[client][:output].include? "#{user}"
-        poolsText = result[client][:output]
-puts poolsText
-        poolsList = poolsText.split("\n")
+        poolsList = result[client][:output].split("\n")
 puts poolsList
      end
-#     result2 = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} create #{user}_rb/#{argPoolName} --size #{argPoolSize} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
-#puts result2
+     poolsList.each do |pool|  # logic: it will take the alphabetic-last pool from user
+        if pool.include? "#{user}"
+           userPool = pool
+        end
+     end
+     unless userPool == ""
+        result2 = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argPoolName} --size #{argPoolSize} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
+puts result2
+     else
+#       tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} mkpool #{argPoolName} --size #{argPoolSize} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
+        puts "Create at least one RBD pool from the Ceph production frontend\n\n"
+        puts "Use this link to create pool: https://api.grid5000.fr/sid/storage/ceph/ui/"
+        puts "Then rerun this script.\n"
+     end
      tak.loop()
 end
 
