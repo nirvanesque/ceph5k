@@ -499,8 +499,7 @@ poolsList = []
      if result[client][:output].include? "#{user}"
         poolsText = result[client][:output]
 puts poolsText
-        poolsList = poolsText.split
-        end
+        poolsList = poolsText.split("\n")
 puts poolsList
      end
 #     result2 = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} create #{user}_rb/#{argPoolName} --size #{argPoolSize} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
