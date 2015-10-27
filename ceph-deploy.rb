@@ -51,6 +51,7 @@ EOS
   opt :poolSize, "Size of pool to create on Ceph clusters", :default => 28800
   opt :rbdName, "Name of rbd to create inside Ceph pool", :type => String, :default => "image"
   opt :rbdSize, "Size of rbd to create inside Ceph pool", :default => 14400
+  opt :fileSystem, "File System to be formatted on created RBDs", :type => String, :default => "ext4"
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
@@ -68,6 +69,7 @@ argPoolName = "#{user}_" + opts[:poolName] # Name of pool to create on clusters.
 argPoolSize = opts[:poolSize] # Size of pool to create on clusters.
 argRBDName = "#{user}_" + opts[:rbdName] # Name of pool to create on clusters.
 argRBDSize = opts[:rbdSize] # Size of pool to create on clusters.
+argFileSystem = opts[:fileSystem] # File System to be formatted on created RBDs.
 
 # Show parameters for creating Ceph cluster
 puts "Deploying Ceph cluster with the following parameters:"
@@ -506,8 +508,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      end
 puts userPool
      unless userPool == ""
-        result2 = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
-puts result2
+        tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
      else
 #       tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} mkpool #{argPoolName} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
         puts "Create at least one RBD pool from the Ceph production frontend\n\n"
@@ -517,7 +518,7 @@ puts result2
      tak.loop()
 end
 
-# Created & pushed config file for Ceph production cluster.
+# Created & pushed config file for Ceph clusters.
 puts "Created Ceph pools on deployed and production clusters as follows :" + "\n"
 puts "On deployed cluster:\n"
 puts "Pool name: #{argPoolName} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize} " + "\n"
@@ -525,6 +526,25 @@ puts "Created Ceph pools on deployed and production clusters as follows :" + "\n
 puts "On production cluster:\n"
 puts "Pool name: #{userPool} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize} " + "\n"
 
+
+
+# Map RBD and create File Systems.
+puts "Mapping RBDs in deployed and production Ceph clusters ..."
+# Create Ceph pools & RBD
+Cute::TakTuk.start([client], :user => "root") do |tak|
+     # Map RBD & create FS on deployed cluster
+     tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
+     tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argPoolName}/#{argRBDName}")
+
+     # Map RBD & create FS on production cluster
+     tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} map #{argRBDName} -k /etc/ceph/ceph.client.#{user}.keyring")
+     tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{userPool}/#{argRBDName}")
+
+     tak.loop()
+end
+
+# Mapped RBDs and created File Systems.
+puts "Mapped RBDs and created File Systems" + "\n"
 
 
 
