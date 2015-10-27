@@ -52,6 +52,8 @@ EOS
   opt :rbdName, "Name of rbd to create inside Ceph pool", :type => String, :default => "image"
   opt :rbdSize, "Size of rbd to create inside Ceph pool", :default => 14400
   opt :fileSystem, "File System to be formatted on created RBDs", :type => String, :default => "ext4"
+  opt :mntDepl, "Mount point for RBD on deployed cluster", :type => String, :default => "ceph-depl"
+  opt :mntProd, "Mount point for RBD on production cluster", :type => String, :default => "ceph-prod"
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
@@ -70,6 +72,8 @@ argPoolSize = opts[:poolSize] # Size of pool to create on clusters.
 argRBDName = "#{user}_" + opts[:rbdName] # Name of pool to create on clusters.
 argRBDSize = opts[:rbdSize] # Size of pool to create on clusters.
 argFileSystem = opts[:fileSystem] # File System to be formatted on created RBDs.
+argMntDepl = opts[:mntDepl] # Mount point for RBD on deployed cluster.
+argMntProd = opts[:mntProd] # Mount point for RBD on production cluster.
 
 # Show parameters for creating Ceph cluster
 puts "Deploying Ceph cluster with the following parameters:"
@@ -530,7 +534,6 @@ puts "Pool name: #{userPool} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize}
 
 # Map RBD and create File Systems.
 puts "Mapping RBDs in deployed and production Ceph clusters ..."
-# Create Ceph pools & RBD
 Cute::TakTuk.start([client], :user => "root") do |tak|
      # Map RBD & create FS on deployed cluster
      tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
@@ -544,7 +547,26 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
 end
 
 # Mapped RBDs and created File Systems.
-puts "Mapped RBDs and created File Systems" + "\n"
+puts "Mapped RBDs and created File Systems." + "\n"
+
+
+# Mount RBDs as File Systems.
+puts "Mounting RBDs as File Systems in deployed and production Ceph clusters ..."
+Cute::TakTuk.start([client], :user => "root") do |tak|
+     # mount RBD from deployed cluster
+     tak.exec!("rmdir /mnt/#{argMntDepl} && mkdir /mnt/#{argMntDepl}")
+     tak.exec!("mount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
+
+     # mount RBD from production cluster
+     tak.exec!("rmdir /mnt/#{argMntProd} && mkdir /mnt/#{argMntProd}")
+     tak.exec!("mount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
+
+     tak.loop()
+end
+
+# Mounted RBDs as File Systems.
+puts "Mounted RBDs as File Systems." + "\n"
+
 
 
 
