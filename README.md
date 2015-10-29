@@ -20,7 +20,13 @@ At the CLI in a frontend:
         chmod +x dss5k/*.sh
         ./dss5k/cephClient.sh
         ./dss5k/ceph-deploy.rb     # Creates & deploys the Ceph cluster
-        ./dss5k/ceph-client.rb     # Creates & deploys the Ceph client
+
+At end of successful execution of the script, you will have 2 Ceph clusters - a deployed cluster and a production cluster - mounted as file systems on your Ceph client, as follows:
+        /mnt/ceph-depl/
+        /mnt/ceph-prod/
+
+To try them out you can type a benchmarking command as follows:
+        dd if=/dev/zero bs=1M | dd of=/mnt/ceph-prod/temp bs=1M
 
 ##Detailed Usage
        ceph-deploy.rb [options]
