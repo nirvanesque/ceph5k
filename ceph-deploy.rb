@@ -48,9 +48,9 @@ EOS
   opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => "01:00:00"
   opt :multiOSD, "Multiple OSDs on each node", :default => false
   opt :poolName, "Name of pool to create on Ceph clusters", :type => String, :default => "pool"
-  opt :poolSize, "Size of pool to create on Ceph clusters", :default => 28800
+  opt :poolSize, "Size of pool to create on Ceph clusters", :default => 57600
   opt :rbdName, "Name of rbd to create inside Ceph pool", :type => String, :default => "image"
-  opt :rbdSize, "Size of rbd to create inside Ceph pool", :default => 14400
+  opt :rbdSize, "Size of rbd to create inside Ceph pool", :default => 57600
   opt :fileSystem, "File System to be formatted on created RBDs", :type => String, :default => "ext4"
   opt :mntDepl, "Mount point for RBD on deployed cluster", :type => String, :default => "ceph-depl"
   opt :mntProd, "Mount point for RBD on production cluster", :type => String, :default => "ceph-prod"
