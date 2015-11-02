@@ -45,7 +45,7 @@ EOS
   opt :jobName, "Name of Grid'5000 job if already created", :type => String, :default => "cephDeploy"
   opt :cephCluster, "Ceph cluster name", :type => String, :default => "ceph"
   opt :numNodes, "Nodes in Ceph cluster", :default => 6
-  opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => "07:00:00"
+  opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => "01:00:00"
   opt :multiOSD, "Multiple OSDs on each node", :default => false
   opt :poolName, "Name of pool to create on Ceph clusters", :type => String, :default => "pool"
   opt :poolSize, "Size of pool to create on Ceph clusters", :default => 57600
