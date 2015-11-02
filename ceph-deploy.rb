@@ -376,7 +376,9 @@ else # Option for single OSD per node
    osdNodes.each_with_index do |node, index|
         Cute::TakTuk.start([node], :user => "root") do |tak|
           tak.exec!("rm -rf /osd#{index}")
+          tak.exec!("umount /tmp")
           tak.exec!("mkdir /osd#{index}")
+          tak.exec!("mount /dev/sda5 /osd#{index}")
           tak.loop()
         end
 
