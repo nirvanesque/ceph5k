@@ -19,7 +19,7 @@ At the CLI in a frontend:
         chmod +x dss5k/*.rb
         chmod +x dss5k/*.sh
         ./dss5k/cephClient.sh
-        ./dss5k/ceph-deploy.rb     # Creates & deploys the Ceph cluster
+        ./dss5k/cephDeploy.rb     # Creates & deploys the Ceph cluster
 
 At end of successful execution of the script, you will have 2 Ceph clusters - a deployed cluster and a production cluster - mounted as file systems on your Ceph client, as follows:
         /mnt/ceph-depl/
@@ -32,16 +32,25 @@ To try them out you can type a benchmarking command as follows:
        ceph-deploy.rb [options]
 where [options] are:
 
-        -i, --ignore                   Ignore incorrect values
-        -s, --site=sitename            Grid 5000 site for Ceph cluster (default: sophia)
-        -r, --release=ceph-release     Ceph Release name (default: firefly)
-        -c, --cephCluster=<s>          Ceph cluster name (default: ceph)
-        -m, --multiOSD                 Multiple OSDs on each node (default: false)
-        -n, --numNodes=number          Nodes in Ceph cluster (default: 5)
-        -w, --walltime=xx:yy:zz        Wall time for reservation (default: 01:00:00)
-        -v, --version                  Print version and exit
-        -h, --help                     Show this message
-
+        -i, --ignore             Ignore incorrect values
+        -s, --site=<s>           Grid'5000 site for Ceph cluster (default: sophia)
+        -g, --g5kCluster=<s>     Grid'5000 cluster in specified site (default: suno)
+        -r, --release=<s>        Ceph Release name (default: firefly)
+        -e, --env=<s>            G5K environment to be deployed (default: wheezy-x64-nfs)
+        -j, --jobName=<s>        Name of Grid'5000 job (default: cephDeploy)
+        -c, --cephCluster=<s>    Ceph cluster name (default: ceph)
+        -n, --numNodes=<i>       Nodes in Ceph cluster (default: 6)
+        -w, --walltime=<s>       Wall time for Ceph cluster deployed (default: 01:00:00)
+        -m, --multiOSD           Multiple OSDs on each node
+        -p, --poolName=<s>       Name of pool to create on Ceph clusters (default: pool)
+        -o, --poolSize=<i>       Size of pool to create on Ceph clusters (default: 57600)
+        -b, --rbdName=<s>        Name of rbd to create inside Ceph pool (default: image)
+        -d, --rbdSize=<i>        Size of rbd to create inside Ceph pool (default: 57600)
+        -f, --fileSystem=<s>     File System to be format on created RBDs (default: ext4)
+        -t, --mntDepl=<s>        Mount point for RBD on deployed cluster (default: ceph-depl)
+        -P, --mntProd=<s>        Mount point for RBD on production cluster (default: ceph-prod)
+        -v, --version            Print version and exit
+        -h, --help               Show this message
 
 If interested in using the PRy shell interface, type at CLI
 
