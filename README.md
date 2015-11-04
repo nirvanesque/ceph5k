@@ -41,6 +41,7 @@ At end of successful execution of the script, you will have 2 Ceph clusters - a 
         /mnt/ceph-prod/
 
 To try them out you can type a benchmarking command as follows:
+
         dd if=/mnt/ceph-prod/input-file-name of=/mnt/ceph-depl/output-file-name bs=4M
 
 ##Detailed Usage
