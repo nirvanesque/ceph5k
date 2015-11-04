@@ -18,18 +18,22 @@ At the CLI in a frontend:
         git clone https://github.com/nirvanesque/dss5k.git
         chmod +x dss5k/*.rb
         chmod +x dss5k/*.sh
+        unset http_proxy && unset https_proxy
         ./dss5k/cephClient.sh
+        export http_proxy=http://proxy:3128 && export https_proxy=https://proxy:3128
         ./dss5k/cephDeploy.rb     # Creates & deploys the Ceph cluster
+
+Note: To create an RBD on the Ceph production site, it is required first to create your Ceph account and your Ceph pool using the Ceph frontend. 
 
 At end of successful execution of the script, you will have 2 Ceph clusters - a deployed cluster and a production cluster - mounted as file systems on your Ceph client, as follows:
         /mnt/ceph-depl/
         /mnt/ceph-prod/
 
 To try them out you can type a benchmarking command as follows:
-        dd if=/dev/zero bs=1M | dd of=/mnt/ceph-prod/temp bs=1M
+        dd if=/mnt/ceph-prod/input-file-name of=/mnt/ceph-depl/output-file-name bs=4M
 
 ##Detailed Usage
-       ceph-deploy.rb [options]
+       cephDeploy.rb [options]
 where [options] are:
 
         -i, --ignore             Ignore incorrect values
@@ -58,26 +62,6 @@ If interested in using the PRy shell interface, type at CLI
         cute
 
 And then simply copy & paste the lines of ceph-deploy.rb in the PRy shell.
-
-##Configuring and mounting a Rados Block Device
-Once the Ceph cluster + client is deployed, you can create and use Block Devices. On your Ceph client node, login as root@client-node. Then execute the following commands at shell CLI :
-
-- create and map Block Devices,
-
-        modprobe rbd
-        rbd create foo --size 4096 -k /path/to/ceph.client.admin.keyring
-        rbd map foo --name client.admin -k /path/to/ceph.client.admin.keyring
-
-- Format and install a File System on the block device (this may take some time),
-
-        mkfs.ext4 -m0 /dev/rbd/rbd/foo
-
-- Mount the file system on your Ceph client node and use it.
-
-        mkdir /mnt/ceph-depl
-        mount /dev/rbd/rbd/foo /mnt/ceph-depl
-        cd /mnt/ceph-block-device
-
 
 ##Copying data from production Ceph cluster to deployed Ceph cluster
 Once the Ceph cluster + client are deployed and block devices mapped and mounted, it is possible to copy data as normal files between the deployed Ceph cluster and the production Ceph cluster. This is required during the initial phase of preparing data before the run of experiments. On your Ceph client node, login as root@client-node. 
