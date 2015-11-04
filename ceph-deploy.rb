@@ -39,7 +39,7 @@ EOS
 
   opt :ignore, "Ignore incorrect values"
   opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => "sophia"
-  opt :g5kCluster, "Grid 5000 cluster in specified site", :type => String, :default => ""
+  opt :g5kCluster, "Grid 5000 cluster in specified site", :type => String, :default => "suno"
   opt :release, "Ceph Release name", :type => String, :default => "firefly"
   opt :env, "G5K environment to be deployed", :type => String, :default => "wheezy-x64-nfs"
   opt :jobName, "Name of Grid'5000 job if already created", :type => String, :default => "cephDeploy"
@@ -108,7 +108,7 @@ end
 
 # Finally, if job does not yet exist reserve nodes and deploy
 if jobCephCluster == nil
-   jobCephCluster = g5k.reserve(:name => argJobName, :nodes => argNumNodes, :site => argSite, :walltime => argWallTime, :keys => "~/public/id_rsa", :type => :deploy)
+   jobCephCluster = g5k.reserve(:name => argJobName, :nodes => argNumNodes, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :keys => "~/public/id_rsa", :type => :deploy)
 
    clientNode = jobCephCluster["assigned_nodes"][1]
    dfsNodes = jobCephCluster["assigned_nodes"] - [clientNode]
