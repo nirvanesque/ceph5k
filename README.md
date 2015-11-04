@@ -40,10 +40,6 @@ At end of successful execution of the script, you will have 2 Ceph clusters - a 
         /mnt/ceph-depl/
         /mnt/ceph-prod/
 
-To try them out you can type a benchmarking command as follows:
-
-        dd if=/mnt/ceph-prod/input-file-name of=/mnt/ceph-depl/output-file-name bs=4M
-
 ##Detailed Usage
        cephDeploy.rb [options]
 where [options] are:
@@ -79,6 +75,28 @@ And then simply copy & paste the lines of ceph-deploy.rb in the PRy shell.
 Once the Ceph cluster + client are deployed and block devices mapped and mounted, it is possible to copy data as normal files between the deployed Ceph cluster and the production Ceph cluster. This is required during the initial phase of preparing data before the run of experiments. On your Ceph client node, login as root@client-node. 
 
         # cp /mnt/ceph-prod/filename /mnt/ceph-depl/
+
+##Benchmarking your deployed Ceph cluster
+It is possible to run some benchmarking tests to check the performance of your deployed Ceph and production Ceph clusters. There are trial datasets available on Grid'5000, on nancy and sophia frontends on /home/abasu/public/ceph-data/. For this purpose, copy the following datasets to your deployed Ceph cluster as follows: 
+
+1. On your Ceph client node, login as root@client-node. 
+
+        # cp nancy:/home/abasu/public/ceph-data/* /mnt/ceph-prod/
+
+
+2. Try the following command to understand the performance of reading from Ceph production cluster and writing to Ceph deployed cluster. 
+
+        # dd if=/mnt/ceph-prod/wiki-latest-pages.xml.bz2 of=/mnt/ceph-depl/output-file bs=4M oflag=direct
+
+3. You can study the performance in detail by varying the blocksize parameter 'bs' in the above command. Generally, the performance (whatever it may be) stabilises around bs=3M and above. Below bs=512K the performance deteriorates fast.
+
+
+##Improving performance through higher parallelism (more OSDs)
+Another way of improving the performance is by increasing the number of OSDs in the Ceph cluster deployed. This can be done by re-deploying the Ceph cluster as follows. On a front-end, deploy the Ceph cluster with following option:
+
+        ./dss5k/cephDeploy.rb --numNodes=12    # Deploy Ceph cluster with 10 OSDs
+
+Then run the benchmarking steps as above.
 
 
 ##In case of errors
