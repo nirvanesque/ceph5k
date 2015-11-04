@@ -7,9 +7,20 @@ ceph-deploy.rb is a script for deploying a Ceph DFS on reserved nodes. It deploy
 
 The Ceph cluster itself is deployed using the "wheezy-x64-nfs" distribution of Linux while the Ceph clients use the "jessie-x64-nfs" deployment.
 
-## Installation & Execution
-At the CLI in a frontend:
+## Preliminaries (for installing Ruby-CUTE)
+To simplify the use of Ruby-Cute modules for node reservation and deployment, it is better to create a file with the following information. This is one-time. 
 
+At the CLI on a frontend:
+
+        cat > ~/.grid5000_api.yml << EOF
+        uri: https://api.grid5000.fr/
+        username: user
+        password: **********
+        version: sid
+        EOF
+
+## Installation & Execution
+At the CLI on a frontend:
        
         export http_proxy=http://proxy:3128 && export https_proxy=https://proxy:3128
         gem install --user-install ruby-cute trollop
