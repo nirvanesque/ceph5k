@@ -25,6 +25,13 @@ require 'json'
 g5k = Cute::G5K::API.new()
 user = g5k.g5k_user
 
+# Populate the hash with default parameters from YAML file.
+defaults = begin
+  YAML.load(File.open("dss5k/defaults.yml"))
+rescue ArgumentError => e
+  puts "Could not parse YAML: #{e.message}"
+end
+puts defaults
 
 # banner for script
 opts = Trollop::options do
