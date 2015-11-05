@@ -347,9 +347,9 @@ if argMultiOSD # Option for activating multiple OSDs per node
 
      restURL = "https://api.grid5000.fr/stable/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}"
      result = system("curl -kni #{restURL}")
-puts result
+#puts result
      parsedResult = JSON.parse(result)
-puts parsedResult
+#puts parsedResult
      storageDevices = parsedResult["storage_devices"] # Get list of storage devices
 puts storageDevices
 =begin
