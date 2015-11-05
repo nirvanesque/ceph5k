@@ -345,6 +345,14 @@ if argMultiOSD # Option for activating multiple OSDs per node
      g5kCluster = nodeShort.split("-").first # the G5K cluster of the node
      storageDevices = []
 
+     restURL = "https://api.grid5000.fr/stable/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}"
+     result = system("curl -kni #{restURL}")
+puts result
+     parsedResult = JSON.parse(result)
+puts parsedResult
+     storageDevices = parsedResult["storage_devices"] # Get list of storage devices
+puts storageDevices
+=begin
      Cute::TakTuk.start([node], :user => "root") do |tak|
           result = tak.exec!("ceph-deploy disk list node")
           output = result[node][:output]
@@ -370,12 +378,13 @@ puts result2
              end
              tak.loop()
         end # Cute::TakTuk.start([monitor]
-
+=end
         osdIndex += 1
 
      end # loop over each physical disc
 
    end # loop over all OSD nodes
+puts osdIndex
 
 else # Option for single OSD per node
    osdIndex = 0 # change to check if osdIndex file exists, then initialise from there
