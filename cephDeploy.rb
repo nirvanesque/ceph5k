@@ -27,7 +27,7 @@ user = g5k.g5k_user
 
 # Populate the hash with default parameters from YAML file.
 defaults = begin
-  YAML.load(File.open("dss5k/defaults.yml"))
+  YAML.load(File.open("dss5k/config/defaults.yml"))
 rescue ArgumentError => e
   puts "Could not parse YAML: #{e.message}"
 end

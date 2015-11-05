@@ -13,8 +13,8 @@
 # limitations under the License. 
 
 config:
-site: sophia          # Grid 5000 site for deploying Ceph cluster
-g5kCluster: suno      # Grid 5000 cluster in specified site
+site: lyon            # Grid 5000 site for deploying Ceph cluster
+g5kCluster: taurus    # Grid 5000 cluster in specified site
 release: firefly      # Ceph Release name
 env: "wheezy-x64-nfs" # G5K environment to be deployed
 jobName: cephDeploy   # Name of Grid'5000 job if already created
