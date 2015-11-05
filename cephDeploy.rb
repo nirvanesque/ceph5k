@@ -21,6 +21,9 @@ require 'erb'
 require 'socket'
 require 'trollop'
 require 'json'
+require "net/http"
+require "uri"
+
 
 g5k = Cute::G5K::API.new()
 user = g5k.g5k_user
@@ -345,11 +348,15 @@ if argMultiOSD # Option for activating multiple OSDs per node
      g5kCluster = nodeShort.split("-").first # the G5K cluster of the node
      storageDevices = []
 
-     restURL = "https://api.grid5000.fr/stable/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}"
-     output = system("curl -kni #{restURL}")
-puts output
-     result = output.split('{').last.insert(0, '{')
-puts result
+     nodeURL = "https://api.grid5000.fr/stable/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}"
+     uri = URI.parse(nodeURL)
+     http = Net::HTTP.new(uri.host, uri.port)
+     request = Net::HTTP::Get.new(uri.request_uri)
+     response = http.request(request)
+
+puts response
+puts response.body
+
      parsedResult = JSON.parse(result)
 #puts parsedResult
      storageDevices = parsedResult["storage_devices"] # Get list of storage devices
