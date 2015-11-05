@@ -381,7 +381,7 @@ puts result2
 =end
         osdIndex += 1
 
-     end # loop over each physical disc
+#     end # loop over each physical disc
 
    end # loop over all OSD nodes
 puts osdIndex
