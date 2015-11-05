@@ -69,7 +69,7 @@ If interested in using the PRy shell interface, type at CLI
         gem install --user-install pry
         cute
 
-And then simply copy & paste the lines of ceph-deploy.rb in the PRy shell.
+And then simply copy & paste the lines of cephDeploy.rb in the PRy shell.
 
 ##Copying data from production Ceph cluster to deployed Ceph cluster
 Once the Ceph cluster + client are deployed and block devices mapped and mounted, it is possible to copy data as normal files between the deployed Ceph cluster and the production Ceph cluster. This is required during the initial phase of preparing data before the run of experiments. On your Ceph client node, login as root@client-node. 
