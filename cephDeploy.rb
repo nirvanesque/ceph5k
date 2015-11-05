@@ -351,7 +351,7 @@ if argMultiOSD # Option for activating multiple OSDs per node
      parsedResult = JSON.parse(result)
 #puts parsedResult
      storageDevices = parsedResult["storage_devices"] # Get list of storage devices
-puts storageDevices
+#puts storageDevices
 =begin
      Cute::TakTuk.start([node], :user => "root") do |tak|
           result = tak.exec!("ceph-deploy disk list node")
