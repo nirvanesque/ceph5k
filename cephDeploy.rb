@@ -31,8 +31,7 @@ defaults = begin
 rescue ArgumentError => e
   puts "Could not parse YAML: #{e.message}"
 end
-puts defaults
-puts defaults["site"]
+
 # banner for script
 opts = Trollop::options do
   version "ceph-deploy 0.0.1 (c) 2015-16 Anirvan BASU, INRIA RBA"
