@@ -45,22 +45,22 @@ where [options] are:
 EOS
 
   opt :ignore, "Ignore incorrect values"
-  opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => "sophia"
-  opt :g5kCluster, "Grid 5000 cluster in specified site", :type => String, :default => "suno"
-  opt :release, "Ceph Release name", :type => String, :default => "firefly"
-  opt :env, "G5K environment to be deployed", :type => String, :default => "wheezy-x64-nfs"
-  opt :jobName, "Name of Grid'5000 job if already created", :type => String, :default => "cephDeploy"
-  opt :cephCluster, "Ceph cluster name", :type => String, :default => "ceph"
-  opt :numNodes, "Nodes in Ceph cluster", :default => 6
-  opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => "01:00:00"
-  opt :multiOSD, "Multiple OSDs on each node", :default => false
-  opt :poolName, "Name of pool to create on Ceph clusters", :type => String, :default => "pool"
-  opt :poolSize, "Size of pool to create on Ceph clusters", :default => 57600
-  opt :rbdName, "Name of rbd to create inside Ceph pool", :type => String, :default => "image"
-  opt :rbdSize, "Size of rbd to create inside Ceph pool", :default => 57600
-  opt :fileSystem, "File System to be formatted on created RBDs", :type => String, :default => "ext4"
-  opt :mntDepl, "Mount point for RBD on deployed cluster", :type => String, :default => "ceph-depl"
-  opt :mntProd, "Mount point for RBD on production cluster", :type => String, :default => "ceph-prod"
+  opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["site"]
+  opt :g5kCluster, "Grid 5000 cluster in specified site", :type => String, :default => defaults["g5kCluster"]
+  opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
+  opt :env, "G5K environment to be deployed", :type => String, :default => defaults["env"]
+  opt :jobName, "Name of Grid'5000 job if already created", :type => String, :default => defaults["jobName"]
+  opt :cephCluster, "Ceph cluster name", :type => String, :default => defaults["cephCluster"]
+  opt :numNodes, "Nodes in Ceph cluster", :default => defaults["numNodes"]
+  opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => defaults["walltime"]
+  opt :multiOSD, "Multiple OSDs on each node", :default => defaults["multiOSD"]
+  opt :poolName, "Name of pool to create on Ceph clusters", :type => String, :default => defaults["poolName"]
+  opt :poolSize, "Size of pool to create on Ceph clusters", :default => defaults["poolSize"]
+  opt :rbdName, "Name of rbd to create inside Ceph pool", :type => String, :default => defaults["rbdName"]
+  opt :rbdSize, "Size of rbd to create inside Ceph pool", :default => defaults["rbdSize"]
+  opt :fileSystem, "File System to be formatted on created RBDs", :type => String, :default => defaults["fileSystem"]
+  opt :mntDepl, "Mount point for RBD on deployed cluster", :type => String, :default => defaults["mntDepl"]
+  opt :mntProd, "Mount point for RBD on production cluster", :type => String, :default => defaults["mntProd"]
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
