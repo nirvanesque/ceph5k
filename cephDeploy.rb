@@ -384,7 +384,7 @@ puts storageDevices
 
         else  # case of /dev/sdb, /dev/sdc, required to zap disc before deploy 
            Cute::TakTuk.start([node], :user => "root") do |tak|
-               result = tak.exec!("ceph-deploy osd disk zap #{nodeShort}:#{device}")
+               result = tak.exec!("ceph-deploy osd disk --zap-disk --fs-type #{argFileSystem} #{nodeShort}:#{device}")
 puts result
                tak.exec!("mkdir /osd#{osdIndex}")
                tak.exec!("mount /dev/#{device} /osd#{osdIndex}")
