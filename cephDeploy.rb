@@ -356,6 +356,7 @@ puts uri
      request = Net::HTTP::Get.new(uri.request_uri)
      http.use_ssl = true
      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+     response = http.request(request)
 puts response.body if response.is_a?(Net::HTTPSuccess)
 
 puts response
