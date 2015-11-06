@@ -381,10 +381,11 @@ puts storageDevices
                tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd#{osdIndex}")
                tak.loop()
            end
+        puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}5.\n"
 
         else  # case of /dev/sdb, /dev/sdc, required to zap disc before deploy 
            Cute::TakTuk.start([node], :user => "root") do |tak|
-               result = tak.exec!("ceph-deploy osd disk --zap-disk --fs-type #{argFileSystem} #{nodeShort}:#{device}")
+               result = tak.exec!("ceph-deploy osd --zap-disk --fs-type #{argFileSystem} #{nodeShort}:#{device}")
 puts result
                tak.exec!("mkdir /osd#{osdIndex}")
                tak.exec!("mount /dev/#{device} /osd#{osdIndex}")
@@ -398,9 +399,9 @@ puts result1
 puts result2
                tak.loop()
            end # end of TakTuk loop for monitor
-        end # end of if-else device == "sda"
+           puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}.\n"
 
-        puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}5.\n"
+        end # end of if-else device == "sda"
 
      end # loop over storage devices
 
