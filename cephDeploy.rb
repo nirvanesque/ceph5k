@@ -357,15 +357,14 @@ puts uri
      http.use_ssl = true
      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
      response = http.request(request)
-puts response.body if response.is_a?(Net::HTTPSuccess)
+     result = response.body if response.is_a?(Net::HTTPSuccess)
 
-puts response
-puts response.body
+puts result
 
      parsedResult = JSON.parse(result)
-#puts parsedResult
+puts parsedResult
      storageDevices = parsedResult["storage_devices"] # Get list of storage devices
-#puts storageDevices
+puts storageDevices
 =begin
      Cute::TakTuk.start([node], :user => "root") do |tak|
           result = tak.exec!("ceph-deploy disk list node")
