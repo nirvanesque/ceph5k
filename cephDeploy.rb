@@ -401,10 +401,8 @@ puts result2
         end # end of if-else device == "sda"
 
         puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}5.\n"
-        osdCounter = index
 
      end # loop over storage devices
-     osdIndex += osdCounter
 
    end # loop over all OSD nodes
 
