@@ -348,11 +348,16 @@ if argMultiOSD # Option for activating multiple OSDs per node
      g5kCluster = nodeShort.split("-").first # the G5K cluster of the node
      storageDevices = []
 
-     nodeURL = "https://api.grid5000.fr/stable/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}"
-     uri = URI.parse(nodeURL)
+     nodeURI = "https://api.grid5000.fr/stable/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}"
+     uri = URI(nodeURI)
+     response = Net::HTTP.get_response(uri)
+puts response.body if response.is_a?(Net::HTTPSuccess)
+
+=begin
      http = Net::HTTP.new(uri.host, uri.port)
      request = Net::HTTP::Get.new(uri.request_uri)
      response = http.request(request)
+=end
 
 puts response
 puts response.body
