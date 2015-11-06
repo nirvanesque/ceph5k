@@ -20,7 +20,7 @@ env: "wheezy-x64-nfs" # G5K environment to be deployed
 jobName: cephDeploy   # Name of Grid'5000 job if already created
 cephCluster: ceph     # Ceph cluster name
 numNodes: 6           # Nodes in Ceph cluster
-walltime: "01:00:00"  # Wall time for Ceph cluster deployed
+walltime: "08:00:00"  # Wall time for Ceph cluster deployed
 multiOSD: true        # Multiple OSDs on each node
 poolName: pool        # Name of pool to create on Ceph clusters
 poolSize: 57600       # Size of pool to create on Ceph clusters

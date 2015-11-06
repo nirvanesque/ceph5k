@@ -350,14 +350,13 @@ if argMultiOSD # Option for activating multiple OSDs per node
 
      nodeURI = "https://api.grid5000.fr/stable/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}"
      uri = URI(nodeURI)
-     response = Net::HTTP.get_response(uri)
-puts response.body if response.is_a?(Net::HTTPSuccess)
+puts uri
 
-=begin
      http = Net::HTTP.new(uri.host, uri.port)
      request = Net::HTTP::Get.new(uri.request_uri)
-     response = http.request(request)
-=end
+     http.use_ssl = true
+     http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+puts response.body if response.is_a?(Net::HTTPSuccess)
 
 puts response
 puts response.body
