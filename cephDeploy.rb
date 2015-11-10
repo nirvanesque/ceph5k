@@ -366,6 +366,15 @@ if argMultiOSD # Option for activating multiple OSDs per node
      storageDevices.each do |storageDev| # loop to find SSD disk
         if storageDev["storage"] == "SSD"
            journalDisk = storageDev["device"] # remember the SSD disk for journalfile
+
+           # On SSD, remove all partitions, create primary partition (1), install FS
+           Cute::TakTuk.start([node], :user => "root") do |tak|
+               tak.exec!("parted -s /dev/#{journalDisk} mklabel msdos")
+               tak.exec!("parted -s /dev/#{journalDisk} --align optimal mkpart primary 0 100%")
+               tak.exec!("mkfs -t #{argFileSystem} /dev/#{journalDisk}1")
+               tak.loop()
+           end
+
         end
      end # loop to find SSD
 
@@ -374,7 +383,7 @@ if argMultiOSD # Option for activating multiple OSDs per node
         nodeShort = node.split(".").first
         osdIndex += 1
 
-        osdCreateCmd = "ceph-deploy osd create #{nodeShort}:/osd#{osdIndex}" + (journalDisk.empty? ? "" : ":/dev/#{journalDisk}")
+        osdCreateCmd = "ceph-deploy osd create #{nodeShort}:/osd#{osdIndex}" + (journalDisk.empty? ? "" : ":/dev/#{journalDisk}1")
 puts osdCreateCmd
 
         case device
