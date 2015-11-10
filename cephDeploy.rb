@@ -361,7 +361,6 @@ if argMultiOSD # Option for activating multiple OSDs per node
      # Understand node resources
      parsedResult = JSON.parse(result)
      storageDevices = parsedResult["storage_devices"] # Get list of storage devices
-puts storageDevices
 
      storageDevices.each do |storageDev, index| # loop over each physical disc
         device = storageDev["device"]
@@ -384,6 +383,14 @@ puts storageDevices
         puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}5.\n"
 
         else  # case of /dev/sdb, /dev/sdc, required to zap disc before deploy 
+
+           # Get all partitions & remove them first
+           Cute::TakTuk.start([node], :user => "root") do |tak|
+               result = tak.exec!("parted #{device} print")
+puts result
+               tak.loop()
+           end
+=begin
            Cute::TakTuk.start([node], :user => "root") do |tak|
 #               result = tak.exec!("ceph-deploy osd --zap-disk --fs-type #{argFileSystem} #{nodeShort}:/dev/#{device}")
 #puts result
@@ -400,7 +407,7 @@ puts result2
                tak.loop()
            end # end of TakTuk loop for monitor
            puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}.\n"
-
+=end
         end # end of if-else device == "sda"
 
      end # loop over storage devices

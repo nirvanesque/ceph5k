@@ -21,7 +21,7 @@ jobName: cephDeploy   # Name of Grid'5000 job if already created
 cephCluster: ceph     # Ceph cluster name
 numNodes: 6           # Nodes in Ceph cluster
 walltime: "08:00:00"  # Wall time for Ceph cluster deployed
-multiOSD: false       # Multiple OSDs on each node
+multiOSD: true        # Multiple OSDs on each node
 poolName: pool        # Name of pool to create on Ceph clusters
 poolSize: 57600       # Size of pool to create on Ceph clusters
 rbdName: image        # Name of rbd to create inside Ceph pool

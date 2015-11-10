@@ -23,7 +23,7 @@ At the CLI on a frontend:
 At the CLI on a frontend:
        
         export http_proxy=http://proxy:3128 && export https_proxy=https://proxy:3128
-        gem install --user-install ruby-cute trollop curb
+        gem install --user-install ruby-cute trollop
         export PATH=$PATH:$(ruby -e 'puts "#{Gem.user_dir}/bin"')
         rm -rf dss5k
         git clone https://github.com/nirvanesque/dss5k.git
