@@ -392,7 +392,7 @@ puts osdCreateCmd
            end
         puts "Created OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}5.\n"
 
-        when journalDisk  # case of SSD - do nothing
+        when "sdf"  # case of SSD - do nothing
            # Don't create OSD on SSD disc
 
         else  # case of /dev/sdb, /dev/sdc, reformat partitions before deploy 
