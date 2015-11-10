@@ -391,7 +391,7 @@ puts osdCreateCmd
            end
         puts "Created OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}5.\n"
 
-        else if device == journalDisk  # case of SSD - do nothing
+        elseif device == journalDisk  # case of SSD - do nothing
            # Don't create OSD on SSD disc
 
         else  # case of /dev/sdb, /dev/sdc, reformat partitions before deploy 
@@ -422,7 +422,7 @@ puts osdCreateCmd
 
         end # end of if-else device == "sda"
 
-     end # loop over storage devices
+     end # loop over storage devices (disks)
 
    end # loop over all OSD nodes
 
