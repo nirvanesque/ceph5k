@@ -377,7 +377,8 @@ if argMultiOSD # Option for activating multiple OSDs per node
         osdCreateCmd = "ceph-deploy osd create #{nodeShort}:/osd#{osdIndex}" + (journalDisk.empty? ? "" : ":/dev/#{journalDisk}")
 puts osdCreateCmd
 
-        if device == "sda" # deploy OSD only on partition /dev/sda5
+        case device
+        when "sda" # deploy OSD only on partition /dev/sda5
            Cute::TakTuk.start([node], :user => "root") do |tak|
                tak.exec!("rm -rf /osd*")
                tak.exec!("umount /tmp")
@@ -391,7 +392,7 @@ puts osdCreateCmd
            end
         puts "Created OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}5.\n"
 
-        elseif device == journalDisk  # case of SSD - do nothing
+        when journalDisk  # case of SSD - do nothing
            # Don't create OSD on SSD disc
 
         else  # case of /dev/sdb, /dev/sdc, reformat partitions before deploy 
@@ -420,7 +421,7 @@ puts osdCreateCmd
 
            puts "Created OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}.\n"
 
-        end # end of if-else device == "sda"
+        end # end of case statement
 
      end # loop over storage devices (disks)
 
