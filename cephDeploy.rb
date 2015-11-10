@@ -387,7 +387,7 @@ if argMultiOSD # Option for activating multiple OSDs per node
            # Get all partitions & remove them first
            Cute::TakTuk.start([node], :user => "root") do |tak|
                result = tak.exec!("parted /dev/#{device} print")
-puts result
+puts result[:output]
                tak.loop()
            end
 =begin
