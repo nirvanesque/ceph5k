@@ -14,7 +14,7 @@
 
 config:
 site: rennes          # Grid 5000 site for deploying Ceph cluster
-g5kCluster: paravance # Grid 5000 cluster in specified site
+g5kCluster: parasilo  # Grid 5000 cluster in specified site
 release: firefly      # Ceph Release name
 env: "wheezy-x64-nfs" # G5K environment to be deployed
 jobName: cephDeploy   # Name of Grid'5000 job if already created
