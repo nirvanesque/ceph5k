@@ -380,7 +380,7 @@ if argMultiOSD # Option for activating multiple OSDs per node
                tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}")
                tak.loop()
            end
-        puts "Created OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}5.\n"
+        puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}5.\n"
 
         else  # case of /dev/sdb, /dev/sdc, reformat partitions before deploy 
 
@@ -402,11 +402,12 @@ if argMultiOSD # Option for activating multiple OSDs per node
 
            # Prepare & Activate the OSD 
            Cute::TakTuk.start([monitor], :user => "root") do |tak|
-               tak.exec!("ceph-deploy osd create #{nodeShort}:/osd.#{osdIndex}")
+               tak.exec!("ceph-deploy osd prepare #{nodeShort}:/osd.#{osdIndex}")
+               tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}")
                tak.loop()
            end # end of TakTuk loop for monitor
 
-           puts "Created OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}1.\n"
+           puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}1.\n"
 
         end # end of case statement
         osdIndex += 1
@@ -429,11 +430,12 @@ else # Option for single OSD per node
         nodeShort = node.split(".").first
 
         Cute::TakTuk.start([monitor], :user => "root") do |tak|
-          tak.exec!("ceph-deploy create #{nodeShort}:/osd.#{osdIndex}")
+          tak.exec!("ceph-deploy prepare #{nodeShort}:/osd.#{osdIndex}")
+          tak.exec!("ceph-deploy activate #{nodeShort}:/osd.#{osdIndex}")
           tak.loop()
         end
 
-        puts "Created OSD.#{osdIndex} on: #{nodeShort}:/dev/sda5.\n"
+        puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/sda5.\n"
 
         osdIndex += 1
    end # Option for activating multiple OSDs per node
