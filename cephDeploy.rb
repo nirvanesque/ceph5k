@@ -417,13 +417,14 @@ puts osdActCmd
            end
 
            # Mount the partition on /osd# 
+=begin
            Cute::TakTuk.start([node], :user => "root") do |tak|
                tak.exec!("rm -rf /osd*")
                tak.exec!("mkdir /osd.#{osdIndex}")
                tak.exec!("mount /dev/#{device}1 /osd.#{osdIndex}")
                tak.loop()
            end
-
+=end
            # Prepare & Activate the OSD
            osdCreateCmd = "ceph-deploy osd create #{nodeShort}:#{device}" + (journalDisk.empty? ? "" : ":/dev/#{journalDisk}1")
 puts osdCreateCmd
