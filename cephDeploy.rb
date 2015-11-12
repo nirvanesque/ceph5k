@@ -383,9 +383,7 @@ if argMultiOSD # Option for activating multiple OSDs per node
         nodeShort = node.split(".").first
 
         osdPrepCmd = "ceph-deploy osd prepare #{nodeShort}:/osd.#{osdIndex}" + (journalDisk.empty? ? "" : ":/dev/#{journalDisk}1")
-puts osdPrepCmd
         osdActCmd = "ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}" + (journalDisk.empty? ? "" : ":/dev/#{journalDisk}1")
-puts osdActCmd
 
         case device
         when "sda" # deploy OSD only on partition /dev/sda5
@@ -417,21 +415,20 @@ puts osdActCmd
            end
 
            # Mount the partition on /osd# 
-=begin
            Cute::TakTuk.start([node], :user => "root") do |tak|
                tak.exec!("rm -rf /osd*")
                tak.exec!("mkdir /osd.#{osdIndex}")
                tak.exec!("mount /dev/#{device}1 /osd.#{osdIndex}")
                tak.loop()
            end
-=end
+
            # Prepare & Activate the OSD
            osdCreateCmd = "ceph-deploy osd create #{nodeShort}:#{device}" + (journalDisk.empty? ? "" : ":/dev/#{journalDisk}1")
-puts osdCreateCmd
            Cute::TakTuk.start([monitor], :user => "root") do |tak|
 #               tak.exec!(osdPrepCmd)
 #               tak.exec!(osdActCmd)
-               tak.exec!(osdCreateCmd)
+               result = tak.exec!(osdCreateCmd)
+puts result
                tak.loop()
            end # end of TakTuk loop for monitor
 
