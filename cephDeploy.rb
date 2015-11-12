@@ -376,7 +376,8 @@ if argMultiOSD # Option for activating multiple OSDs per node
                tak.loop()
            end
            Cute::TakTuk.start([monitor], :user => "root") do |tak|
-               tak.exec!("ceph-deploy osd create #{nodeShort}:/osd.#{osdIndex}")
+               tak.exec!("ceph-deploy osd prepare #{nodeShort}:/osd.#{osdIndex}")
+               tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}")
                tak.loop()
            end
         puts "Created OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}5.\n"
@@ -557,7 +558,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
            userPool = pool
         end
      end
-puts userPool
+
      unless userPool == ""
         tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
      else
