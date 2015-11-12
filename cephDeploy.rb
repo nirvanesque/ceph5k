@@ -362,29 +362,10 @@ if argMultiOSD # Option for activating multiple OSDs per node
      parsedResult = JSON.parse(result)
      storageDevices = parsedResult["storage_devices"] # Get list of storage devices
 
-     journalDisk = "" # the SSD disk to store journalfile (in case it exists)
-     storageDevices.each do |storageDev| # loop to find SSD disk
-        if storageDev["storage"] == "SSD"
-           journalDisk = storageDev["device"] # remember the SSD disk for journalfile
-
-           # On SSD, remove all partitions, create primary partition (1), install FS
-           Cute::TakTuk.start([node], :user => "root") do |tak|
-               tak.exec!("parted -s /dev/#{journalDisk} mklabel msdos")
-               tak.exec!("parted -s /dev/#{journalDisk} --align optimal mkpart primary 0 100%")
-               tak.exec!("mkfs -t #{argFileSystem} /dev/#{journalDisk}1")
-               tak.loop()
-           end
-
-        end
-     end # loop to find SSD
-
      storageDevices.each do |storageDev, index| # loop over each physical disc
         device = storageDev["device"]
         nodeShort = node.split(".").first
         osdIndex += 1
-
-        osdCreateCmd = "ceph-deploy osd create #{nodeShort}:/osd#{osdIndex}" + (journalDisk.empty? ? "" : ":/dev/#{journalDisk}1")
-puts osdCreateCmd
 
         case device
         when "sda" # deploy OSD only on partition /dev/sda5
@@ -396,13 +377,10 @@ puts osdCreateCmd
                tak.loop()
            end
            Cute::TakTuk.start([monitor], :user => "root") do |tak|
-               tak.exec!(osdCreateCmd)
+               tak.exec!("ceph-deploy osd create #{nodeShort}:/osd#{osdIndex}")
                tak.loop()
            end
         puts "Created OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}5.\n"
-
-        when "sdf"  # case of SSD - do nothing
-           # Don't create OSD on SSD disc
 
         else  # case of /dev/sdb, /dev/sdc, reformat partitions before deploy 
 
@@ -424,7 +402,7 @@ puts osdCreateCmd
 
            # Prepare & Activate the OSD 
            Cute::TakTuk.start([monitor], :user => "root") do |tak|
-               tak.exec!(osdCreateCmd)
+               tak.exec!("ceph-deploy osd create #{nodeShort}:/osd#{osdIndex}")
                tak.loop()
            end # end of TakTuk loop for monitor
 
