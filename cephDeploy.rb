@@ -382,18 +382,18 @@ if argMultiOSD # Option for activating multiple OSDs per node
         device = storageDev["device"]
         nodeShort = node.split(".").first
 
-        osdPrepCmd = "ceph-deploy osd prepare #{nodeShort}:/osd.#{osdIndex}" + (journalDisk.empty? ? "" : ":/dev/#{journalDisk}1")
-        osdActCmd = "ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}" + (journalDisk.empty? ? "" : ":/dev/#{journalDisk}1")
+        osdPrepCmd = "ceph-deploy osd prepare #{nodeShort}:#{device}" + (journalDisk.empty? ? "" : ":/dev/#{journalDisk}")
 
         case device
         when "sda" # deploy OSD only on partition /dev/sda5
            Cute::TakTuk.start([node], :user => "root") do |tak|
                tak.exec!("rm -rf /osd*")
                tak.exec!("umount /tmp")
-               tak.exec!("mkdir /osd.#{osdIndex}")
-               tak.exec!("mount /dev/#{device}5 /osd.#{osdIndex}")
+#               tak.exec!("mkdir /osd.#{osdIndex}")
+#               tak.exec!("mount /dev/#{device}5 /osd.#{osdIndex}")
                tak.loop()
            end
+           osdActCmd = "ceph-deploy osd activate #{nodeShort}:/dev/#{device}5" + (journalDisk.empty? ? "" : ":/dev/#{journalDisk}#{osdIndex}")
            Cute::TakTuk.start([monitor], :user => "root") do |tak|
                tak.exec!(osdPrepCmd)
                tak.exec!(osdActCmd)
@@ -413,7 +413,7 @@ if argMultiOSD # Option for activating multiple OSDs per node
                tak.exec!("mkfs -t #{argFileSystem} /dev/#{device}1")
                tak.loop()
            end
-
+=begin
            # Mount the partition on /osd# 
            Cute::TakTuk.start([node], :user => "root") do |tak|
                tak.exec!("rm -rf /osd*")
@@ -421,13 +421,14 @@ if argMultiOSD # Option for activating multiple OSDs per node
                tak.exec!("mount /dev/#{device}1 /osd.#{osdIndex}")
                tak.loop()
            end
-
+=end
            # Prepare & Activate the OSD
-           osdCreateCmd = "ceph-deploy osd create #{nodeShort}:/osd.#{osdIndex}" + (journalDisk.empty? ? "" : ":/dev/#{journalDisk}1")
+#           osdCreateCmd = "ceph-deploy osd create #{nodeShort}:/osd.#{osdIndex}" + (journalDisk.empty? ? "" : ":/dev/#{journalDisk}1")
+           osdActCmd = "ceph-deploy osd activate #{nodeShort}:/dev/#{device}1" + (journalDisk.empty? ? "" : ":/dev/#{journalDisk}#{osdIndex}")
            Cute::TakTuk.start([monitor], :user => "root") do |tak|
-#               tak.exec!(osdPrepCmd)
-#               tak.exec!(osdActCmd)
-               result = tak.exec!(osdCreateCmd)
+               tak.exec!(osdPrepCmd)
+               result = tak.exec!(osdActCmd)
+#               result = tak.exec!(osdCreateCmd)
 puts result
                tak.loop()
            end # end of TakTuk loop for monitor
