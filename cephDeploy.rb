@@ -381,6 +381,8 @@ if argMultiOSD # Option for activating multiple OSDs per node
      storageDevices.each do |storageDev| # loop over each physical disc
         device = storageDev["device"]
         nodeShort = node.split(".").first
+        osdPrepCmd = "ceph-deploy osd prepare #{nodeShort}:/dev/#{device}"
+        osdActCmd  = "ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}"
 
         case device
         when "sda" # deploy OSD only on partition /dev/sda5
@@ -388,10 +390,7 @@ if argMultiOSD # Option for activating multiple OSDs per node
                tak.exec!("umount /tmp")
                tak.exec!("mkdir -p /osd.#{osdIndex}")
                tak.exec!("mount /dev/#{device}5 /osd.#{osdIndex}")
-               unless journalDisk.empty?
-                  osdPrepCmd = "ceph-deploy osd prepare #{nodeShort}:/dev/#{device}"
-                  osdActCmd  = "ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}"
-               else
+               if journalDisk.present?
                   tak.exec!("mkdir -p /dev/#{journalDisk}1/osd.#{osdIndex}; touch /dev/#{journalDisk}1/osd.#{osdIndex}/journalFile")
                   osdPrepCmd = "ceph-deploy osd prepare #{nodeShort}:/dev/#{device}:/dev/#{journalDisk}1/osd.#{osdIndex}/journalFile"
                   osdActCmd  = "ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}:/dev/#{journalDisk}1/osd.#{osdIndex}/journalFile"
