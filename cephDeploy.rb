@@ -382,18 +382,22 @@ if argMultiOSD # Option for activating multiple OSDs per node
         device = storageDev["device"]
         nodeShort = node.split(".").first
 
-        osdPrepCmd = "ceph-deploy osd prepare #{nodeShort}:#{device}" + (journalDisk.empty? ? "" : ":/dev/#{journalDisk}")
-
         case device
         when "sda" # deploy OSD only on partition /dev/sda5
            Cute::TakTuk.start([node], :user => "root") do |tak|
-               tak.exec!("rm -rf /osd*")
                tak.exec!("umount /tmp")
-               tak.exec!("mkdir /osd.#{osdIndex}")
+               tak.exec!("mkdir -p /osd.#{osdIndex}")
                tak.exec!("mount /dev/#{device}5 /osd.#{osdIndex}")
+               unless journalDisk.empty?
+                  osdPrepCmd = "ceph-deploy osd prepare #{nodeShort}:/dev/#{device}")
+                  osdActCmd  = "ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}")
+               else
+                  tak.exec!("mkdir -p /dev/#{journalDisk}1/osd.#{osdIndex}; touch /dev/#{journalDisk}1/osd.#{osdIndex}/journalFile")
+                  osdPrepCmd = "ceph-deploy osd prepare #{nodeShort}:/dev/#{device}:/dev/#{journalDisk}1/osd.#{osdIndex}/journalFile")
+                  osdActCmd  = "ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}:/dev/#{journalDisk}1/osd.#{osdIndex}/journalFile")
+               end
                tak.loop()
            end
-           osdActCmd = "ceph-deploy osd activate #{nodeShort}:/dev/#{device}5" + (journalDisk.empty? ? "" : ":/dev/#{journalDisk}#{osdIndex}")
            Cute::TakTuk.start([monitor], :user => "root") do |tak|
                tak.exec!(osdPrepCmd)
                tak.exec!(osdActCmd)
