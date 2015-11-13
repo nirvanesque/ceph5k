@@ -389,8 +389,8 @@ if argMultiOSD # Option for activating multiple OSDs per node
            Cute::TakTuk.start([node], :user => "root") do |tak|
                tak.exec!("rm -rf /osd*")
                tak.exec!("umount /tmp")
-#               tak.exec!("mkdir /osd.#{osdIndex}")
-#               tak.exec!("mount /dev/#{device}5 /osd.#{osdIndex}")
+               tak.exec!("mkdir /osd.#{osdIndex}")
+               tak.exec!("mount /dev/#{device}5 /osd.#{osdIndex}")
                tak.loop()
            end
            osdActCmd = "ceph-deploy osd activate #{nodeShort}:/dev/#{device}5" + (journalDisk.empty? ? "" : ":/dev/#{journalDisk}#{osdIndex}")
