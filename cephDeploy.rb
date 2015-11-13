@@ -390,7 +390,7 @@ if argMultiOSD # Option for activating multiple OSDs per node
                tak.exec!("umount /tmp")
                tak.exec!("mkdir -p /osd.#{osdIndex}")
                tak.exec!("mount /dev/#{device}5 /osd.#{osdIndex}")
-               if journalDisk.empty? == False # separate disk for journalFile
+               if journalDisk # separate disk assigned for journalFile
                   tak.exec!("mkdir -p /dev/#{journalDisk}1/osd.#{osdIndex}; touch /dev/#{journalDisk}1/osd.#{osdIndex}/journalFile")
                   osdPrepCmd = "ceph-deploy osd prepare #{nodeShort}:/dev/#{device}:/dev/#{journalDisk}1/osd.#{osdIndex}/journalFile"
                   osdActCmd  = "ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}:/dev/#{journalDisk}1/osd.#{osdIndex}/journalFile"
