@@ -389,12 +389,12 @@ if argMultiOSD # Option for activating multiple OSDs per node
                tak.exec!("mkdir -p /osd.#{osdIndex}")
                tak.exec!("mount /dev/#{device}5 /osd.#{osdIndex}")
                unless journalDisk.empty?
-                  osdPrepCmd = "ceph-deploy osd prepare #{nodeShort}:/dev/#{device}")
-                  osdActCmd  = "ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}")
+                  osdPrepCmd = "ceph-deploy osd prepare #{nodeShort}:/dev/#{device}"
+                  osdActCmd  = "ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}"
                else
                   tak.exec!("mkdir -p /dev/#{journalDisk}1/osd.#{osdIndex}; touch /dev/#{journalDisk}1/osd.#{osdIndex}/journalFile")
-                  osdPrepCmd = "ceph-deploy osd prepare #{nodeShort}:/dev/#{device}:/dev/#{journalDisk}1/osd.#{osdIndex}/journalFile")
-                  osdActCmd  = "ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}:/dev/#{journalDisk}1/osd.#{osdIndex}/journalFile")
+                  osdPrepCmd = "ceph-deploy osd prepare #{nodeShort}:/dev/#{device}:/dev/#{journalDisk}1/osd.#{osdIndex}/journalFile"
+                  osdActCmd  = "ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}:/dev/#{journalDisk}1/osd.#{osdIndex}/journalFile"
                end
                tak.loop()
            end
