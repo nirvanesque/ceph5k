@@ -339,10 +339,10 @@ puts "Monitor & Client added to Ceph cluster." + "\n"
 # Prepare & Activate OSDs.
 puts "Preparing & activating OSDs..."
 
+osdIndex = 0 # Iteration counter for OSDs created.
 # mkdir, Prepare & Activate each OSD
 if argMultiOSD # Option for activating multiple OSDs per node
 
-   osdIndex = 0 # change to check if osdIndex file exists, then initialise from there
    osdNodes.each do |node|    # loop over all OSD nodes
      nodeShort = node.split(".").first       # the shortname of the node
      g5kCluster = nodeShort.split("-").first # the G5K cluster of the node
@@ -365,77 +365,75 @@ if argMultiOSD # Option for activating multiple OSDs per node
      storageDevices.each do |storageDev, index| # loop over each physical disc
         device = storageDev["device"]
         nodeShort = node.split(".").first
-        osdIndex += 1
 
         if device == "sda" # deploy OSD only on partition /dev/sda5
            Cute::TakTuk.start([node], :user => "root") do |tak|
-               tak.exec!("rm -rf /osd*")
                tak.exec!("umount /tmp")
-               tak.exec!("mkdir /osd#{osdIndex}")
-               tak.exec!("mount /dev/#{device}5 /osd#{osdIndex}")
+               tak.exec!("mkdir -p /osd.#{osdIndex}")
+               tak.exec!("mount /dev/#{device}5 /osd.#{osdIndex}")
                tak.loop()
            end
            Cute::TakTuk.start([monitor], :user => "root") do |tak|
-               tak.exec!("ceph-deploy osd prepare #{nodeShort}:/osd#{osdIndex}")
-               tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd#{osdIndex}")
+               tak.exec!("ceph-deploy osd prepare #{nodeShort}:/osd.#{osdIndex}")
+               tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}")
                tak.loop()
            end
-        puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}5.\n"
+           puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}5.\n"
 
         else  # case of /dev/sdb, /dev/sdc, required to zap disc before deploy 
-
            # Remove all partitions, create primary partition (1), install FS
            Cute::TakTuk.start([node], :user => "root") do |tak|
                tak.exec!("parted -s /dev/#{device} mklabel msdos")
                tak.exec!("parted -s /dev/#{device} --align optimal mkpart primary 0 100%")
                tak.exec!("mkfs -t #{argFileSystem} /dev/#{device}1")
                tak.loop()
-           end
+           end # end of TakTuk loop for OSD node
 
            # Mount the partition on /osd# 
            Cute::TakTuk.start([node], :user => "root") do |tak|
-               tak.exec!("rm -rf /osd#{osdIndex}")
-               tak.exec!("mkdir /osd#{osdIndex}")
-               tak.exec!("mount /dev/#{device}1 /osd#{osdIndex}")
+               tak.exec!("rm -rf /osd.#{osdIndex}")
+               tak.exec!("mkdir /osd.#{osdIndex}")
+               tak.exec!("mount /dev/#{device}1 /osd.#{osdIndex}")
                tak.loop()
            end
 
            # Prepare & Activate the OSD 
            Cute::TakTuk.start([monitor], :user => "root") do |tak|
-               tak.exec!("ceph-deploy osd prepare #{nodeShort}:/osd#{osdIndex}")
-               tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd#{osdIndex}")
+               tak.exec!("ceph-deploy osd prepare #{nodeShort}:/osd.#{osdIndex}")
+               tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}")
                tak.loop()
            end # end of TakTuk loop for monitor
-           puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}.\n"
+           puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}1.\n"
 
         end # end of if-else device == "sda"
+        osdIndex += 1
 
      end # loop over storage devices
 
    end # loop over all OSD nodes
 
 else # Option for single OSD per node
-   osdIndex = 0 # change to check if osdIndex file exists, then initialise from there
-   osdNodes.each_with_index do |node, index|
-        Cute::TakTuk.start([node], :user => "root") do |tak|
-          tak.exec!("rm -rf /osd#{index}")
-          tak.exec!("umount /tmp")
-          tak.exec!("mkdir /osd#{index}")
-          tak.exec!("mount /dev/sda5 /osd#{index}")
-          tak.loop()
-        end
 
+   osdNodes.each do |node|
         nodeShort = node.split(".").first
 
-        Cute::TakTuk.start([monitor], :user => "root") do |tak|
-          tak.exec!("ceph-deploy osd prepare #{nodeShort}:/osd#{index}")
-          tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd#{index}")
+        Cute::TakTuk.start([node], :user => "root") do |tak|
+          tak.exec!("rm -rf /osd.#{osdIndex}")
+          tak.exec!("umount /tmp")
+          tak.exec!("mkdir /osd.#{osdIndex}")
+          tak.exec!("mount /dev/sda5 /osd.#{osdIndex}")
           tak.loop()
-        end
-        osdIndex = index
-   end # Option for activating multiple OSDs per node
+        end # end of TakTuk loop for OSD node
 
-end
+        Cute::TakTuk.start([monitor], :user => "root") do |tak|
+          tak.exec!("ceph-deploy osd prepare #{nodeShort}:/osd.#{osdIndex}")
+          tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}")
+          tak.loop()
+        end # end of TakTuk loop for monitor
+
+   end # loop over all OSD nodes
+
+end # if-else for single/multi-OSD per node
 
 
 # Write to osdIndex & osdList files locally
@@ -462,10 +460,6 @@ Cute::TakTuk.start([monitor], :user => "root") do |tak|
      tak.put("monList", "monList")
      tak.loop()
 end
-
-# OSDs prepared & activated.
-puts "Prepared & Activated following OSDs: #{osdNodes}" + "\n"
-
 
 
 # Distribute config & keyrings for cluster.
