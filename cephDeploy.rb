@@ -37,7 +37,7 @@ end
 
 # banner for script
 opts = Trollop::options do
-  version "ceph-deploy 0.0.2 (c) 2015-16 Anirvan BASU, INRIA RBA"
+  version "ceph-deploy 0.0.3 (c) 2015-16 Anirvan BASU, INRIA RBA"
   banner <<-EOS
 ceph-deploy.rb is a script for deploying a Ceph DFS on reserved nodes.
 
