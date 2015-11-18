@@ -13,15 +13,15 @@
 # limitations under the License. 
 
 config:
-site: rennes          # Grid 5000 site for deploying Ceph cluster
-g5kCluster: parasilo  # Grid 5000 cluster in specified site
+site: nancy           # Grid 5000 site for deploying Ceph cluster
+g5kCluster: graphite  # Grid 5000 cluster in specified site
 release: firefly      # Ceph Release name
 env: "wheezy-x64-nfs" # G5K environment to be deployed
 jobName: cephDeploy   # Name of Grid'5000 job if already created
 cephCluster: ceph     # Ceph cluster name
-numNodes: 6           # Nodes in Ceph cluster
-walltime: "08:00:00"  # Wall time for Ceph cluster deployed
-multiOSD: true        # Multiple OSDs on each node
+numNodes: 4           # Nodes in Ceph cluster
+walltime: "03:00:00"  # Wall time for Ceph cluster deployed
+multiOSD: false       # Multiple OSDs on each node
 poolName: pool        # Name of pool to create on Ceph clusters
 poolSize: 57600       # Size of pool to create on Ceph clusters
 rbdName: image        # Name of rbd to create inside Ceph pool
@@ -29,4 +29,6 @@ rbdSize: 57600        # Size of rbd to create inside Ceph pool
 fileSystem: ext4      # File System to be formatted on created RBD
 mntDepl: "ceph-depl"  # Mount point for RBD on deployed cluster
 mntProd: "ceph-prod"  # Mount point for RBD on production cluster
+inMemory: true        # In-memory OSD only using shared memory
+maxMem: 50            # Maximum % memory allowed from RAM for in-memory OSD
 
