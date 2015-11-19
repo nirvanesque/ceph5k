@@ -64,7 +64,7 @@ EOS
   opt :mntDepl, "Mount point for RBD on deployed cluster", :type => String, :default => defaults["mntDepl"]
   opt :mntProd, "Mount point for RBD on production cluster", :type => String, :default => defaults["mntProd"]
 defaults["mntDepl"]
-  opt :inMemory, "In-memory OSD only using shared memory", :type => String, :default => defaults["inMemory"]
+  opt :inMemory, "In-memory OSD only using shared memory", :default => defaults["inMemory"]
   opt :maxMem, "Maximum % memory allowed from RAM for in-memory OSD", :default => defaults["maxMem"]
 end
 
