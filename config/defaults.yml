@@ -13,14 +13,14 @@
 # limitations under the License. 
 
 config:
-site: nancy           # Grid 5000 site for deploying Ceph cluster
-g5kCluster: graphite  # Grid 5000 cluster in specified site
+site: rennes          # Grid 5000 site for deploying Ceph cluster
+g5kCluster: paravance # Grid 5000 cluster in specified site
 release: firefly      # Ceph Release name
 env: "wheezy-x64-nfs" # G5K environment to be deployed
 jobName: cephDeploy   # Name of Grid'5000 job if already created
 cephCluster: ceph     # Ceph cluster name
 numNodes: 4           # Nodes in Ceph cluster
-walltime: "03:00:00"  # Wall time for Ceph cluster deployed
+walltime: "02:00:00"  # Wall time for Ceph cluster deployed
 multiOSD: false       # Multiple OSDs on each node
 poolName: pool        # Name of pool to create on Ceph clusters
 poolSize: 57600       # Size of pool to create on Ceph clusters
