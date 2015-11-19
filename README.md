@@ -45,8 +45,8 @@ At end of successful execution of the script, you will have 2 Ceph clusters - a 
 where [options] are:
 
         -i, --ignore             Ignore incorrect values
-        -s, --site=<s>           Grid'5000 site for Ceph cluster (default: sophia)
-        -g, --g5kCluster=<s>     Grid'5000 cluster in specified site (default: suno)
+        -s, --site=<s>           Grid'5000 site for Ceph cluster (default: rennes)
+        -g, --g5kCluster=<s>     Grid'5000 cluster in specified site (default: parasilo)
         -r, --release=<s>        Ceph Release name (default: firefly)
         -e, --env=<s>            G5K environment to be deployed (default: wheezy-x64-nfs)
         -j, --jobName=<s>        Name of Grid'5000 job (default: cephDeploy)
@@ -61,8 +61,11 @@ where [options] are:
         -f, --fileSystem=<s>     File System to be format on created RBDs (default: ext4)
         -t, --mntDepl=<s>        Mount point for RBD on deployed cluster (default: ceph-depl)
         -P, --mntProd=<s>        Mount point for RBD on production cluster (default: ceph-prod)
+        -M, --inMemory, --no-inMemory    In-memory OSD only using shared memory (default: false)
+        -a, --maxMem=<i>         Maximum % memory allowed from RAM for in-memory OSD (default: 50)
         -v, --version            Print version and exit
         -h, --help               Show this message
+
 
 If interested in using the PRy shell interface, type at CLI
 
