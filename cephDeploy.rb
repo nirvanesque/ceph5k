@@ -86,6 +86,8 @@ argFileSystem = opts[:fileSystem] # File System to be formatted on created RBDs.
 argMntDepl = opts[:mntDepl] # Mount point for RBD on deployed cluster.
 argMntProd = opts[:mntProd] # Mount point for RBD on production cluster.
 
+puts argJobID
+
 # Show parameters for creating Ceph cluster
 puts "Deploying Ceph cluster with the following parameters:"
 puts "Grid 5000 site: #{argSite}"
