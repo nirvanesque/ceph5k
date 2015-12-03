@@ -47,6 +47,7 @@ where [options] are:
 EOS
 
   opt :ignore, "Ignore incorrect values"
+  opt :jobID, "Oarsub ID of the job", :default => nil
   opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["site"]
   opt :g5kCluster, "Grid 5000 cluster in specified site", :type => String, :default => defaults["g5kCluster"]
   opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
@@ -59,6 +60,7 @@ EOS
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
+argJobID = opts[:jobID] # Oarsub ID of the job. 
 argSite = opts[:site] # site name. 
 argG5KCluster = opts[:g5kCluster] # G5K cluster name if specified. 
 argRelease = opts[:release] # Ceph release name. 
@@ -83,23 +85,26 @@ puts "Total nodes in Ceph cluster: #{argNumNodes}"
 puts "Deployment time: #{argWallTime}\n"
 puts "Option for multiple OSDs per node: #{argMultiOSD}\n" + "\n"
 
-# Get all jobs submitted in a cluster
-jobs = g5k.get_my_jobs(argSite) 
-
-# get the job with name "cephCluster"
 jobCephCluster = nil
-jobs.each do |job|
-   if job["name"] == argJobName # if job exists already, refresh the deployment
-      jobCephCluster = job
-      clientNode = jobCephCluster["assigned_nodes"][1]
-      dfsNodes = jobCephCluster["assigned_nodes"] - [clientNode]
+if argJobID    # If jobID is specified, get the specific job
+   jobCephCluster = g5k.get_job(argSite, argJobID)
+else           # Get all jobs submitted in a cluster
+   jobs = g5k.get_my_jobs(argSite, state = "running") 
 
-      depCeph = g5k.deploy(jobCephCluster, :nodes => dfsNodes, :env => argEnv, :keys => "~/public/id_rsa")
-      depCephClient = g5k.deploy(jobCephCluster, :nodes => [clientNode], :env => argEnvClient, :keys => "~/public/id_rsa")
+   # get the job with name "cephCluster"
+   jobs.each do |job|
+      if job["name"] == argJobName # if job exists already, refresh the deployment
+         jobCephCluster = job
+         clientNode = jobCephCluster["assigned_nodes"][1]
+         dfsNodes = jobCephCluster["assigned_nodes"] - [clientNode]
 
-      g5k.wait_for_deploy(jobCephCluster)
-   end
-end
+         depCeph = g5k.deploy(jobCephCluster, :nodes => dfsNodes, :env => argEnv, :keys => "~/public/id_rsa")
+         depCephClient = g5k.deploy(jobCephCluster, :nodes => [clientNode], :env => argEnvClient, :keys => "~/public/id_rsa")
+
+         g5k.wait_for_deploy(jobCephCluster)
+      end # if job["name"] == argJobName
+   end # jobs.each do |job|
+end # if argJobID
 
 # Finally, if job does not yet exist reserve nodes and deploy
 if jobCephCluster == nil
