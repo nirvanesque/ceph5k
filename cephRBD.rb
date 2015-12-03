@@ -47,6 +47,7 @@ where [options] are:
 EOS
 
   opt :ignore, "Ignore incorrect values"
+  opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["site"]
   opt :jobName, "Name of Grid'5000 job if already created", :type => String, :default => defaults["jobName"]
   opt :poolName, "Name of pool to create on Ceph clusters", :type => String, :default => defaults["poolName"]
   opt :poolSize, "Size of pool to create on Ceph clusters", :default => defaults["poolSize"]
@@ -58,6 +59,7 @@ EOS
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
+argSite = opts[:site] # site name. 
 argJobName = opts[:jobName] # Grid'5000 ndoes reservation job. 
 argPoolName = "#{user}_" + opts[:poolName] # Name of pool to create on clusters.
 argPoolSize = opts[:poolSize] # Size of pool to create on clusters.
