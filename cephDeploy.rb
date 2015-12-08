@@ -98,7 +98,7 @@ puts "Deployment time: #{argWallTime}\n"
 puts "Option for multiple OSDs per node: #{argMultiOSD}\n" + "\n"
 
 # Get all jobs submitted in a cluster
-jobs = g5k.get_my_jobs(argSite, state = "running") 
+jobs = g5k.get_my_jobs(argSite) 
 
 # get the job with name "cephCluster"
 jobCephCluster = nil
