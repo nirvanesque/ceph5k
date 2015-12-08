@@ -57,6 +57,7 @@ EOS
   opt :numNodes, "Nodes in Ceph cluster", :default => defaults["numNodes"]
   opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => defaults["walltime"]
   opt :multiOSD, "Multiple OSDs on each node", :default => defaults["multiOSD"]
+  opt :fileSystem, "File System to be formatted on created RBDs", :type => String, :default => defaults["fileSystem"]
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
@@ -71,6 +72,7 @@ argCephCluster = opts[:cephCluster] # Ceph cluster name.
 argNumNodes = opts[:numNodes] # number of nodes in Ceph cluster.
 argWallTime = opts[:walltime] # walltime for the reservation.
 argMultiOSD = opts[:multiOSD] # Multiple OSDs on each node.
+argFileSystem = opts[:fileSystem] # File System to be formatted on created RBDs.
 
 # Show parameters for creating Ceph cluster
 puts "Deploying Ceph cluster with the following parameters:"
