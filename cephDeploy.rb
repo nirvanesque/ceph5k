@@ -98,7 +98,7 @@ puts "Deployment time: #{argWallTime}\n"
 puts "Option for multiple OSDs per node: #{argMultiOSD}\n" + "\n"
 
 # Get all jobs submitted in a cluster
-jobs = g5k.get_my_jobs(argSite) 
+jobs = g5k.get_my_jobs(argSite, state = "running") 
 
 # get the job with name "cephCluster"
 jobCephCluster = nil
@@ -117,13 +117,13 @@ end
 
 # Finally, if job does not yet exist reserve nodes and deploy
 if jobCephCluster == nil
-   jobCephCluster = g5k.reserve(:name => argJobName, :nodes => argNumNodes, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :keys => "~/public/id_rsa", :type => :deploy)
+   jobCephCluster = g5k.reserve(:name => argJobName, :nodes => argNumNodes, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :type => :deploy)
 
    clientNode = jobCephCluster["assigned_nodes"][1]
    dfsNodes = jobCephCluster["assigned_nodes"] - [clientNode]
 
    depCeph = g5k.deploy(jobCephCluster, :nodes => dfsNodes, :env => argEnv, :keys => "~/public/id_rsa")
-   depCephClient = g5k.deploy(jobCephCluster, :nodes => [clientNode], :env => argEnvClient, :keys => "~/public/id_rsa")
+   depCephClient = g5k.deploy(jobCephCluster, :nodes => [clientNode], :env => argEnvClient)
 
    g5k.wait_for_deploy(jobCephCluster)
 
