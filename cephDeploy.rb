@@ -37,9 +37,9 @@ end
 
 # banner for script
 opts = Trollop::options do
-  version "ceph-deploy 0.0.3 (c) 2015-16 Anirvan BASU, INRIA RBA"
+  version "cephDeploy 0.0.3 (c) 2015-16 Anirvan BASU, INRIA RBA"
   banner <<-EOS
-ceph-deploy.rb is a script for deploying a Ceph DFS on reserved nodes.
+cephDeploy.rb is a script for deploying a Ceph DFS on reserved nodes.
 
 Usage:
        ceph-deploy.rb [options]
@@ -47,6 +47,7 @@ where [options] are:
 EOS
 
   opt :ignore, "Ignore incorrect values"
+  opt :jobID, "Oarsub ID of the job", :default => nil
   opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["site"]
   opt :g5kCluster, "Grid 5000 cluster in specified site", :type => String, :default => defaults["g5kCluster"]
   opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
@@ -56,16 +57,11 @@ EOS
   opt :numNodes, "Nodes in Ceph cluster", :default => defaults["numNodes"]
   opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => defaults["walltime"]
   opt :multiOSD, "Multiple OSDs on each node", :default => defaults["multiOSD"]
-  opt :poolName, "Name of pool to create on Ceph clusters", :type => String, :default => defaults["poolName"]
-  opt :poolSize, "Size of pool to create on Ceph clusters", :default => defaults["poolSize"]
-  opt :rbdName, "Name of rbd to create inside Ceph pool", :type => String, :default => defaults["rbdName"]
-  opt :rbdSize, "Size of rbd to create inside Ceph pool", :default => defaults["rbdSize"]
   opt :fileSystem, "File System to be formatted on created RBDs", :type => String, :default => defaults["fileSystem"]
-  opt :mntDepl, "Mount point for RBD on deployed cluster", :type => String, :default => defaults["mntDepl"]
-  opt :mntProd, "Mount point for RBD on production cluster", :type => String, :default => defaults["mntProd"]
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
+argJobID = opts[:jobID] # Oarsub ID of the job. 
 argSite = opts[:site] # site name. 
 argG5KCluster = opts[:g5kCluster] # G5K cluster name if specified. 
 argRelease = opts[:release] # Ceph release name. 
@@ -76,13 +72,7 @@ argCephCluster = opts[:cephCluster] # Ceph cluster name.
 argNumNodes = opts[:numNodes] # number of nodes in Ceph cluster.
 argWallTime = opts[:walltime] # walltime for the reservation.
 argMultiOSD = opts[:multiOSD] # Multiple OSDs on each node.
-argPoolName = "#{user}_" + opts[:poolName] # Name of pool to create on clusters.
-argPoolSize = opts[:poolSize] # Size of pool to create on clusters.
-argRBDName = "#{user}_" + opts[:rbdName] # Name of pool to create on clusters.
-argRBDSize = opts[:rbdSize] # Size of pool to create on clusters.
 argFileSystem = opts[:fileSystem] # File System to be formatted on created RBDs.
-argMntDepl = opts[:mntDepl] # Mount point for RBD on deployed cluster.
-argMntProd = opts[:mntProd] # Mount point for RBD on production cluster.
 
 # Show parameters for creating Ceph cluster
 puts "Deploying Ceph cluster with the following parameters:"
@@ -97,23 +87,26 @@ puts "Total nodes in Ceph cluster: #{argNumNodes}"
 puts "Deployment time: #{argWallTime}\n"
 puts "Option for multiple OSDs per node: #{argMultiOSD}\n" + "\n"
 
-# Get all jobs submitted in a cluster
-jobs = g5k.get_my_jobs(argSite, state = "running") 
-
-# get the job with name "cephCluster"
 jobCephCluster = nil
-jobs.each do |job|
-   if job["name"] == argJobName # if job exists already, refresh the deployment
-      jobCephCluster = job
-      clientNode = jobCephCluster["assigned_nodes"][1]
-      dfsNodes = jobCephCluster["assigned_nodes"] - [clientNode]
+if argJobID    # If jobID is specified, get the specific job
+   jobCephCluster = g5k.get_job(argSite, argJobID)
+else           # Get all jobs submitted in a cluster
+   jobs = g5k.get_my_jobs(argSite, state = "running") 
 
-      depCeph = g5k.deploy(jobCephCluster, :nodes => dfsNodes, :env => argEnv, :keys => "~/public/id_rsa")
-      depCephClient = g5k.deploy(jobCephCluster, :nodes => [clientNode], :env => argEnvClient, :keys => "~/public/id_rsa")
+   # get the job with name "cephCluster"
+   jobs.each do |job|
+      if job["name"] == argJobName # if job exists already, refresh the deployment
+         jobCephCluster = job
+         clientNode = jobCephCluster["assigned_nodes"][1]
+         dfsNodes = jobCephCluster["assigned_nodes"] - [clientNode]
 
-      g5k.wait_for_deploy(jobCephCluster)
-   end
-end
+         depCeph = g5k.deploy(jobCephCluster, :nodes => dfsNodes, :env => argEnv, :keys => "~/public/id_rsa")
+         depCephClient = g5k.deploy(jobCephCluster, :nodes => [clientNode], :env => argEnvClient, :keys => "~/public/id_rsa")
+
+         g5k.wait_for_deploy(jobCephCluster)
+      end # if job["name"] == argJobName
+   end # jobs.each do |job|
+end # if argJobID
 
 # Finally, if job does not yet exist reserve nodes and deploy
 if jobCephCluster == nil
@@ -501,110 +494,4 @@ Cute::TakTuk.start([monitor], :user => "root") do |tak|
      end
      tak.loop()
 end
-
-
-# Creating & pushing config file for Ceph production cluster.
-puts "Creating & pushing config file to Ceph client for Ceph production cluster ..."
-
-# Prepare ceph.conf file for production Ceph cluster
-configFile = File.open("/tmp/ceph.conf", "w") do |file|
-   file.puts("[global]")
-   file.puts("  mon initial members = ceph0,ceph1,ceph2")
-   file.puts("  mon host = 172.16.111.30,172.16.111.31,172.16.111.32")
-end
-
-# Then put ceph.conf file to all client nodes
-Cute::TakTuk.start([client], :user => "root") do |tak|
-     tak.exec!("rm -rf prod/")
-     tak.exec!("mkdir prod/ && touch prod/ceph.conf")
-     tak.put("/tmp/ceph.conf", "/root/prod/ceph.conf")
-     tak.put("/tmp/ceph.client.#{user}.keyring", "/etc/ceph/ceph.client.#{user}.keyring")
-     tak.loop()
-end
-
-# Created & pushed config file for Ceph production cluster.
-puts "Created & pushed config file for Ceph production cluster to all clients." + "\n"
-
-
-
-# Creating Ceph pools on deployed and production clusters.
-puts "Creating Ceph pools on deployed and production clusters ..."
-poolsList = []
-userPool = ""
-# Create Ceph pools & RBD
-Cute::TakTuk.start([client], :user => "root") do |tak|
-     tak.exec!("modprobe rbd")
-     # Create pools & RBD on deployed cluster
-     tak.exec!("rados mkpool #{argPoolName}")
-     tak.exec!("rbd create #{argRBDName} --pool #{argPoolName} --size #{argRBDSize}")
-
-     # Create pools & RBD on production cluster
-     result = tak.exec!("rados -c /root/prod/ceph.conf --id #{user} lspools")
-
-     if result[client][:output].include? "#{user}"
-        poolsList = result[client][:output].split("\n")
-     end
-     poolsList.each do |pool|  # logic: it will take the alphabetic-last pool from user
-        if pool.include? "#{user}"
-           userPool = pool
-        end
-     end
-puts userPool
-     unless userPool == ""
-        tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
-     else
-#       tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} mkpool #{argPoolName} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
-        puts "Create at least one RBD pool from the Ceph production frontend\n\n"
-        puts "Use this link to create pool: https://api.grid5000.fr/sid/storage/ceph/ui/"
-        puts "Then rerun this script.\n"
-     end
-     tak.loop()
-end
-
-# Created & pushed config file for Ceph clusters.
-puts "Created Ceph pools on deployed and production clusters as follows :" + "\n"
-puts "On deployed cluster:\n"
-puts "Pool name: #{argPoolName} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize} " + "\n"
-puts "Created Ceph pools on deployed and production clusters as follows :" + "\n"
-puts "On production cluster:\n"
-puts "Pool name: #{userPool} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize} " + "\n"
-
-
-
-# Map RBD and create File Systems.
-puts "Mapping RBDs in deployed and production Ceph clusters ..."
-Cute::TakTuk.start([client], :user => "root") do |tak|
-     # Map RBD & create FS on deployed cluster
-     tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
-     tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argPoolName}/#{argRBDName}")
-
-     # Map RBD & create FS on production cluster
-     tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} map #{argRBDName} -k /etc/ceph/ceph.client.#{user}.keyring")
-     tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{userPool}/#{argRBDName}")
-
-     tak.loop()
-end
-
-# Mapped RBDs and created File Systems.
-puts "Mapped RBDs and created File Systems." + "\n"
-
-
-# Mount RBDs as File Systems.
-puts "Mounting RBDs as File Systems in deployed and production Ceph clusters ..."
-Cute::TakTuk.start([client], :user => "root") do |tak|
-     # mount RBD from deployed cluster
-     tak.exec!("rmdir /mnt/#{argMntDepl}")
-     tak.exec!("mkdir /mnt/#{argMntDepl}")
-     tak.exec!("mount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
-
-     # mount RBD from production cluster
-     tak.exec!("rmdir /mnt/#{argMntProd}")
-     tak.exec!("mkdir /mnt/#{argMntProd}")
-     tak.exec!("mount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
-
-     tak.loop()
-end
-
-# Mounted RBDs as File Systems.
-puts "Mounted RBDs as File Systems." + "\n"
 
