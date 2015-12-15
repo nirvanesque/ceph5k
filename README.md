@@ -114,7 +114,7 @@ Other generic options:
 ##Copying data from production Ceph cluster to deployed Ceph cluster
 Once the Ceph cluster + client are deployed and block devices mapped and mounted, it is possible to copy data as normal files between the deployed Ceph cluster and the production Ceph cluster. This is required during the initial phase of preparing data before the run of experiments. On your Ceph client node, login as root@client-node. 
 
-        # cp /mnt/ceph-prod/filename /mnt/ceph-depl/
+        # cp /mnt/ceph-prod/<filename> /mnt/ceph-depl/
 
 ##Benchmarking your deployed Ceph cluster
 It is possible to run some benchmarking tests to check the performance of your deployed Ceph and production Ceph clusters. There are trial datasets available on Grid'5000, on nancy and sophia frontends on /home/abasu/public/ceph-data/. For this purpose, copy the following datasets to your deployed Ceph cluster as follows: 
