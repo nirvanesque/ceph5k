@@ -20,6 +20,18 @@ At the CLI on a frontend:
         EOF
 
 ## Installation & Execution
+The installation consists of the following steps:
+- Deploying a Ceph cluster (monitor node, client node, OSD nodes)
+- Creating Rados Block Devices (RBD) and installing a File System :
+-- on the deployed Ceph cluster,
+-- on the production Ceph cluster.
+
+### Deploying a Ceph cluster
+Note: All default parameters that are necessary for a deployment are stored in the installation subdirectory at:
+        ./config/defaults.yml
+
+This is a YAML file for human reading. All parameters are declarative and by name. It can be modified by text editor to customise the Ceph deployment.
+ 
 At the CLI on a frontend:
        
         export http_proxy=http://proxy:3128 && export https_proxy=https://proxy:3128
@@ -28,6 +40,12 @@ At the CLI on a frontend:
         rm -rf dss5k
         git clone https://github.com/nirvanesque/dss5k.git
         chmod +x dss5k/*.rb
+
+### Creating RBD and installing a File System
+Note: To create an RBD on the Ceph production site, it is required first to create your Ceph account and your Ceph pool using the Ceph frontend. 
+
+At the CLI on a frontend:
+
         ./dss5k/cephDeploy.rb     # Creates & deploys the Ceph cluster
         chmod +x dss5k/*.sh
         unset http_proxy && unset https_proxy
@@ -35,13 +53,11 @@ At the CLI on a frontend:
         export http_proxy=http://proxy:3128 && export https_proxy=https://proxy:3128
         ./dss5k/cephRBD.rb        # Creates RBD & FS on deployed and production Ceph
 
-Note: To create an RBD on the Ceph production site, it is required first to create your Ceph account and your Ceph pool using the Ceph frontend. 
-
 At end of successful execution of the script, you will have 2 Ceph clusters - a deployed cluster and a production cluster - mounted as file systems on your Ceph client, as follows:
         /mnt/ceph-depl/
         /mnt/ceph-prod/
 
-##Detailed Usage
+##Detailed Usage of Options
        cephDeploy.rb [options]
 where [options] are:
 
