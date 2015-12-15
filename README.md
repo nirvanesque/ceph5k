@@ -1,14 +1,14 @@
-# dss5k
+# Ceph5k
 New version of dfs5k being developed - Ceph (Lustre, Gluster - coming soon)
-ceph-deploy.rb is a script for deploying a Ceph DFS on reserved nodes. It deploys a Ceph cluster using the following :
+Ceph5K is a scripts suite for deploying a Ceph DFS on reserved nodes. It deploys a Ceph cluster using the following :
 - 1 or more monitors, 
 - 1 or more clients (depending on which script is chosen),
 - multiple OSDs.
 
-The Ceph cluster itself is deployed using the "wheezy-x64-nfs" distribution of Linux while the Ceph clients use the "jessie-x64-nfs" deployment.
+By default, the Ceph cluster itself is deployed using the "wheezy-x64-nfs" distribution of Linux while the Ceph clients use the "jessie-x64-nfs" deployment.
 
 ## Preliminaries (for installing Ruby-CUTE)
-To simplify the use of Ruby-Cute modules for node reservation and deployment, it is better to create a file with the following information. This is one-time. 
+To simplify the use of Ruby-Cute modules for node reservation and deployment, it is better to create a file with the following information. This is one-time effort. 
 
 At the CLI on a frontend:
 
@@ -23,8 +23,9 @@ At the CLI on a frontend:
 The installation consists of the following steps:
 - Deploying a Ceph cluster (monitor node, client node, OSD nodes)
 - Creating Rados Block Devices (RBD) and installing a File System :
--- on the deployed Ceph cluster,
--- on the production Ceph cluster.
+
+        on the deployed Ceph cluster,
+        on the production Ceph cluster.
 
 ### Deploying a Ceph cluster
 Note: All default parameters that are necessary for a deployment are stored in the installation subdirectory at:
@@ -111,12 +112,12 @@ Other generic options:
         -i, --ignore             Ignore incorrect values
 
 
-##Copying data from production Ceph cluster to deployed Ceph cluster
+## Copying data from production Ceph cluster to deployed Ceph cluster
 Once the Ceph cluster + client are deployed and block devices mapped and mounted, it is possible to copy data as normal files between the deployed Ceph cluster and the production Ceph cluster. This is required during the initial phase of preparing data before the run of experiments. On your Ceph client node, login as root@client-node. 
 
         # cp /mnt/ceph-prod/<filename> /mnt/ceph-depl/
 
-##Benchmarking your deployed Ceph cluster
+## Benchmarking your deployed Ceph cluster
 It is possible to run some benchmarking tests to check the performance of your deployed Ceph and production Ceph clusters. There are trial datasets available on Grid'5000, on nancy and sophia frontends on /home/abasu/public/ceph-data/. For this purpose, copy the following datasets to your deployed Ceph cluster as follows: 
 
 1. On your Ceph client node, login as root@client-node. 
@@ -131,7 +132,7 @@ It is possible to run some benchmarking tests to check the performance of your d
 3. You can study the performance in detail by varying the blocksize parameter 'bs' in the above command. Generally, the performance (whatever it may be) stabilises around bs=3M and above. Below bs=512K the performance deteriorates fast.
 
 
-##Improving performance through higher parallelism (more OSDs)
+## Improving performance through higher parallelism (more OSDs)
 Another way of improving the performance is by increasing the number of OSDs in the Ceph cluster deployed. This can be done by re-deploying the Ceph cluster as follows. On a front-end, deploy the Ceph cluster with following option:
 
         ./dss5k/cephDeploy.rb --numNodes=12    # Deploy Ceph cluster with 10 OSDs
@@ -139,7 +140,7 @@ Another way of improving the performance is by increasing the number of OSDs in 
 Then run the benchmarking steps as above.
 
 
-##In case of errors
+## In case of errors
 If using the Rados Block Device (RBD) with a different / lower distribution than "jessie" problems may be encountered. In that case, use the following commands first to avoid errors while mounting RBDs (this happens in the case of release firefly). 
 
 Login as root@monitor-node. Then the following commands at shell CLI :
