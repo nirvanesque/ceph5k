@@ -58,10 +58,13 @@ At end of successful execution of the script, you will have 2 Ceph clusters - a 
         /mnt/ceph-prod/
 
 ##Detailed Usage of Options
+
+Note: Default values of all these options are provided in the YAML file mentioned above. If the options are specified at the command-line, they override the default values in the YAML file.
+
+### Options for: Deploying a Ceph cluster
        cephDeploy.rb [options]
 where [options] are:
 
-        -i, --ignore             Ignore incorrect values
         -s, --site=<s>           Grid'5000 site for Ceph cluster (default: sophia)
         -g, --g5kCluster=<s>     Grid'5000 cluster in specified site (default: suno)
         -r, --release=<s>        Ceph Release name (default: firefly)
@@ -71,6 +74,25 @@ where [options] are:
         -n, --numNodes=<i>       Nodes in Ceph cluster (default: 6)
         -w, --walltime=<s>       Wall time for Ceph cluster deployed (default: 01:00:00)
         -m, --multiOSD           Multiple OSDs on each node
+        -f, --fileSystem=<s>     File System to be format on created RBDs (default: ext4)
+
+Other generic options:
+
+        -v, --version            Print version and exit
+        -h, --help               Show this message
+        -i, --ignore             Ignore incorrect values
+
+If interested in using the PRy shell interface, type at CLI
+
+        gem install --user-install pry
+        cute
+
+And then simply copy & paste the lines of cephDeploy.rb in the PRy shell.
+
+### Options for: Creating RBD and installing a File System
+       cephRBD.rb [options]
+where [options] are:
+
         -p, --poolName=<s>       Name of pool to create on Ceph clusters (default: pool)
         -o, --poolSize=<i>       Size of pool to create on Ceph clusters (default: 57600)
         -b, --rbdName=<s>        Name of rbd to create inside Ceph pool (default: image)
@@ -81,12 +103,12 @@ where [options] are:
         -v, --version            Print version and exit
         -h, --help               Show this message
 
-If interested in using the PRy shell interface, type at CLI
+Other generic options:
 
-        gem install --user-install pry
-        cute
+        -v, --version            Print version and exit
+        -h, --help               Show this message
+        -i, --ignore             Ignore incorrect values
 
-And then simply copy & paste the lines of cephDeploy.rb in the PRy shell.
 
 ##Copying data from production Ceph cluster to deployed Ceph cluster
 Once the Ceph cluster + client are deployed and block devices mapped and mounted, it is possible to copy data as normal files between the deployed Ceph cluster and the production Ceph cluster. This is required during the initial phase of preparing data before the run of experiments. On your Ceph client node, login as root@client-node. 
