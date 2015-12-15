@@ -28,6 +28,7 @@ The installation consists of the following steps:
 
 ### Deploying a Ceph cluster
 Note: All default parameters that are necessary for a deployment are stored in the installation subdirectory at:
+
         ./config/defaults.yml
 
 This is a YAML file for human reading. All parameters are declarative and by name. It can be modified by text editor to customise the Ceph deployment.
