@@ -76,7 +76,7 @@ where [options] are:
         -n, --numNodes=<i>       Nodes in Ceph cluster (default: 6)
         -w, --walltime=<s>       Wall time for Ceph cluster deployed (default: 01:00:00)
         -m, --multiOSD           Multiple OSDs on each node
-        -f, --fileSystem=<s>     File System to be format on created RBDs (default: ext4)
+        -f, --fileSystem=<s>     File System to format on OSDs (default: ext4)
 
 Other generic options:
 
@@ -99,7 +99,7 @@ where [options] are:
         -o, --poolSize=<i>       Size of pool to create on Ceph clusters (default: 57600)
         -b, --rbdName=<s>        Name of rbd to create inside Ceph pool (default: image)
         -d, --rbdSize=<i>        Size of rbd to create inside Ceph pool (default: 57600)
-        -f, --fileSystem=<s>     File System to be format on created RBDs (default: ext4)
+        -f, --fileSystem=<s>     File System to format on created RBDs (default: ext4)
         -t, --mntDepl=<s>        Mount point for RBD on deployed cluster (default: ceph-depl)
         -P, --mntProd=<s>        Mount point for RBD on production cluster (default: ceph-prod)
         -v, --version            Print version and exit
