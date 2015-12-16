@@ -42,13 +42,13 @@ At the CLI on a frontend:
         rm -rf dss5k
         git clone https://github.com/nirvanesque/dss5k.git
         chmod +x dss5k/*.rb
+        ./dss5k/cephDeploy.rb     # Creates & deploys the Ceph cluster
 
 ### Creating RBD and installing a File System
 Note: To create an RBD on the Ceph production site, it is required first to create your Ceph account and your Ceph pool using the Ceph frontend. 
 
 At the CLI on a frontend:
 
-        ./dss5k/cephDeploy.rb     # Creates & deploys the Ceph cluster
         chmod +x dss5k/*.sh
         unset http_proxy && unset https_proxy
         ./dss5k/cephClient.sh
