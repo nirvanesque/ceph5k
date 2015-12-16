@@ -54,7 +54,7 @@ EOS
   opt :env, "G5K environment to be deployed", :type => String, :default => defaults["env"]
   opt :'job-name', "Name of Grid'5000 job if already created", :type => String, :default => defaults["job-name"]
   opt :'ceph-name', "Ceph cluster name", :type => String, :default => defaults["ceph-name"]
-  opt :'num-nodes', "Nodes in Ceph cluster", :default => defaults["numNodes"]
+  opt :'num-nodes', "Nodes in Ceph cluster", :default => defaults["num-nodes"]
   opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => defaults["walltime"]
   opt :'multi-osd', "Multiple OSDs on each node", :default => defaults["multi-osd"]
   opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
