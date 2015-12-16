@@ -14,19 +14,19 @@
 
 config:
 site: rennes          # Grid 5000 site for deploying Ceph cluster
-cluster: paravance    # Grid 5000 cluster in specified site
+g5kCluster: paravance # Grid 5000 cluster in specified site
 release: firefly      # Ceph Release name
 env: "wheezy-x64-nfs" # G5K environment to be deployed
-job-name: cephDeploy  # Name of Grid'5000 job if already created
-ceph-name: ceph       # Ceph cluster name
-num-nodes: 6          # Nodes in Ceph cluster
-walltime: "03:00:00"  # Walltime for Ceph cluster deployed
-multi-osd: true       # Multiple OSDs on each node
-pool-name: pool       # Name of pool to create on Ceph clusters
-pool-size: 57600      # Size of pool to create on Ceph clusters
-rbd-name: image       # Name of rbd to create inside Ceph pool
-rbd-size: 57600       # Size of rbd to create inside Ceph pool
-file-system: ext4     # File System to be formatted on OSD and later in created RBD
-mnt-depl: "ceph-depl" # Mount point for RBD on deployed cluster
-mnt-prod: "ceph-prod" # Mount point for RBD on production cluster
+jobName: cephDeploy   # Name of Grid'5000 job if already created
+cephCluster: ceph     # Ceph cluster name
+numNodes: 6           # Nodes in Ceph cluster
+walltime: "03:00:00"  # Wall time for Ceph cluster deployed
+multiOSD: true        # Multiple OSDs on each node
+poolName: pool        # Name of pool to create on Ceph clusters
+poolSize: 57600       # Size of pool to create on Ceph clusters
+rbdName: image        # Name of rbd to create inside Ceph pool
+rbdSize: 57600        # Size of rbd to create inside Ceph pool
+fileSystem: ext4      # File System to be formatted on created RBD
+mntDepl: "ceph-depl"  # Mount point for RBD on deployed cluster
+mntProd: "ceph-prod"  # Mount point for RBD on production cluster
 

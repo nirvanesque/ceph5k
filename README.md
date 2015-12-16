@@ -42,6 +42,7 @@ At the CLI on a frontend:
         rm -rf dss5k
         git clone https://github.com/nirvanesque/dss5k.git
         chmod +x dss5k/*.rb
+        cp ~/.ssh/id_rsa ~/public/
         ./dss5k/cephDeploy.rb     # Creates & deploys the Ceph cluster
 
 ### Creating RBD and installing a File System
