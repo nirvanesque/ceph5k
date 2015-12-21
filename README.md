@@ -39,7 +39,7 @@ At the CLI on a frontend:
         cp ~/.ssh/id_rsa.pub ~/public/
         ./dss5k/cephDeploy.rb     # Creates and deploys the Ceph cluster
 
-Note: All default parameters that are necessary for a deployment are stored in the installation subdirectory at:
+Note: To have an easy start, all default parameters that are necessary for a deployment are stored in the installation subdirectory at:
 
         ./config/defaults.yml
 

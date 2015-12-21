@@ -27,7 +27,7 @@ require "uri"
 
 g5k = Cute::G5K::API.new()
 user = g5k.g5k_user
-puts g5k
+
 # Populate the hash with default parameters from YAML file.
 defaults = begin
   YAML.load(File.open("dss5k/config/defaults.yml"))
@@ -88,9 +88,7 @@ puts "Deployment time: #{argWallTime}\n"
 puts "Option for multiple OSDs per node: #{argMultiOSD}\n" + "\n"
 
 jobCephCluster = nil
-if argJobID    # If jobID is specified, get the specific job
-   jobCephCluster = g5k.get_job(argSite, argJobID)
-else           # Get all jobs submitted in a cluster
+unless [nil, 0].include?(argJobID)    # Get all jobs submitted in a cluster
    jobs = g5k.get_my_jobs(argSite, state = "running") 
 
    # get the job with name "cephCluster"
@@ -106,6 +104,8 @@ else           # Get all jobs submitted in a cluster
          g5k.wait_for_deploy(jobCephCluster)
       end # if job["name"] == argJobName
    end # jobs.each do |job|
+else   # If jobID is specified, get the specific job
+   jobCephCluster = g5k.get_job(argSite, argJobID)
 end # if argJobID
 
 # Finally, if job does not yet exist reserve nodes and deploy
