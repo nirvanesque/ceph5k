@@ -27,7 +27,6 @@ require "uri"
 
 g5k = Cute::G5K::API.new()
 user = g5k.g5k_user
-puts user
 
 # Populate the hash with default parameters from YAML file.
 defaults = begin
@@ -91,9 +90,9 @@ puts "Option for multiple OSDs per node: #{argMultiOSD}\n" + "\n"
 jobCephCluster = nil
 if argJobID    # If jobID is specified, get the specific job
    jobCephCluster = g5k.get_job(argSite, argJobID)
-puts jobCephCluster
 else           # Get all jobs submitted in a cluster
    jobs = g5k.get_my_jobs(argSite, state = "running") 
+puts jobCephCluster
 
    # get the job with name "cephCluster"
    jobs.each do |job|
@@ -121,7 +120,6 @@ if jobCephCluster == nil
    depCephClient = g5k.deploy(jobCephCluster, :nodes => [clientNode], :env => argEnvClient, :keys => "~/public/id_rsa")
 
    g5k.wait_for_deploy(jobCephCluster)
-
 end
 
 # At this point job was created or fetched
