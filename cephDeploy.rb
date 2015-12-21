@@ -34,6 +34,7 @@ defaults = begin
 rescue ArgumentError => e
   puts "Could not parse YAML: #{e.message}"
 end
+puts defaults
 
 # banner for script
 opts = Trollop::options do
