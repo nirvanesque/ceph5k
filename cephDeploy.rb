@@ -27,6 +27,7 @@ require "uri"
 
 g5k = Cute::G5K::API.new()
 user = g5k.g5k_user
+puts user
 
 # Populate the hash with default parameters from YAML file.
 defaults = begin
@@ -34,7 +35,6 @@ defaults = begin
 rescue ArgumentError => e
   puts "Could not parse YAML: #{e.message}"
 end
-puts defaults
 
 # banner for script
 opts = Trollop::options do
@@ -91,6 +91,7 @@ puts "Option for multiple OSDs per node: #{argMultiOSD}\n" + "\n"
 jobCephCluster = nil
 if argJobID    # If jobID is specified, get the specific job
    jobCephCluster = g5k.get_job(argSite, argJobID)
+puts jobCephCluster
 else           # Get all jobs submitted in a cluster
    jobs = g5k.get_my_jobs(argSite, state = "running") 
 
