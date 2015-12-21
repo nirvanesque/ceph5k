@@ -42,37 +42,37 @@ opts = Trollop::options do
 cephDeploy.rb is a script for deploying a Ceph DFS on reserved nodes.
 
 Usage:
-       cephDeploy.rb [options]
+       ceph-deploy.rb [options]
 where [options] are:
 EOS
 
   opt :ignore, "Ignore incorrect values"
-  opt :'job-id', "Oarsub ID of the job", :default => nil
+  opt :jobID, "Oarsub ID of the job", :default => nil
   opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["site"]
-  opt :cluster, "Grid 5000 cluster in specified site", :type => String, :default => defaults["cluster"]
+  opt :g5kCluster, "Grid 5000 cluster in specified site", :type => String, :default => defaults["g5kCluster"]
   opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
   opt :env, "G5K environment to be deployed", :type => String, :default => defaults["env"]
-  opt :'job-name', "Name of Grid'5000 job if already created", :type => String, :default => defaults["job-name"]
-  opt :'ceph-name', "Ceph cluster name", :type => String, :default => defaults["ceph-name"]
-  opt :'num-nodes', "Nodes in Ceph cluster", :default => defaults["num-nodes"]
+  opt :jobName, "Name of Grid'5000 job if already created", :type => String, :default => defaults["jobName"]
+  opt :cephCluster, "Ceph cluster name", :type => String, :default => defaults["cephCluster"]
+  opt :numNodes, "Nodes in Ceph cluster", :default => defaults["numNodes"]
   opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => defaults["walltime"]
-  opt :'multi-osd', "Multiple OSDs on each node", :default => defaults["multi-osd"]
-  opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
+  opt :multiOSD, "Multiple OSDs on each node", :default => defaults["multiOSD"]
+  opt :fileSystem, "File System to be formatted on created RBDs", :type => String, :default => defaults["fileSystem"]
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
-argJobID = opts[:'job-id'] # Oarsub ID of the job. 
+argJobID = opts[:jobID] # Oarsub ID of the job. 
 argSite = opts[:site] # site name. 
-argG5KCluster = opts[:cluster] # G5K cluster name if specified. 
+argG5KCluster = opts[:g5kCluster] # G5K cluster name if specified. 
 argRelease = opts[:release] # Ceph release name. 
 argEnv = opts[:env] # Grid'5000 environment to deploy. 
 argEnvClient = "jessie-x64-nfs" # Grid'5000 environment to deploy Ceph client. 
-argJobName = opts[:'job-name'] # Grid'5000 ndoes reservation job. 
-argCephCluster = opts[:'ceph-name'] # Ceph cluster name.
-argNumNodes = opts[:'num-nodes'] # number of nodes in Ceph cluster.
+argJobName = opts[:jobName] # Grid'5000 ndoes reservation job. 
+argCephCluster = opts[:cephCluster] # Ceph cluster name.
+argNumNodes = opts[:numNodes] # number of nodes in Ceph cluster.
 argWallTime = opts[:walltime] # walltime for the reservation.
-argMultiOSD = opts[:'multi-osd'] # Multiple OSDs on each node.
-argFileSystem = opts[:'file-system'] # File System to be formatted on OSDs.
+argMultiOSD = opts[:multiOSD] # Multiple OSDs on each node.
+argFileSystem = opts[:fileSystem] # File System to be formatted on created RBDs.
 
 # Show parameters for creating Ceph cluster
 puts "Deploying Ceph cluster with the following parameters:"
@@ -88,7 +88,9 @@ puts "Deployment time: #{argWallTime}\n"
 puts "Option for multiple OSDs per node: #{argMultiOSD}\n" + "\n"
 
 jobCephCluster = nil
-unless [nil, 0].include?(argJobID)    # Get all jobs submitted in a cluster
+if argJobID    # If jobID is specified, get the specific job
+   jobCephCluster = g5k.get_job(argSite, argJobID)
+else           # Get all jobs submitted in a cluster
    jobs = g5k.get_my_jobs(argSite, state = "running") 
 
    # get the job with name "cephCluster"
@@ -104,8 +106,6 @@ unless [nil, 0].include?(argJobID)    # Get all jobs submitted in a cluster
          g5k.wait_for_deploy(jobCephCluster)
       end # if job["name"] == argJobName
    end # jobs.each do |job|
-else   # If jobID is specified, get the specific job
-   jobCephCluster = g5k.get_job(argSite, argJobID)
 end # if argJobID
 
 # Finally, if job does not yet exist reserve nodes and deploy
@@ -494,4 +494,3 @@ Cute::TakTuk.start([monitor], :user => "root") do |tak|
      end
      tak.loop()
 end
-
