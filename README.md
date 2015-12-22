@@ -75,7 +75,7 @@ where [options] are:
 
 Grid'5000-specific options :
 
-        -j, --job-id                       Oarsub ID of the Grid'5000 job
+        -j, --jobid                        Oarsub ID of the Grid'5000 job
         -o, --job-name=<s>                 Name of Grid'5000 job if resources already reserved (default: cephDeploy)
         -s, --site=<s>                     Grid'5000 site for cluster (default: rennes)
         -c, --cluster=<s>                  Grid'5000 cluster in site (default: paravance)
