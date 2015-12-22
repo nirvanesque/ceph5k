@@ -47,7 +47,7 @@ where [options] are:
 EOS
 
   opt :ignore, "Ignore incorrect values"
-  opt :'job-id', "Oarsub ID of the job", :default => 0
+  opt :'jobid', "Oarsub ID of the job", :default => 0
   opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["site"]
   opt :cluster, "Grid 5000 cluster in specified site", :type => String, :default => defaults["cluster"]
   opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
