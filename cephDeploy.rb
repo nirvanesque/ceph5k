@@ -88,13 +88,11 @@ puts "Deployment time: #{argWallTime}\n"
 puts "Option for multiple OSDs per node: #{argMultiOSD}\n" + "\n"
 
 jobCephCluster = nil
-puts argJobID
-puts [nil, 0].include?(argJobID)
-unless [nil, 0].include?(argJobID)    # Get all jobs submitted in a cluster
-puts "with job id #{argJobID}"
+unless [nil, 0].include?(argJobID)
+   # If jobID is specified, get the specific job
    jobCephCluster = g5k.get_job(argSite, argJobID)
-else   # If jobID is specified, get the specific job
-puts "with job name #{argJobName}"
+else
+   # Get all jobs submitted in a cluster
    jobs = g5k.get_my_jobs(argSite, state = "running") 
 
    # get the job with name "cephCluster"
