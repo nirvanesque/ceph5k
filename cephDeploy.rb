@@ -61,7 +61,7 @@ EOS
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
-argJobID = opts[:jobid] # Oarsub ID of the job. 
+argJobID = opts[:jobid].to_i # Oarsub ID of the job. 
 argSite = opts[:site] # site name. 
 argG5KCluster = opts[:cluster] # G5K cluster name if specified. 
 argRelease = opts[:release] # Ceph release name. 
