@@ -106,7 +106,7 @@ puts "with job name"
       end # if job["name"] == argJobName
    end # jobs.each do |job|
 else   # If jobID is specified, get the specific job
-puts "with job id"
+puts "with job id #{argJobID}"
    jobCephCluster = g5k.get_job(argSite, argJobID)
 end # if argJobID
 
