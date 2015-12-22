@@ -30,7 +30,6 @@ The installation consists of the following steps:
 ### Deploying a Ceph cluster
 The deployment of a Ceph cluster is done from any frontend on Grid'5000. At the CLI on a frontend :
        
-        export http_proxy=http://proxy:3128 && export https_proxy=https://proxy:3128
         gem install --user-install ruby-cute trollop
         export PATH=$PATH:$(ruby -e 'puts "#{Gem.user_dir}/bin"')
         rm -rf dss5k
@@ -53,9 +52,7 @@ Note: To create an RBD on the Ceph production cluster, it is required first to c
 At the CLI on a frontend:
 
         chmod +x dss5k/*.sh
-        unset http_proxy && unset https_proxy
         ./dss5k/cephClient.sh
-        export http_proxy=http://proxy:3128 && export https_proxy=https://proxy:3128
         ./dss5k/cephRBD.rb        # Creates RBD and FS on deployed and production Ceph
 
 At end of successful execution of the script, you will have 2 Ceph clusters - a deployed cluster and a production cluster - mounted as file systems on your Ceph client, as follows:
