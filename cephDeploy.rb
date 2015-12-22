@@ -47,7 +47,7 @@ where [options] are:
 EOS
 
   opt :ignore, "Ignore incorrect values"
-  opt :'jobid', "Oarsub ID of the job", :default => 0
+  opt :jobid, "Oarsub ID of the job", :default => 0
   opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["site"]
   opt :cluster, "Grid 5000 cluster in specified site", :type => String, :default => defaults["cluster"]
   opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
@@ -61,7 +61,7 @@ EOS
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
-argJobID = opts[:'jobid'] # Oarsub ID of the job. 
+argJobID = opts[:jobid] # Oarsub ID of the job. 
 argSite = opts[:site] # site name. 
 argG5KCluster = opts[:cluster] # G5K cluster name if specified. 
 argRelease = opts[:release] # Ceph release name. 
