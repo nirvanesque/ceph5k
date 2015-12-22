@@ -89,6 +89,7 @@ puts "Option for multiple OSDs per node: #{argMultiOSD}\n" + "\n"
 
 jobCephCluster = nil
 unless [nil, 0].include?(argJobID)    # Get all jobs submitted in a cluster
+puts "with job name"
    jobs = g5k.get_my_jobs(argSite, state = "running") 
 
    # get the job with name "cephCluster"
@@ -105,6 +106,7 @@ unless [nil, 0].include?(argJobID)    # Get all jobs submitted in a cluster
       end # if job["name"] == argJobName
    end # jobs.each do |job|
 else   # If jobID is specified, get the specific job
+puts "with job id"
    jobCephCluster = g5k.get_job(argSite, argJobID)
 end # if argJobID
 
