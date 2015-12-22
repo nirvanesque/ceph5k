@@ -88,6 +88,7 @@ puts "Deployment time: #{argWallTime}\n"
 puts "Option for multiple OSDs per node: #{argMultiOSD}\n" + "\n"
 
 jobCephCluster = nil
+puts argJobID
 puts [nil, 0].include?(argJobID)
 unless [nil, 0].include?(argJobID)    # Get all jobs submitted in a cluster
 puts "with job name #{argJobName}"
