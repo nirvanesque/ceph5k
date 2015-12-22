@@ -61,7 +61,7 @@ EOS
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
-argJobID = opts[:jobid].to_i # Oarsub ID of the job. 
+argJobID = opts[:jobid] # Oarsub ID of the job. 
 argSite = opts[:site] # site name. 
 argG5KCluster = opts[:cluster] # G5K cluster name if specified. 
 argRelease = opts[:release] # Ceph release name. 
@@ -88,8 +88,9 @@ puts "Deployment time: #{argWallTime}\n"
 puts "Option for multiple OSDs per node: #{argMultiOSD}\n" + "\n"
 
 jobCephCluster = nil
+puts [nil, 0].include?(argJobID)
 unless [nil, 0].include?(argJobID)    # Get all jobs submitted in a cluster
-puts "with job name"
+puts "with job name #{argJobName}"
    jobs = g5k.get_my_jobs(argSite, state = "running") 
 
    # get the job with name "cephCluster"
