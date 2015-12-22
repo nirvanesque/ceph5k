@@ -53,7 +53,7 @@ EOS
   opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
   opt :env, "G5K environment to be deployed", :type => String, :default => defaults["env"]
   opt :'job-name', "Name of Grid'5000 job if already created", :type => String, :default => defaults["job-name"]
-  opt :'ceph-name', "Ceph cluster name", :type => String, :default => defaults["ceph-name"]
+  opt :'cluster-name', "Ceph cluster name", :type => String, :default => defaults["cluster-name"]
   opt :'num-nodes', "Nodes in Ceph cluster", :default => defaults["num-nodes"]
   opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => defaults["walltime"]
   opt :'multi-osd', "Multiple OSDs on each node", :default => defaults["multi-osd"]
@@ -68,7 +68,7 @@ argRelease = opts[:release] # Ceph release name.
 argEnv = opts[:env] # Grid'5000 environment to deploy. 
 argEnvClient = "jessie-x64-nfs" # Grid'5000 environment to deploy Ceph client. 
 argJobName = opts[:'job-name'] # Grid'5000 ndoes reservation job. 
-argCephCluster = opts[:'ceph-name'] # Ceph cluster name.
+argCephCluster = opts[:'cluster-name'] # Ceph cluster name.
 argNumNodes = opts[:'num-nodes'] # number of nodes in Ceph cluster.
 argWallTime = opts[:walltime] # walltime for the reservation.
 argMultiOSD = opts[:'multi-osd'] # Multiple OSDs on each node.
@@ -87,7 +87,11 @@ puts "Total nodes in Ceph cluster: #{argNumNodes}"
 puts "Deployment time: #{argWallTime}\n"
 puts "Option for multiple OSDs per node: #{argMultiOSD}\n" + "\n"
 
+#Initialise some global variables
 jobCephCluster = nil
+clientNode = ""
+dfsNodes = []
+
 unless [nil, 0].include?(argJobID)
    # If jobID is specified, get the specific job
    jobCephCluster = g5k.get_job(argSite, argJobID)
@@ -95,7 +99,7 @@ else
    # Get all jobs submitted in a cluster
    jobs = g5k.get_my_jobs(argSite, state = "running") 
 
-   # get the job with name "cephCluster"
+   # get the job with name "cephDeploy"
    jobs.each do |job|
       if job["name"] == argJobName # if job exists already, get nodes
          jobCephCluster = job
@@ -108,7 +112,7 @@ end # if argJobID
 
 # Finally, if job does not yet exist reserve nodes
 if jobCephCluster.nil?
-   jobCephCluster = g5k.reserve(:name => argJobName, :nodes => argNumNodes, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :type => :deploy)
+   jobCephCluster = g5k.reserve(:name => argJobName, :nodes => argNumNodes, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :keys => "~/public/id_rsa", :type => :deploy)
 
    clientNode = jobCephCluster["assigned_nodes"][1]
    dfsNodes = jobCephCluster["assigned_nodes"] - [clientNode]
@@ -116,8 +120,8 @@ if jobCephCluster.nil?
 end # if jobCephCluster.nil?
 
 # Finally, deploy the nodes with respective environments
-depCeph = g5k.deploy(jobCephCluster, :nodes => dfsNodes, :env => argEnv )
-depCephClient = g5k.deploy(jobCephCluster, :nodes => [clientNode], :env => argEnvClient)
+depCeph = g5k.deploy(jobCephCluster, :nodes => dfsNodes, :env => argEnv, :keys => "~/public/id_rsa")
+depCephClient = g5k.deploy(jobCephCluster, :nodes => [clientNode], :env => argEnvClient, :keys => "~/public/id_rsa")
 g5k.wait_for_deploy(jobCephCluster)
 
 
