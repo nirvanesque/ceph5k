@@ -28,7 +28,7 @@ The installation consists of the following steps:
         on the production Ceph cluster.
 
 ### Deploying a Ceph cluster
-At the CLI on a frontend:
+The deployment of a Ceph cluster is done from any frontend on Grid'5000. At the CLI on a frontend :
        
         export http_proxy=http://proxy:3128 && export https_proxy=https://proxy:3128
         gem install --user-install ruby-cute trollop
@@ -39,13 +39,15 @@ At the CLI on a frontend:
         cp ~/.ssh/id_rsa.pub ~/public/
         ./dss5k/cephDeploy.rb     # Creates and deploys the Ceph cluster
 
-Note: To have an easy start, all default parameters that are necessary for a deployment are stored in the installation subdirectory at:
+Note: To have an easy start, all default parameters that are necessary for a deployment are configured and stored in the installation subdirectory at :
 
         ./config/defaults.yml
 
-This is a YAML file for human reading. All parameters are declarative and by name. It can be modified by text editor to customise the Ceph deployment.
+To facilitate easy human reading and editing : This is a YAML file. All parameters are declarative and by name. The file can be modified by text editor to customise the Ceph deployment.
  
 ### Creating RBD and installing a File System
+Given a Ceph cluster (deployed cluster or production cluster), one needs to create pools, RBDs in the cluster(s), subsequently, format a File System (FS) and then mount the FS. 
+
 Note: To create an RBD on the Ceph production cluster, it is required first to create your Ceph account and your Ceph pool using the Ceph frontend. 
 
 At the CLI on a frontend:
@@ -65,25 +67,34 @@ At end of successful execution of the script, you will have 2 Ceph clusters - a 
 Note: Default values of all these options are provided in the YAML file mentioned above. If the options are specified at the command-line, they override the default values in the YAML file.
 
 ### Options for: Deploying a Ceph cluster
-       cephDeploy.rb [options]
+The deployment of a Ceph cluster is done from any frontend on Grid'5000. Usually, this is done using the following command :
+
+        ./dss5k/cephDeploy.rb [options]
+
 where [options] are:
 
-        -s, --site=<s>           Grid'5000 site for Ceph cluster (default: sophia)
-        -g, --g5kCluster=<s>     Grid'5000 cluster in specified site (default: suno)
-        -r, --release=<s>        Ceph Release name (default: firefly)
-        -e, --env=<s>            G5K environment to be deployed (default: wheezy-x64-nfs)
-        -j, --jobName=<s>        Name of Grid'5000 job (default: cephDeploy)
-        -c, --cephCluster=<s>    Ceph cluster name (default: ceph)
-        -n, --numNodes=<i>       Nodes in Ceph cluster (default: 6)
-        -w, --walltime=<s>       Wall time for Ceph cluster deployed (default: 01:00:00)
-        -m, --multiOSD           Multiple OSDs on each node
-        -f, --fileSystem=<s>     File System to format on OSDs (default: ext4)
+Grid'5000-specific options :
 
-Other generic options:
+        -j, --job-id                       Oarsub ID of the Grid'5000 job
+        -o, --job-name=<s>                 Name of Grid'5000 job if resources already reserved (default: cephDeploy)
+        -s, --site=<s>                     Grid'5000 site for cluster (default: rennes)
+        -c, --cluster=<s>                  Grid'5000 cluster in site (default: paravance)
+        -n, --num-nodes=<i>                Nodes in Ceph cluster (default: 6)
+        -w, --walltime=<s>                 Wall time for deployment (default: 03:00:00)
+        -e, --env=<s>                      Grid'5000 environment to be deployed (default: wheezy-x64-nfs)
 
-        -v, --version            Print version and exit
-        -h, --help               Show this message
-        -i, --ignore             Ignore incorrect values
+Ceph-specific options :
+
+        -r, --release=<s>                  Ceph Release name (default: firefly)
+        -p, --ceph-name=<s>                Ceph cluster name (default: ceph)
+        -m, --multi-osd, --no-multi-osd    Multiple OSDs on each node (default: true)
+        -f, --file-system=<s>              File System to be formatted on OSD disks (default: ext4)
+
+Other generic options :
+
+        -v, --version                      Print version and exit
+        -h, --help                         Show this message
+        -i, --ignore                       Ignore incorrect values
 
 If interested in using the PRy shell interface, type at CLI
 
@@ -93,7 +104,10 @@ If interested in using the PRy shell interface, type at CLI
 And then simply copy & paste the lines of cephDeploy.rb in the PRy shell.
 
 ### Options for: Creating RBD and installing a File System
-       cephRBD.rb [options]
+Given a Ceph cluster (deployed cluster or production cluster), one needs to create pools, RBDs in the cluster(s), subsequently, format a File System (FS) and then mount the FS. These tasks are automated on a Grid'5000 frontend using the following command :
+
+        ./dss5K/cephRBD.rb [options]
+
 where [options] are:
 
         -p, --poolName=<s>       Name of pool to create on Ceph clusters (default: pool)
@@ -106,7 +120,7 @@ where [options] are:
         -v, --version            Print version and exit
         -h, --help               Show this message
 
-Other generic options:
+Other generic options :
 
         -v, --version            Print version and exit
         -h, --help               Show this message
