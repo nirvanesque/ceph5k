@@ -91,6 +91,9 @@ jobCephCluster = nil
 puts argJobID
 puts [nil, 0].include?(argJobID)
 unless [nil, 0].include?(argJobID)    # Get all jobs submitted in a cluster
+puts "with job id #{argJobID}"
+   jobCephCluster = g5k.get_job(argSite, argJobID)
+else   # If jobID is specified, get the specific job
 puts "with job name #{argJobName}"
    jobs = g5k.get_my_jobs(argSite, state = "running") 
 
@@ -107,9 +110,6 @@ puts "with job name #{argJobName}"
          g5k.wait_for_deploy(jobCephCluster)
       end # if job["name"] == argJobName
    end # jobs.each do |job|
-else   # If jobID is specified, get the specific job
-puts "with job id #{argJobID}"
-   jobCephCluster = g5k.get_job(argSite, argJobID)
 end # if argJobID
 
 # Finally, if job does not yet exist reserve nodes and deploy
