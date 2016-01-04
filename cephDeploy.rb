@@ -28,6 +28,10 @@ require "uri"
 g5k = Cute::G5K::API.new()
 user = g5k.g5k_user
 
+ARGV.each do|a|
+  puts "Argument: #{a}"
+end
+
 # Populate the hash with default parameters from YAML file.
 defaults = begin
   YAML.load(File.open("dss5k/config/defaults.yml"))
