@@ -28,13 +28,15 @@ require "uri"
 g5k = Cute::G5K::API.new()
 user = g5k.g5k_user
 
-ARGV.each do|a|
-  puts "Argument: #{a}"
+If (ARGV[0].include? "--def-conf" || ARGV[0].include? "-d") && (!ARGV[1].empty? )
+   configFile = ARGV[1]
+else
+   configFile = "dss5k/config/defaults.yml"
 end
 
 # Populate the hash with default parameters from YAML file.
 defaults = begin
-  YAML.load(File.open("dss5k/config/defaults.yml"))
+  YAML.load(File.open(configFile))
 rescue ArgumentError => e
   puts "Could not parse YAML: #{e.message}"
 end
