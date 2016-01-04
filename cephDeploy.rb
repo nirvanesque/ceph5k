@@ -28,15 +28,13 @@ require "uri"
 g5k = Cute::G5K::API.new()
 user = g5k.g5k_user
 
-puts ARGV
 if (["--def-conf", "-d"].include?(ARGV[0])  && !ARGV[1].empty? )
-   configFile = ARGV[1]
+   configFile = ARGV[1] # assign file location to variable configFile
+   ARGV.delete_at(0)    # clean up ARGV array
    ARGV.delete_at(0)
-   ARGV.delete_at(0)
-   puts ARGV
 else
-   configFile = "dss5k/config/defaults.yml"
-end
+   configFile = "dss5k/config/defaults.yml" # default config file is used.
+end    # if (["--def-conf", "-d"])
 
 # Populate the hash with default parameters from YAML file.
 defaults = begin
