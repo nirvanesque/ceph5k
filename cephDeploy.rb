@@ -32,6 +32,7 @@ puts ARGV
 if (["--def-conf", "-d"].include?(ARGV[0])  && !ARGV[1].empty? )
    configFile = ARGV[1]
    ARGV.delete_at(0)
+   ARGV.delete_at(0)
    puts ARGV
 else
    configFile = "dss5k/config/defaults.yml"
