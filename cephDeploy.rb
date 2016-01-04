@@ -28,8 +28,11 @@ require "uri"
 g5k = Cute::G5K::API.new()
 user = g5k.g5k_user
 
+puts ARGV
 if (["--def-conf", "-d"].include?(ARGV[0])  && !ARGV[1].empty? )
    configFile = ARGV[1]
+   ARGV.delete_at(0)
+   puts ARGV
 else
    configFile = "dss5k/config/defaults.yml"
 end
