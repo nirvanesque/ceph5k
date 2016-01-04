@@ -32,6 +32,13 @@ ARGV.each do|a|
   puts "Argument: #{a}"
 end
 
+# Populate the hash with default parameters from YAML file.
+defaults = begin
+  YAML.load(File.open("dss5k/config/defaults.yml"))
+rescue ArgumentError => e
+  puts "Could not parse YAML: #{e.message}"
+end
+
 # banner for script
 opts = Trollop::options do
   version "cephDeploy 0.0.3 (c) 2015-16 Anirvan BASU, INRIA RBA"
@@ -44,15 +51,6 @@ where [options] are:
 EOS
 
   opt :ignore, "Ignore incorrect values"
-  opt :'def-conf', "YAML file with default config parameters", :type => String, :default => "dss5k/config/defaults.yml"
-
-# Populate the hash with default parameters from YAML file.
-defaults = begin
-  YAML.load(File.open(opts[:'def-conf']))
-rescue ArgumentError => e
-  puts "Could not parse YAML: #{e.message}"
-end
-
   opt :jobid, "Oarsub ID of the job", :default => 0
   opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["site"]
   opt :cluster, "Grid 5000 cluster in specified site", :type => String, :default => defaults["cluster"]
