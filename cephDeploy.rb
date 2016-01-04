@@ -28,7 +28,7 @@ require "uri"
 g5k = Cute::G5K::API.new()
 user = g5k.g5k_user
 
-if (ARGV[0].include? "--def-conf" && !ARGV[1].empty? )
+if (["--def-conf", "-d"].include?(ARGV[0])  && !ARGV[1].empty? )
    configFile = ARGV[1]
 else
    configFile = "dss5k/config/defaults.yml"
