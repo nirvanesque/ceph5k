@@ -72,6 +72,7 @@ where [options] are:
 
 Grid'5000-specific options :
 
+        -d, --def-conf=<s>                 Default configuration file (default: dssk/config/defaults.yml)
         -j, --jobid                        Oarsub ID of the Grid'5000 job
         -o, --job-name=<s>                 Name of Grid'5000 job if resources already reserved (default: cephDeploy)
         -s, --site=<s>                     Grid'5000 site for cluster (default: rennes)
@@ -82,6 +83,7 @@ Grid'5000-specific options :
 
 Ceph-specific options :
 
+        -d, --def-conf=<s>                 Default configuration file (default: dssk/config/defaults.yml)
         -r, --release=<s>                  Ceph Release name (default: firefly)
         -p, --ceph-name=<s>                Ceph cluster name (default: ceph)
         -m, --multi-osd, --no-multi-osd    Multiple OSDs on each node (default: true)
