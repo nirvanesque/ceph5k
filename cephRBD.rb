@@ -37,7 +37,7 @@ end
 
 # banner for script
 opts = Trollop::options do
-  version "ceph-deploy 0.0.3 (c) 2015-16 Anirvan BASU, INRIA RBA"
+  version "ceph5k 0.0.4 (c) 2015-16 Anirvan BASU, INRIA RBA"
   banner <<-EOS
 cephRBD.rb is a script for creating RBD and FS on deployed Ceph and production Ceph.
 
