@@ -57,26 +57,26 @@ EOS
 
   opt :ignore, "Ignore incorrect values"
   opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["site"]
-  opt :jobName, "Name of Grid'5000 job if already created", :type => String, :default => defaults["jobName"]
-  opt :poolName, "Name of pool to create on Ceph clusters", :type => String, :default => defaults["poolName"]
-  opt :poolSize, "Size of pool to create on Ceph clusters", :default => defaults["poolSize"]
-  opt :rbdName, "Name of rbd to create inside Ceph pool", :type => String, :default => defaults["rbdName"]
-  opt :rbdSize, "Size of rbd to create inside Ceph pool", :default => defaults["rbdSize"]
-  opt :fileSystem, "File System to be formatted on created RBDs", :type => String, :default => defaults["fileSystem"]
-  opt :mntDepl, "Mount point for RBD on deployed cluster", :type => String, :default => defaults["mntDepl"]
-  opt :mntProd, "Mount point for RBD on production cluster", :type => String, :default => defaults["mntProd"]
+  opt :'job-name', "Name of Grid'5000 job if already created", :type => String, :default => defaults["job-name"]
+  opt :'pool-name', "Name of pool to create on Ceph clusters", :type => String, :default => defaults["pool-name"]
+  opt :'pool-size', "Size of pool to create on Ceph clusters", :default => defaults["poolSize"]
+  opt :'rbd-name', "Name of rbd to create inside Ceph pool", :type => String, :default => defaults["rbd-name"]
+  opt :'rbd-size', "Size of rbd to create inside Ceph pool", :default => defaults["rbd-size"]
+  opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
+  opt :'mnt-depl', "Mount point for RBD on deployed cluster", :type => String, :default => defaults["mnt-depl"]
+  opt :'mnt-prod', "Mount point for RBD on production cluster", :type => String, :default => defaults["mnt-prod"]
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
 argSite = opts[:site] # site name. 
-argJobName = opts[:jobName] # Grid'5000 ndoes reservation job. 
-argPoolName = "#{user}_" + opts[:poolName] # Name of pool to create on clusters.
-argPoolSize = opts[:poolSize] # Size of pool to create on clusters.
-argRBDName = "#{user}_" + opts[:rbdName] # Name of pool to create on clusters.
-argRBDSize = opts[:rbdSize] # Size of pool to create on clusters.
-argFileSystem = opts[:fileSystem] # File System to be formatted on created RBDs.
-argMntDepl = opts[:mntDepl] # Mount point for RBD on deployed cluster.
-argMntProd = opts[:mntProd] # Mount point for RBD on production cluster.
+argJobName = opts[:'job-name'] # Grid'5000 ndoes reservation job. 
+argPoolName = "#{user}_" + opts[:'pool-name'] # Name of pool to create on clusters.
+argPoolSize = opts[:'pool-size'] # Size of pool to create on clusters.
+argRBDName = "#{user}_" + opts[:'rbd-name'] # Name of pool to create on clusters.
+argRBDSize = opts[:'rbd-size'] # Size of pool to create on clusters.
+argFileSystem = opts[:'file-system'] # File System to be formatted on created RBDs.
+argMntDepl = opts[:'mnt-depl'] # Mount point for RBD on deployed cluster.
+argMntProd = opts[:'mnt-prod'] # Mount point for RBD on production cluster.
 
 # Get all jobs submitted in a cluster
 jobs = g5k.get_my_jobs(argSite) 
