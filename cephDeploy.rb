@@ -74,8 +74,8 @@ argSite = opts[:site] # site name.
 argG5KCluster = opts[:cluster] # G5K cluster name if specified. 
 argRelease = opts[:release] # Ceph release name. 
 argEnv = opts[:env] # Grid'5000 environment to deploy. 
-argEnvClient = "jessie-x64-nfs" # Grid'5000 environment to deploy Ceph client. 
-argJobName = opts[:'job-name'] # Grid'5000 ndoes reservation job. 
+argEnvClient = opts[:'env-client'] # Grid'5000 environment to deploy Ceph client. 
+argJobName = opts[:'job-name'] # Grid'5000 Ceph cluster reservation job. 
 argCephCluster = opts[:'cluster-name'] # Ceph cluster name.
 argNumNodes = opts[:'num-nodes'] # number of nodes in Ceph cluster.
 argWallTime = opts[:walltime] # walltime for the reservation.
@@ -127,7 +127,7 @@ if jobCephCluster.nil?
 
 end # if jobCephCluster.nil?
 
-# Finally, deploy the nodes with respective environments
+# Then, deploy the cluster nodes with respective environments
 depCeph = g5k.deploy(jobCephCluster, :nodes => dfsNodes, :env => argEnv, :keys => "~/public/id_rsa")
 depCephClient = g5k.deploy(jobCephCluster, :nodes => [clientNode], :env => argEnvClient, :keys => "~/public/id_rsa")
 g5k.wait_for_deploy(jobCephCluster)

@@ -13,20 +13,23 @@
 # limitations under the License. 
 
 config:
-site: rennes          # Grid 5000 site for deploying Ceph cluster
-cluster: paravance    # Grid 5000 cluster in specified site
-release: firefly      # Ceph Release name
-env: "wheezy-x64-nfs" # G5K environment to be deployed
-job-name: cephDeploy  # Name of Grid'5000 job if already created
-cluster-name: ceph    # Ceph cluster name
-num-nodes: 6          # Nodes in Ceph cluster
-walltime: "03:00:00"  # Walltime for Ceph cluster deployed
-multi-osd: true       # Multiple OSDs on each node
-pool-name: pool       # Name of pool to create on Ceph clusters
-pool-size: 57600      # Size of pool to create on Ceph clusters
-rbd-name: image       # Name of rbd to create inside Ceph pool
-rbd-size: 57600       # Size of rbd to create inside Ceph pool
-file-system: ext4     # File System to be formatted on OSD disks and in created RBD
-mnt-depl: "ceph-depl" # Mount point for RBD on deployed cluster
-mnt-prod: "ceph-prod" # Mount point for RBD on production cluster
+site: rennes                  # Grid 5000 site for deploying Ceph cluster
+cluster: paravance            # Grid 5000 cluster in specified site
+release: firefly              # Ceph Release name
+env: "wheezy-x64-nfs"         # G5K environment to be deployed
+env-client: "jessie-x64-nfs"  # G5K environment for Ceph clients
+job-name: cephDeploy          # Name of Grid'5000 job if already created
+job-client: cephClient        # Name of Grid'5000 job if already created
+cluster-name: ceph            # Ceph cluster name
+num-nodes: 6                  # Nodes in Ceph cluster
+num-clients: 1                # Nodes in Ceph cluster
+walltime: "03:00:00"          # Walltime for Ceph cluster deployed
+multi-osd: true               # Multiple OSDs on each node
+pool-name: pool               # Name of pool to create on Ceph clusters
+pool-size: 57600              # Size of pool to create on Ceph clusters
+rbd-name: image               # Name of rbd to create inside Ceph pool
+rbd-size: 57600               # Size of rbd to create inside Ceph pool
+file-system: ext4             # File System format on OSD disks and in created RBD
+mnt-depl: "ceph-depl"         # Mount point for RBD on deployed cluster
+mnt-prod: "ceph-prod"         # Mount point for RBD on production cluster
 
