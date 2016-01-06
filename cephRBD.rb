@@ -118,8 +118,8 @@ end # if argJobID
 # Finally, if Client job does not yet exist reserve nodes
 if jobCephClient.nil?
    jobCephClient = g5k.reserve(:name => argJobClient, :nodes => argNumClients, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :keys => "~/public/id_rsa", :type => :deploy)
-   clients = jobCephCluster["assigned_nodes"]
-end # if jobCephCluster.nil?
+   clients = jobCephClient["assigned_nodes"]
+end # if jobCephClient.nil?
 
 # Then, deploy client nodes with respective environments
 depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClient, :keys => "~/public/id_rsa")
