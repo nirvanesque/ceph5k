@@ -167,8 +167,9 @@ ceph_update =  'http://ceph.com/debian-#{argRelease}/ wheezy main'
 Cute::TakTuk.start(clients, :user => "root") do |tak|
 #     tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
 #     tak.exec!("echo deb #{ceph_update}  | sudo tee /etc/apt/sources.list.d/ceph.list")
-     tak.exec!("export http_proxy=http://proxy:3128; export https_proxy=https://proxy:3128; sudo apt-get update -y && sudo apt-get install -y ceph-deploy")
+     result = tak.exec!("export http_proxy=http://proxy:3128; export https_proxy=https://proxy:3128; sudo apt-get update -y && sudo apt-get install -y ceph-deploy")
      tak.loop()
+puts result
 end
 
 
