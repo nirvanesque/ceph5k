@@ -158,7 +158,7 @@ puts "OSDs on: #{osdNodes}" + "\n"
 puts "Doing pre-flight checklist..."
 # Add (release) Keys to each Ceph node
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.put("/home/#{user}/public/release.asc", "/root/release.asc")
+     tak.put("/home/abasu/public/release.asc", "/root/release.asc")
      tak.exec!("cat ./release.asc  | apt-key add -")
      tak.loop()
 end
@@ -169,8 +169,8 @@ ceph_extras =  'http://ceph.com/packages/ceph-extras/debian wheezy main'
 ceph_update =  'http://ceph.com/debian-#{argRelease}/ wheezy main'
 
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
-     tak.exec!("echo deb #{ceph_update}  | sudo tee /etc/apt/sources.list.d/ceph.list")
+#     tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
+#     tak.exec!("echo deb #{ceph_update}  | sudo tee /etc/apt/sources.list.d/ceph.list")
      tak.exec!("export http_proxy=http://proxy:3128; export https_proxy=https://proxy:3128; sudo apt-get update -y && sudo apt-get install -y ceph-deploy")
      tak.loop()
 end
