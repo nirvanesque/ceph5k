@@ -137,12 +137,11 @@ g5k.wait_for_deploy(jobCephCluster)
 # At this point job was created or fetched
 puts "Ceph deployment job details recovered." + "\n"
 
-# Change to be read/write from YAML file
+# # Read some parameters into variables
 nodes = jobCephCluster["assigned_nodes"]
 monitor = nodes[0] # Currently single monitor. Later make multiple monitors.
 client = nodes[1] # Currently single client. Later make multiple clients.
 osdNodes = nodes - [monitor] - [client]
-dataDir = "/tmp"
 radosGW = monitor # as of now the machine is the same for monitor & rados GW
 monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
 
@@ -164,7 +163,7 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 
-# Add Ceph & Extras to each Ceph node ('firefly' is the most complete, later use CLI argument)
+# Add Ceph & Extras to each Ceph node ('firefly' is the most complete)
 ceph_extras =  'http://ceph.com/packages/ceph-extras/debian wheezy main'
 ceph_update =  'http://ceph.com/debian-#{argRelease}/ wheezy main'
 
@@ -186,7 +185,7 @@ configFile = File.open("/tmp/config", "w") do |file|
    end
 end
 
-# Get ssh_config file from master/monitor
+# Get ssh_config file from monitor
 Net::SFTP.start(monitor, 'root') do |sftp|
   sftp.download!("/etc/ssh/ssh_config", "ssh_config")
 end
@@ -196,12 +195,12 @@ configFile = File.open("ssh_config", "a") do |file|
    file.puts("    StrictHostKeyChecking no") # append only once
 end
 
-# Copy ssh keys & config for Ceph on monitor/master node
+# Copy ssh keys & config for Ceph on monitor node
 ssh_key =  'id_rsa'
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
      tak.put(".ssh/#{ssh_key}", "/root/.ssh/#{ssh_key}") # copy the config file to master/monitor
      tak.put(".ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub") # copy the config file to master/monitor
-     tak.put("/tmp/config", "/root/.ssh/config") # copy the config file to master/monitor
+     tak.put("/tmp/config", "/root/.ssh/config") # copy the config file to monitor
      tak.loop()
 end
 
@@ -248,7 +247,7 @@ Cute::TakTuk.start([monitor], :user => "root") do |tak|
 end
 
 
-# Get initial config file from ceph master/monitor
+# Get initial config file from ceph monitor
 Net::SFTP.start(monitor, 'root') do |sftp|
   sftp.download!("ceph.conf", "ceph.conf")
 end
