@@ -158,9 +158,10 @@ puts "OSDs on: #{osdNodes}" + "\n"
 puts "Doing pre-flight checklist..."
 # Add (release) Keys to each Ceph node
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
+     tak.exec!("rm /root/release.asc")
      result = tak.put("/home/abasu/public/release.asc", "/root/release.asc")
 puts result
-     tak.exec!("cat ./release.asc  | apt-key add -")
+     tak.exec!("cat /root/release.asc  | apt-key add -")
      tak.loop()
 end
 
