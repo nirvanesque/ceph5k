@@ -58,6 +58,7 @@ EOS
   opt :jobid, "Oarsub ID of the job", :default => 0
   opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["site"]
   opt :cluster, "Grid 5000 cluster in specified site", :type => String, :default => defaults["cluster"]
+  opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
   opt :'job-name', "Name of Grid'5000 job if already created", :type => String, :default => defaults["job-name"]
   opt :'job-client', "Name of Grid'5000 Client job if already created", :type => String, :default => defaults["job-client"]
   opt :'num-clients', "No of clients in Ceph cluster", :default => defaults["num-clients"]
