@@ -159,21 +159,14 @@ puts "Doing pre-flight checklist..."
 # Add (release) Keys to each Ceph node
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm /root/release.asc")
-     result = tak.put("/home/abasu/public/release.asc", "/root/release.asc")
-puts result
+     tak.put("/home/abasu/public/release.asc", "/root/release.asc")
      tak.exec!("cat /root/release.asc  | apt-key add -")
      tak.loop()
 end
 
 
-# Add Ceph extras to each Ceph node ('firefly' is the most complete)
+# Add Ceph extras to each Ceph node (this step is not really required)
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-=begin: 4 lines commented out as ceph-deploy updates normally possible in wheezy & jessie
-     ceph_extras =  'http://ceph.com/packages/ceph-extras/debian wheezy main'
-     ceph_update =  'http://ceph.com/debian-#{argRelease}/ wheezy main'
-     tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
-     tak.exec!("echo deb #{ceph_update}  | sudo tee /etc/apt/sources.list.d/ceph.list")
-=end
      tak.exec!("export http_proxy=http://proxy:3128; export https_proxy=https://proxy:3128; sudo apt-get update -y && sudo apt-get install -y ceph-deploy")
      tak.loop()
 end
