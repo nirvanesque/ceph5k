@@ -159,6 +159,7 @@ puts "Doing pre-flight checklist..."
 # Add (release) Keys to each Ceph node
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm /root/release.asc")
+     tak.exec!("touch /root/release.asc")
      tak.put("/home/abasu/public/release.asc", "/root/release.asc")
      tak.exec!("cat /root/release.asc  | apt-key add -")
      tak.loop()
@@ -300,8 +301,7 @@ end
 nodes.each do |node|
      nodeShort = node.split(".").first
      Cute::TakTuk.start([node], :user => "root") do |tak|
-          result = tak.exec!("export https_proxy=\"https://proxy:3128\"; export http_proxy=\"http://proxy:3128\"; ceph-deploy install --release #{argRelease} #{nodeShort}")
-puts result
+          tak.exec!("export https_proxy=\"https://proxy:3128\"; export http_proxy=\"http://proxy:3128\"; ceph-deploy install --release #{argRelease} #{nodeShort}")
           tak.loop()
      end
 end

@@ -154,7 +154,9 @@ puts "Client(s) node on: #{clients}" + "\n"
 puts "Doing pre-flight checklist..."
 # Add (release) Keys to each Ceph node
 Cute::TakTuk.start(clients, :user => "root") do |tak|
-     tak.put("/home/#{user}/public/release.asc", "/root/release.asc")
+     tak.exec!("rm /root/release.asc")
+     tak.exec!("touch /root/release.asc")
+     tak.put("/home/abasu/public/release.asc", "/root/release.asc")
      tak.exec!("cat ./release.asc  | apt-key add -")
      tak.loop()
 end
@@ -240,8 +242,15 @@ Cute::TakTuk.start([monitor], :user => "root") do |tak|
      tak.loop()
 end
 
-# Ceph installation on all nodes completed.
-puts "Ceph cluster installation completed." + "\n"
+# Ensure correct permissions for ceph.client.admin.keyring
+Cute::TakTuk.start(clients, :user => "root") do |tak|
+     tak.exec!("chmod +r /etc/ceph/ceph.client.admin.keyring")
+     tak.loop()
+end
+
+# Client(s) added and prepared.
+puts "Client(s) added to Ceph cluster." + "\n"
+
 
 
 
@@ -253,7 +262,7 @@ configFile = File.open("/tmp/ceph.conf", "w") do |file|
 end
 
 # Then put ceph.conf file to all client nodes
-Cute::TakTuk.start([client], :user => "root") do |tak|
+Cute::TakTuk.start(clients, :user => "root") do |tak|
      tak.exec!("rm -rf prod/")
      tak.exec!("mkdir prod/ && touch prod/ceph.conf")
      tak.put("/tmp/ceph.conf", "/root/prod/ceph.conf")
@@ -269,6 +278,7 @@ puts "Created & pushed config file for Ceph production cluster to all clients." 
 
 
 # Creating Ceph pools on deployed and production clusters.
+client = clients[0] # Take the first client
 puts "Creating Ceph pools on deployed and production clusters ..."
 poolsList = []
 userPool = ""
@@ -332,7 +342,7 @@ puts "Mapped RBDs and created File Systems." + "\n"
 
 # Mount RBDs as File Systems.
 puts "Mounting RBDs as File Systems in deployed and production Ceph clusters ..."
-Cute::TakTuk.start([client], :user => "root") do |tak|
+Cute::TakTuk.start(clients, :user => "root") do |tak|
      # mount RBD from deployed cluster
      tak.exec!("rmdir /mnt/#{argMntDepl}")
      tak.exec!("mkdir /mnt/#{argMntDepl}")
