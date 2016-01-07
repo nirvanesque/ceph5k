@@ -324,7 +324,7 @@ end
 otherNodesShort = nodesShort - [monitorShort]
 otherNodesList = otherNodesShort.join(' ') # short names of all nodes other than master
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
-     tak.exec!("ceph-deploy --overwrite-conf admin #{monitorShort} #{otherNodesList}")
+     tak.exec!("ceph-deploy --overwrite-conf admin #{otherNodesList}")
      tak.loop()
 end
 

@@ -229,6 +229,17 @@ clients.each do |client|
      end
 end
 
+# Make a text list of short names of all clients
+clientsShort = clients.map do |client|  # array of short names of clients
+     client.split(".").first
+end
+clientsList = clientsShort.join(' ') # text list of short names separated by spaces
+# Push config file and admin keys from monitor node to all ceph clients
+Cute::TakTuk.start([monitor], :user => "root") do |tak|
+     tak.exec!("ceph-deploy --overwrite-conf admin #{clientsList}")
+     tak.loop()
+end
+
 # Ceph installation on all nodes completed.
 puts "Ceph cluster installation completed." + "\n"
 
