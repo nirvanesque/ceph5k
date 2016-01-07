@@ -166,14 +166,15 @@ puts result
 end
 
 
-# Add Ceph & Extras to each Ceph node ('firefly' is the most complete)
-ceph_extras =  'http://ceph.com/packages/ceph-extras/debian wheezy main'
-ceph_update =  'http://ceph.com/debian-#{argRelease}/ wheezy main'
-
+# Add Ceph extras to each Ceph node ('firefly' is the most complete)
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-#     tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
-#     tak.exec!("echo deb #{ceph_update}  | sudo tee /etc/apt/sources.list.d/ceph.list")
-     result = tak.exec!("export http_proxy=http://proxy:3128; export https_proxy=https://proxy:3128; sudo apt-get update -y && sudo apt-get install -y ceph-deploy")
+=begin: 4 lines commented out as ceph-deploy updates normally possible in wheezy & jessie
+     ceph_extras =  'http://ceph.com/packages/ceph-extras/debian wheezy main'
+     ceph_update =  'http://ceph.com/debian-#{argRelease}/ wheezy main'
+     tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
+     tak.exec!("echo deb #{ceph_update}  | sudo tee /etc/apt/sources.list.d/ceph.list")
+=end
+     tak.exec!("export http_proxy=http://proxy:3128; export https_proxy=https://proxy:3128; sudo apt-get update -y && sudo apt-get install -y ceph-deploy")
 puts result
      tak.loop()
 end
@@ -307,7 +308,8 @@ end
 nodes.each do |node|
      nodeShort = node.split(".").first
      Cute::TakTuk.start([node], :user => "root") do |tak|
-          tak.exec!("export https_proxy=\"https://proxy:3128\"; export http_proxy=\"http://proxy:3128\"; ceph-deploy install --release #{argRelease} #{nodeShort}")
+          result = tak.exec!("export https_proxy=\"https://proxy:3128\"; export http_proxy=\"http://proxy:3128\"; ceph-deploy install --release #{argRelease} #{nodeShort}")
+puts result
           tak.loop()
      end
 end
