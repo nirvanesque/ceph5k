@@ -175,7 +175,6 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("echo deb #{ceph_update}  | sudo tee /etc/apt/sources.list.d/ceph.list")
 =end
      tak.exec!("export http_proxy=http://proxy:3128; export https_proxy=https://proxy:3128; sudo apt-get update -y && sudo apt-get install -y ceph-deploy")
-puts result
      tak.loop()
 end
 
