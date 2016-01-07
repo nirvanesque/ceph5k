@@ -114,7 +114,7 @@ else
       end # if job["name"] == argJobClient
    end # jobs.each do |job|
 end # if argJobID
-
+puts clients 
 # Finally, if Client job does not yet exist reserve nodes
 if jobCephClient.nil?
    jobCephClient = g5k.reserve(:name => argJobClient, :nodes => argNumClients, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :keys => "~/public/id_rsa", :type => :deploy)
@@ -137,7 +137,7 @@ end  # jobs.each do |job|
 
 
 # At this point all job details were fetched
-puts "Ceph deployment & client job details recovered." + "\n"
+puts "Ceph client job details recovered." + "\n"
 
 # Read some parameters into variables
 nodes = jobCephCluster["assigned_nodes"]
