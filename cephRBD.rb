@@ -114,7 +114,7 @@ else
       end # if job["name"] == argJobClient
    end # jobs.each do |job|
 end # if argJobID
-puts clients 
+
 # Finally, if Client job does not yet exist reserve nodes
 if jobCephClient.nil?
    jobCephClient = g5k.reserve(:name => argJobClient, :nodes => argNumClients, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :keys => "~/public/id_rsa", :type => :deploy)
@@ -142,8 +142,6 @@ puts "Ceph client job details recovered." + "\n"
 # Read some parameters into variables
 nodes = jobCephCluster["assigned_nodes"]
 monitor = nodes[0] # Currently single monitor. Later make multiple monitors.
-client = nodes[1] # Currently single client. Later make multiple clients.
-
 
 # At this point job was created / fetched
 puts "Deploying Ceph client(s) as follows:"
@@ -223,17 +221,17 @@ end
 
 
 # Install ceph on all client nodes
-clients.each do |client|
-     clientShort = client.split(".").first
-     Cute::TakTuk.start([client], :user => "root") do |tak|
+clients.each do |node|
+     clientShort = node.split(".").first
+     Cute::TakTuk.start([node], :user => "root") do |tak|
           tak.exec!("export https_proxy=\"https://proxy:3128\"; export http_proxy=\"http://proxy:3128\"; ceph-deploy install --release #{argRelease} #{clientShort}")
           tak.loop()
      end
 end
 
 # Make a text list of short names of all clients
-clientsShort = clients.map do |client|  # array of short names of clients
-     client.split(".").first
+clientsShort = clients.map do |node|  # array of short names of clients
+     node.split(".").first
 end
 clientsList = clientsShort.join(' ') # text list of short names separated by spaces
 # Push config file and admin keys from monitor node to all ceph clients
@@ -287,8 +285,8 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("modprobe rbd")
      # Create pools & RBD on deployed cluster
      tak.exec!("rados mkpool #{argPoolName}")
-     tak.exec!("rbd create #{argRBDName} --pool #{argPoolName} --size #{argRBDSize}")
-
+     result = tak.exec!("rbd create #{argRBDName} --pool #{argPoolName} --size #{argRBDSize}")
+puts result
      # Create pools & RBD on production cluster
      result = tak.exec!("rados -c /root/prod/ceph.conf --id #{user} lspools")
 
