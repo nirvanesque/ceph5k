@@ -60,6 +60,7 @@ EOS
   opt :cluster, "Grid 5000 cluster in specified site", :type => String, :default => defaults["cluster"]
   opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
   opt :env, "G5K environment to be deployed", :type => String, :default => defaults["env"]
+  opt :'env-client', "G5K environment for client", :type => String, :default => defaults["env-client"]
   opt :'job-name', "Name of Grid'5000 job if already created", :type => String, :default => defaults["job-name"]
   opt :'cluster-name', "Ceph cluster name", :type => String, :default => defaults["cluster-name"]
   opt :'num-nodes', "Nodes in Ceph cluster", :default => defaults["num-nodes"]
@@ -74,7 +75,7 @@ argSite = opts[:site] # site name.
 argG5KCluster = opts[:cluster] # G5K cluster name if specified. 
 argRelease = opts[:release] # Ceph release name. 
 argEnv = opts[:env] # Grid'5000 environment to deploy. 
-argEnvClient = "jessie-x64-nfs" # Grid'5000 environment to deploy Ceph client. 
+argEnvClient = opts[:'env-client'] # Grid'5000 environment to deploy Ceph client. 
 argJobName = opts[:'job-name'] # Grid'5000 ndoes reservation job. 
 argCephCluster = opts[:'cluster-name'] # Ceph cluster name.
 argNumNodes = opts[:'num-nodes'] # number of nodes in Ceph cluster.
