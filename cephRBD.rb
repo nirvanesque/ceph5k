@@ -127,6 +127,7 @@ puts "Created & pushed config file for Ceph production cluster to all clients." 
 puts "Creating Ceph pools on deployed and production clusters ..."
 poolsList = []
 userPool = ""
+prodCluster = false
 # Create Ceph pools & RBD
 Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("modprobe rbd")
@@ -140,16 +141,32 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      if result[client][:output].include? "#{user}"
         poolsList = result[client][:output].split("\n")
      end
+
      poolsList.each do |pool|  # logic: it will take the alphabetic-last pool from user
         if pool.include? "#{user}"
            userPool = pool
+           # Check if RBD is already created, may contain data
+           resultPool = tak.exec!("rados -c /root/prod/ceph.conf --id #{user} --pool #{argPoolName} ls")
+puts resultPool
+=begin
+     if result[client][:output].include? "#{user}"
+        poolsList = result[client][:output].split("\n")
+     end
+     poolsList.each do |pool|  # logic: it will take the alphabetic-last pool from user
+        if pool.include? "#{user}"
+           userPool = pool
+
+        end
+     end
+=end
         end
      end
 
-     unless userPool == ""
+     unless userPool.empty?
         tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
      else
-#       tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} mkpool #{argPoolName} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
+      # Following command cannot be done at CLI on Ceph client
+      # tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} mkpool #{argPoolName} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
         puts "Create at least one RBD pool from the Ceph production frontend\n\n"
         puts "Use this link to create pool: https://api.grid5000.fr/sid/storage/ceph/ui/"
         puts "Then rerun this script.\n"
@@ -158,12 +175,13 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
 end
 
 # Created & pushed config file for Ceph clusters.
-puts "Created Ceph pools on deployed and production clusters as follows :" + "\n"
+puts "Created Ceph pools on deployed (and production) clusters as follows :" + "\n"
 puts "On deployed cluster:\n"
 puts "Pool name: #{argPoolName} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize} " + "\n"
-puts "Created Ceph pools on deployed and production clusters as follows :" + "\n"
-puts "On production cluster:\n"
-puts "Pool name: #{userPool} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize} " + "\n"
+unless userPool.empty?
+     puts "On production cluster:\n"
+     puts "Pool name: #{userPool} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize} " + "\n"
+end # unless userPool.empty?
 
 
 
