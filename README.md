@@ -31,10 +31,10 @@ The deployment of a Ceph cluster is done from any frontend on Grid'5000. At the 
        
         gem install --user-install ruby-cute trollop
         export PATH=$PATH:$(ruby -e 'puts "#{Gem.user_dir}/bin"')
-        rm -rf dss5k
+        rm -rf ceph5k
         git clone https://github.com/nirvanesque/ceph5k.git
-        chmod +x dss5k/*.rb
-        ./dss5k/cephDeploy.rb     # Creates and deploys the Ceph cluster
+        chmod +x ceph5k/*.rb
+        ./ceph5k/cephDeploy.rb     # Creates and deploys the Ceph cluster
 
 Note: To have an easy start, all default parameters that are necessary for a deployment are configured and stored in the installation subdirectory at :
 
@@ -49,9 +49,9 @@ Note: To create an RBD on the Ceph production cluster, it is required first to c
 
 At the CLI on a frontend:
 
-        chmod +x dss5k/*.sh
-        ./dss5k/cephClient.sh
-        ./dss5k/cephRBD.rb        # Creates RBD and FS on deployed and production Ceph
+        chmod +x ceph5k/*.sh
+        ./ceph5k/cephClient.sh
+        ./ceph5k/cephRBD.rb        # Creates RBD and FS on deployed and production Ceph
 
 At end of successful execution of the script, you will have 2 Ceph clusters - a deployed cluster and a production cluster - mounted as file systems on your Ceph client, as follows:
         /mnt/ceph-depl/
@@ -64,7 +64,7 @@ Note: Default values of all these options are provided in the YAML file mentione
 ### Options for: Deploying a Ceph cluster
 The deployment of a Ceph cluster is done from any frontend on Grid'5000. Usually, this is done using the following command :
 
-        ./dss5k/cephDeploy.rb [options]
+        ./ceph5k/cephDeploy.rb [options]
 
 where [options] are:
 
@@ -105,7 +105,7 @@ And then simply copy & paste the lines of cephDeploy.rb in the PRy shell.
 ### Options for: Creating RBD and installing a File System
 Given a Ceph cluster (deployed cluster or production cluster), one needs to create pools, RBDs in the cluster(s), subsequently, format a File System (FS) and then mount the FS. These tasks are automated on a Grid'5000 frontend using the following command:
 
-        ./dss5K/cephRBD.rb [options]
+        ./ceph5k/cephRBD.rb [options]
 
 where [options] are:
 
@@ -152,7 +152,7 @@ It is possible to run some benchmarking tests to check the performance of your d
 ## Improving performance through higher parallelism (more OSDs)
 Another way of improving the performance is by increasing the number of OSDs in the Ceph cluster deployed. This can be done by re-deploying the Ceph cluster as follows. On a front-end, deploy the Ceph cluster with following option:
 
-        ./dss5k/cephDeploy.rb --numNodes=12    # Deploy Ceph cluster with 10 OSDs
+        ./ceph5k/cephDeploy.rb --numNodes=12    # Deploy Ceph cluster with 10 OSDs
 
 Then run the benchmarking steps as above.
 
