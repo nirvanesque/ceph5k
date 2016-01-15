@@ -127,6 +127,7 @@ puts "Created & pushed config file for Ceph production cluster to all clients." 
 puts "Creating Ceph pools on deployed and production clusters ..."
 poolsList = []
 userPool = ""
+userRBD = ""
 prodCluster = false
 # Create Ceph pools & RBD
 Cute::TakTuk.start([client], :user => "root") do |tak|
@@ -147,12 +148,11 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
            userPool = pool
 
            # Check if RBD is already created, may contain data
-           resultPool = tak.exec!("rados -c /root/prod/ceph.conf --id #{user} --pool #{userPool} ls")
+           resultPool = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} ls")
           rbdList = resultPool[client][:output].split("\n")
           rbdList.each do |rbd|  # logic: it will take the alphabetic-last pool from user
              if rbd.include? "#{argRBDName}"
                 userRBD = rbd
-puts userRBD
              end # if rbd.include? "#{user}"
 
           end # rbdList.each do
