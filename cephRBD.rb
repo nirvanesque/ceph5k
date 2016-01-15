@@ -146,7 +146,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
         if pool.include? "#{user}"
            userPool = pool
            # Check if RBD is already created, may contain data
-           resultPool = tak.exec!("rados -c /root/prod/ceph.conf --id #{user} --pool #{argPoolName} ls")
+           resultPool = tak.exec!("rados -c /root/prod/ceph.conf --id #{user} --pool #{userPool} ls")
 puts resultPool
 =begin
      if result[client][:output].include? "#{user}"
