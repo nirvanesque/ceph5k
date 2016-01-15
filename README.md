@@ -1,5 +1,4 @@
 # Ceph5k
-New version of dfs5k being developed - Ceph (Lustre, Gluster - coming soon)
 Ceph5K is a scripts suite for deploying a Ceph DFS on reserved nodes. It deploys a Ceph cluster using the following :
 - 1 or more monitors, 
 - 1 or more clients (depending on which script is chosen),
@@ -33,7 +32,7 @@ The deployment of a Ceph cluster is done from any frontend on Grid'5000. At the 
         gem install --user-install ruby-cute trollop
         export PATH=$PATH:$(ruby -e 'puts "#{Gem.user_dir}/bin"')
         rm -rf dss5k
-        git clone https://github.com/nirvanesque/dss5k.git
+        git clone https://github.com/nirvanesque/ceph5k.git
         chmod +x dss5k/*.rb
         ./dss5k/cephDeploy.rb     # Creates and deploys the Ceph cluster
 
