@@ -151,10 +151,12 @@ puts resultPool[client][:output]
           rbdList = result[client][:output].split("\n")
           rbdList.each do |rbd|  # logic: it will take the alphabetic-last pool from user
 
-          if rbd.include? "#{argRBDName}"
-             userRBD = rbd
+             if rbd.include? "#{argRBDName}"
+                userRBD = rbd
 puts userRBD
-          end # if rbd.include? "#{user}"
+             end # if rbd.include? "#{user}"
+
+          end # rbdList.each do
 
         end # if pool.include? "#{user}"
 
