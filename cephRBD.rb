@@ -149,6 +149,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
            resultPool = tak.exec!("rados -c /root/prod/ceph.conf --id #{user} --pool #{userPool} ls")
 puts resultPool[client][:output]
           rbdList = result[client][:output].split("\n")
+puts rbdList
           rbdList.each do |rbd|  # logic: it will take the alphabetic-last pool from user
 
              if rbd.include? "#{argRBDName}"
