@@ -35,7 +35,6 @@ The deployment of a Ceph cluster is done from any frontend on Grid'5000. At the 
         rm -rf dss5k
         git clone https://github.com/nirvanesque/dss5k.git
         chmod +x dss5k/*.rb
-        cp ~/.ssh/id_rsa.pub ~/public/
         ./dss5k/cephDeploy.rb     # Creates and deploys the Ceph cluster
 
 Note: To have an easy start, all default parameters that are necessary for a deployment are configured and stored in the installation subdirectory at :
