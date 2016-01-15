@@ -71,14 +71,16 @@ where [options] are:
 
 Grid'5000-specific options :
 
-        -d, --def-conf=<s>                 Default configuration file (default: dssk/config/defaults.yml)
-        -j, --jobid                        Oarsub ID of the Grid'5000 job
-        -o, --job-name=<s>                 Name of Grid'5000 job if resources already reserved (default: cephDeploy)
-        -s, --site=<s>                     Grid'5000 site for cluster (default: rennes)
-        -c, --cluster=<s>                  Grid'5000 cluster in site (default: paravance)
-        -n, --num-nodes=<i>                Nodes in Ceph cluster (default: 6)
-        -w, --walltime=<s>                 Wall time for deployment (default: 03:00:00)
-        -e, --env=<s>                      Grid'5000 environment to be deployed (default: wheezy-x64-nfs)
+Following are options related to reserving resources on Grid'5000:
+
+        -d, --def-conf=string                 Default configuration file (default: dssk/config/defaults.yml)
+        -j, --jobid=int                       Oarsub ID of the Grid'5000 job
+        -o, --job-name=string                 Name of Grid'5000 job if resources already reserved (default: cephDeploy)
+        -s, --site=string                     Grid'5000 site for cluster (default: rennes)
+        -c, --cluster=string                  Grid'5000 cluster in site (default: paravance)
+        -n, --num-nodes=integer               Nodes in Ceph cluster (default: 6)
+        -w, --walltime=hour:min:sec           Wall time for deployment (default: 03:00:00)
+        -e, --env=string                      Grid'5000 environment to be deployed (default: wheezy-x64-nfs)
 
 Ceph-specific options :
 
@@ -102,21 +104,24 @@ If interested in using the PRy shell interface, type at CLI
 And then simply copy & paste the lines of cephDeploy.rb in the PRy shell.
 
 ### Options for: Creating RBD and installing a File System
-Given a Ceph cluster (deployed cluster or production cluster), one needs to create pools, RBDs in the cluster(s), subsequently, format a File System (FS) and then mount the FS. These tasks are automated on a Grid'5000 frontend using the following command :
+Given a Ceph cluster (deployed cluster or production cluster), one needs to create pools, RBDs in the cluster(s), subsequently, format a File System (FS) and then mount the FS. These tasks are automated on a Grid'5000 frontend using the following command:
 
         ./dss5K/cephRBD.rb [options]
 
 where [options] are:
 
-        -p, --poolName=<s>       Name of pool to create on Ceph clusters (default: pool)
-        -o, --poolSize=<i>       Size of pool to create on Ceph clusters (default: 57600)
-        -b, --rbdName=<s>        Name of rbd to create inside Ceph pool (default: image)
-        -d, --rbdSize=<i>        Size of rbd to create inside Ceph pool (default: 57600)
-        -f, --fileSystem=<s>     File System to format on created RBDs (default: ext4)
-        -t, --mntDepl=<s>        Mount point for RBD on deployed cluster (default: ceph-depl)
-        -P, --mntProd=<s>        Mount point for RBD on production cluster (default: ceph-prod)
-        -v, --version            Print version and exit
-        -h, --help               Show this message
+RBD & Ceph-specific options :
+
+Following are options related to reserving resources on Grid'5000:
+
+        -d, --def-conf=string                  Default configuration file (default: dssk/config/defaults.yml)
+        -p, --pool-name=string                 Name of pool to create on Ceph clusters (default: pool)
+        -o, --pool-size=int                    Size of pool in MB, to create on Ceph clusters (default: 57600)
+        -b, --rbd-name=string                  Name of RBD to create inside Ceph pool (default: image)
+        -d, --rbd-size=int                     Size of RBD in MB, to create inside Ceph pool (default: 57600)
+        -f, --file-system=string               File System to format on created RBDs (default: ext4)
+        -t, --mnt-depl=string                  Mount point for RBD on deployed cluster (default: ceph-depl)
+        -P, --mnt-prod=string                  Mount point for RBD on production cluster (default: ceph-prod)
 
 Other generic options :
 
