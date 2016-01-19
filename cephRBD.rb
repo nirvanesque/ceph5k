@@ -97,13 +97,12 @@ nodes = jobCephCluster["assigned_nodes"]
 monitor = nodes[0] # Currently single monitor. Later make multiple monitors.
 client = nodes[1] # Currently single client. Later make multiple clients.
 osdNodes = nodes - [monitor] - [client]
-dataDir = "/tmp"
 radosGW = monitor # as of now the machine is the same for monitor & rados GW
 monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
 
 
 # Prepare ceph.conf file for production Ceph cluster
-configFile = File.open("/tmp/ceph.conf", "w") do |file|
+configFile = File.open("prod/ceph.conf", "w") do |file|
    file.puts("[global]")
    file.puts("  mon initial members = ceph0,ceph1,ceph2")
    file.puts("  mon host = 172.16.111.30,172.16.111.31,172.16.111.32")
@@ -113,7 +112,7 @@ end
 Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("rm -rf prod/")
      tak.exec!("mkdir prod/ && touch prod/ceph.conf")
-     tak.put("/tmp/ceph.conf", "/root/prod/ceph.conf")
+     tak.put("prod/ceph.conf", "/root/prod/ceph.conf")
      tak.put("/tmp/ceph.client.#{user}.keyring", "/etc/ceph/ceph.client.#{user}.keyring")
      tak.loop()
 end

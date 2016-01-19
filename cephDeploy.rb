@@ -143,7 +143,6 @@ nodes = jobCephCluster["assigned_nodes"]
 monitor = nodes[0] # Currently single monitor. Later make multiple monitors.
 client = nodes[1] # Currently single client. Later make multiple clients.
 osdNodes = nodes - [monitor] - [client]
-dataDir = "/tmp"
 radosGW = monitor # as of now the machine is the same for monitor & rados GW
 monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
 
@@ -178,7 +177,7 @@ end
 
 
 # Prepare .ssh/config file locally
-configFile = File.open("/tmp/config", "w") do |file|
+configFile = File.open("config", "w") do |file|
    nodes.each do |node|
       file.puts("Host #{node}")
       file.puts("   Hostname #{node}")
@@ -202,7 +201,7 @@ ssh_key =  'id_rsa'
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
      tak.put(".ssh/#{ssh_key}", "/root/.ssh/#{ssh_key}") # copy the config file to master/monitor
      tak.put(".ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub") # copy the config file to master/monitor
-     tak.put("/tmp/config", "/root/.ssh/config") # copy the config file to master/monitor
+     tak.put("config", "/root/.ssh/config") # copy the config file to master/monitor
      tak.loop()
 end
 
