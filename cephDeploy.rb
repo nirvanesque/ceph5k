@@ -33,7 +33,7 @@ if (["--def-conf", "-d"].include?(ARGV[0])  && !ARGV[1].empty? )
    ARGV.delete_at(0)    # clean up ARGV array
    ARGV.delete_at(0)
 else
-   configFile = "dss5k/config/defaults.yml" # default config file is used.
+   configFile = "ceph5k/config/defaults.yml" # default config file is used.
 end    # if (["--def-conf", "-d"])
 
 # Populate the hash with default parameters from YAML file.
@@ -278,7 +278,7 @@ end
 monAllNodesIPList = monAllNodesIP.join(', ') # text list of IP address separated by comma
 
 # Read template file ceph.conf.erb
-template = ERB.new File.new("./dss5k/ceph.conf.erb").read, nil, "%"
+template = ERB.new File.new("./ceph5k/ceph.conf.erb").read, nil, "%"
 # Fill up variables
 mon_initial_members = monAllNodesList
 mon_host = monAllNodesIPList
