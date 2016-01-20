@@ -100,6 +100,9 @@ osdNodes = nodes - [monitor] - [client]
 radosGW = monitor # as of now the machine is the same for monitor & rados GW
 monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
 
+# Remind where is the Ceph client
+puts "Ceph client on: #{client}" + "\n"
+
 
 # Prepare ceph.conf file for production Ceph cluster
 configFile = File.open("ceph5k/prod/ceph.conf", "w") do |file|
@@ -112,7 +115,7 @@ end
 Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("rm -rf prod/")
      tak.exec!("mkdir prod/ && touch prod/ceph.conf")
-     tak.put("prod/ceph.conf", "/root/prod/ceph.conf")
+     tak.put("ceph5k/prod/ceph.conf", "/root/prod/ceph.conf")
      tak.put("/tmp/ceph.client.#{user}.keyring", "/etc/ceph/ceph.client.#{user}.keyring")
      tak.loop()
 end
