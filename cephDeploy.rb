@@ -158,8 +158,7 @@ puts "OSDs on: #{osdNodes}" + "\n"
 puts "Doing pre-flight checklist..."
 # Add (release) Keys to each Ceph node
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     result = tak.put("ceph5k/release.asc", "/root/release.asc")
-puts result
+     tak.put("ceph5k/release.asc", "/root/release.asc")
      tak.exec!("cat ./release.asc  | apt-key add -")
      tak.loop()
 end
@@ -200,8 +199,8 @@ end
 # Copy ssh keys & config for Ceph on monitor/master node
 ssh_key =  'id_rsa'
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
-     tak.put(".ssh/#{ssh_key}", "/root/.ssh/#{ssh_key}") # copy the config file to master/monitor
-     tak.put(".ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub") # copy the config file to master/monitor
+     tak.put("~/.ssh/#{ssh_key}", "/root/.ssh/#{ssh_key}") # copy the config file to master/monitor
+     tak.put("~/.ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub") # copy the config file to master/monitor
      tak.put("config", "/root/.ssh/config") # copy the config file to master/monitor
      tak.loop()
 end
@@ -209,7 +208,7 @@ end
 # Push ssh_config file & ssh public key to all nodes
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.put("ssh_config", "/etc/ssh/ssh_config")
-     tak.put(".ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub")
+     tak.put("~/.ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub")
      tak.exec!("cat /root/.ssh/#{ssh_key}.pub >> /root/.ssh/authorized_keys")
      tak.loop()
 end
