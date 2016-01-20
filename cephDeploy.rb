@@ -121,7 +121,7 @@ end # if argJobID
 
 # Finally, if job does not yet exist reserve nodes
 if jobCephCluster.nil?
-   jobCephCluster = g5k.reserve(:name => argJobName, :nodes => argNumNodes, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :keys => "~/public/id_rsa", :type => :deploy)
+   jobCephCluster = g5k.reserve(:name => argJobName, :nodes => argNumNodes, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :keys => "/home/#{user}/public/id_rsa", :type => :deploy)
 
    clientNode = jobCephCluster["assigned_nodes"][1]
    dfsNodes = jobCephCluster["assigned_nodes"] - [clientNode]
@@ -129,8 +129,8 @@ if jobCephCluster.nil?
 end # if jobCephCluster.nil?
 
 # Finally, deploy the nodes with respective environments
-depCeph = g5k.deploy(jobCephCluster, :nodes => dfsNodes, :env => argEnv, :keys => "~/public/id_rsa")
-depCephClient = g5k.deploy(jobCephCluster, :nodes => [clientNode], :env => argEnvClient, :keys => "~/public/id_rsa")
+depCeph = g5k.deploy(jobCephCluster, :nodes => dfsNodes, :env => argEnv, :keys => "/home/#{user}/public/id_rsa")
+depCephClient = g5k.deploy(jobCephCluster, :nodes => [clientNode], :env => argEnvClient, :keys => "/home/#{user}/public/id_rsa")
 g5k.wait_for_deploy(jobCephCluster)
 
 
@@ -199,8 +199,8 @@ end
 # Copy ssh keys & config for Ceph on monitor/master node
 ssh_key =  'id_rsa'
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
-     tak.put(".ssh/#{ssh_key}", "/root/.ssh/#{ssh_key}") # copy the config file to master/monitor
-     tak.put(".ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub") # copy the config file to master/monitor
+     tak.put("/home/#{user}/.ssh/#{ssh_key}", "/root/.ssh/#{ssh_key}") # copy the config file to master/monitor
+     tak.put("/home/#{user}/.ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub") # copy the config file to master/monitor
      tak.put("config", "/root/.ssh/config") # copy the config file to master/monitor
      tak.loop()
 end
@@ -208,7 +208,7 @@ end
 # Push ssh_config file & ssh public key to all nodes
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.put("ssh_config", "/etc/ssh/ssh_config")
-     tak.put(".ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub")
+     tak.put("/home/#{user}/.ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub")
      tak.exec!("cat /root/.ssh/#{ssh_key}.pub >> /root/.ssh/authorized_keys")
      tak.loop()
 end

@@ -32,7 +32,6 @@ The deployment of a Ceph cluster is done from any frontend on Grid'5000. At the 
         export PATH=$PATH:$(ruby -e 'puts "#{Gem.user_dir}/bin"')
         rm -rf ceph5k
         git clone https://github.com/nirvanesque/ceph5k.git
-        chmod +x ceph5k/*.rb
         ./ceph5k/cephDeploy.rb     # Creates and deploys the Ceph cluster
 
 Note: To have an easy start, all default parameters that are necessary for a deployment are configured and stored in the installation subdirectory at :
