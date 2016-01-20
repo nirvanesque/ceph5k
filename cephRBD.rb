@@ -102,7 +102,7 @@ monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
 
 
 # Prepare ceph.conf file for production Ceph cluster
-configFile = File.open("prod/ceph.conf", "w") do |file|
+configFile = File.open("ceph5k/prod/ceph.conf", "w") do |file|
    file.puts("[global]")
    file.puts("  mon initial members = ceph0,ceph1,ceph2")
    file.puts("  mon host = 172.16.111.30,172.16.111.31,172.16.111.32")
