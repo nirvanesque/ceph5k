@@ -47,7 +47,6 @@ Note: To create an RBD on the Ceph production cluster, it is required first to c
 
 At the CLI on a frontend:
 
-        chmod +x ceph5k/*.sh
         ./ceph5k/cephClient.sh
         ./ceph5k/cephRBD.rb        # Creates RBD and FS on deployed and production Ceph
 
