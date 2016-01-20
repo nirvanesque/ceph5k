@@ -199,7 +199,9 @@ end
 # Copy ssh keys & config for Ceph on monitor/master node
 ssh_key =  'id_rsa'
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
-     tak.put("/home/#{user}/.ssh/#{ssh_key}", "/root/.ssh/#{ssh_key}") # copy the config file to master/monitor
+     result = tak.put("/home/#{user}/.ssh/#{ssh_key}", "/root/.ssh/#{ssh_key}") # copy the config file to master/monitor
+puts monitor
+puts result
      tak.put("/home/#{user}/.ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub") # copy the config file to master/monitor
      tak.put("config", "/root/.ssh/config") # copy the config file to master/monitor
      tak.loop()
@@ -208,7 +210,8 @@ end
 # Push ssh_config file & ssh public key to all nodes
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.put("ssh_config", "/etc/ssh/ssh_config")
-     tak.put("/home/#{user}/.ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub")
+     result1 = tak.put("/home/#{user}/.ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub")
+puts result1
      tak.exec!("cat /root/.ssh/#{ssh_key}.pub >> /root/.ssh/authorized_keys")
      tak.loop()
 end
