@@ -221,7 +221,7 @@ puts result1
 
      # mount RBD from production cluster
      if userRBD.empty? # Do it only the first time when the RBD is created.
-     result2 = tak.exec!("mount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
+     result2 = tak.exec!("umount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
 puts result2
      tak.exec!("rmdir /mnt/#{argMntProd}")
      tak.exec!("mkdir /mnt/#{argMntProd}")
@@ -229,7 +229,7 @@ puts "Ceph prod (userPool/argRBDName): #{userPool}/#{argRBDName}"
      result2 = tak.exec!("mount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
 puts result2
      else              # This case is when RBD is already created earlier.
-     result2 = tak.exec!("mount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
+     result2 = tak.exec!("umount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
 puts result2
      tak.exec!("rmdir /mnt/#{argMntProd}")
      tak.exec!("mkdir /mnt/#{argMntProd}")
