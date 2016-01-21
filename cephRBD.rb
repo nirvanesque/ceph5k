@@ -197,7 +197,8 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
         tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} map #{argRBDName} -k /etc/ceph/ceph.client.#{user}.keyring")
         tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{userPool}/#{argRBDName}")
      else              # This case is when RBD is already created earlier.
-        tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} map #{userRBD} -k /etc/ceph/ceph.client.#{user}.keyring")
+        result = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} map #{userRBD} -k /etc/ceph/ceph.client.#{user}.keyring")
+puts result
      end # if userRBD.empty?
 
      tak.loop()
