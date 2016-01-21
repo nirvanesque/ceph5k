@@ -213,32 +213,41 @@ puts "Mapped RBDs and created File Systems." + "\n"
 # Mount RBDs as File Systems.
 puts "Mounting RBDs as File Systems in deployed and production Ceph clusters ..."
 Cute::TakTuk.start([client], :user => "root") do |tak|
+
+     result = nil
      # mount RBD from deployed cluster
-     result1 = tak.exec!("umount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
-puts result1
+     result = tak.exec!("umount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
+puts result
      tak.exec!("rmdir /mnt/#{argMntDepl}")
      tak.exec!("mkdir /mnt/#{argMntDepl}")
-     result1 = tak.exec!("mount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
-puts result1
+     result = tak.exec!("mount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
+     if result[client][:status] == 0
+        puts "Mounted RBDs as File System on deployed Ceph." + "\n"
+     end
+
 
      # mount RBD from production cluster
      if userRBD.empty? # Do it only the first time when the RBD is created.
-     result2 = tak.exec!("umount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
-puts result2
+     result = tak.exec!("umount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
+puts result
      tak.exec!("rmdir /mnt/#{argMntProd}")
      tak.exec!("mkdir /mnt/#{argMntProd}")
 puts "Ceph prod (userPool/argRBDName): #{userPool}/#{argRBDName}" 
-     result2 = tak.exec!("mount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
-puts result2
+     result = tak.exec!("mount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
+puts result
      else              # This case is when RBD is already created earlier.
-     result2 = tak.exec!("umount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
-puts result2
+     result = tak.exec!("umount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
+puts result
      tak.exec!("rmdir /mnt/#{argMntProd}")
      tak.exec!("mkdir /mnt/#{argMntProd}")
 puts "Ceph prod (userPool/userRBD): #{userPool}/#{userRBD}" 
-     result2 = tak.exec!("mount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
-puts result2
+     result = tak.exec!("mount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
+puts result
      end # if userRBD.empty?
+
+     if result[client][:status] == 0
+        puts "Mounted RBDs as File System on Managed Ceph." + "\n"
+     end
 
      tak.loop()
 end
