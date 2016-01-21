@@ -145,8 +145,8 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
         poolsList = result[client][:output].split("\n")
      end
 
-puts poolsList
      poolsList.each do |pool|  # logic: it will take the alphabetic-last pool from user
+puts pool
         if pool.include? "#{user}"
            userPool = pool
 
