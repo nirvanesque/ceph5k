@@ -160,10 +160,11 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      end # poolsList.each do
 
      unless userPool.empty?
+
         if userRBD.empty? # There was no rbd created for the user
            result = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
-puts result
         end # if userRBD.empty?
+
      else
       # Following command cannot be done at CLI on Ceph client
       # tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} mkpool #{argPoolName} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
