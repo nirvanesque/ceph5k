@@ -144,6 +144,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      poolsList = result[client][:output].split("\n")
 
      poolsList.each do |pool|  # logic: it will take the alphabetic-last pool from user
+        userRBD = ""
         if pool.include? "#{user}"
            userPool = pool
 
@@ -162,7 +163,6 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      unless userPool.empty?
         if userRBD.empty? # There was no rbd created for the user
            result = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
-puts result
         end # if userRBD.empty?
      else
       # Following command cannot be done at CLI on Ceph client
@@ -209,16 +209,16 @@ puts "Mapped RBDs and created File Systems." + "\n"
 puts "Mounting RBDs as File Systems in deployed and production Ceph clusters ..."
 Cute::TakTuk.start([client], :user => "root") do |tak|
      # mount RBD from deployed cluster
-     tak.exec!("rmdir /mnt/#{argMntDepl}")
-     tak.exec!("mkdir /mnt/#{argMntDepl}")
-     result1 = tak.exec!("mount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
+     result1 = tak.exec!("rmdir /mnt/#{argMntDepl}")
 puts result1
+     tak.exec!("mkdir /mnt/#{argMntDepl}")
+     tak.exec!("mount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
 
      # mount RBD from production cluster
-     tak.exec!("rmdir /mnt/#{argMntProd}")
-     tak.exec!("mkdir /mnt/#{argMntProd}")
-     result2 = tak.exec!("mount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
+     result2 = tak.exec!("rmdir /mnt/#{argMntProd}")
 puts result2
+     tak.exec!("mkdir /mnt/#{argMntProd}")
+     tak.exec!("mount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
      tak.loop()
 end
 
