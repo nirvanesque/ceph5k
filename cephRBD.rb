@@ -141,7 +141,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      # Create pools & RBD on production cluster
      result = tak.exec!("rados -c /root/prod/ceph.conf --id #{user} lspools")
 
-     poolsList = result[client][:output].split("\n")
+     poolsList = result[client][:output]
 
      poolsList.each do |pool|  # logic: it will take the alphabetic-last pool from user
         if pool.include? "#{user}"
