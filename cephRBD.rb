@@ -213,14 +213,17 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
 puts result1
      tak.exec!("rmdir /mnt/#{argMntDepl}")
      tak.exec!("mkdir /mnt/#{argMntDepl}")
-     tak.exec!("mount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
+     result1 = tak.exec!("mount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
+puts result1
 
      # mount RBD from production cluster
      result2 = tak.exec!("mount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
 puts result2
      tak.exec!("rmdir /mnt/#{argMntProd}")
      tak.exec!("mkdir /mnt/#{argMntProd}")
-     tak.exec!("mount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
+     result2 = tak.exec!("mount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
+puts result2
+
      tak.loop()
 end
 
