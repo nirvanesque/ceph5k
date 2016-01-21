@@ -189,25 +189,30 @@ end # unless userPool.empty?
 puts "Mapping RBDs in deployed and production Ceph clusters ..."
 Cute::TakTuk.start([client], :user => "root") do |tak|
      # Map RBD & create FS on deployed cluster
-     tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
+     result = tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
      tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argPoolName}/#{argRBDName}")
+     if result[client][:status] == 0
+        puts "Mapped RBDs on deployed Ceph." + "\n"
+     end
+
 
      # Map RBD & create FS on production cluster
      if userRBD.empty? # Do it only the first time when the RBD is created.
         result = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} map #{argRBDName} -k /etc/ceph/ceph.client.#{user}.keyring")
 puts result
-        result = tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{userPool}/#{argRBDName}")
-puts result
+        tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{userPool}/#{argRBDName}")
      else              # This case is when RBD is already created earlier.
         result = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} map #{userRBD} -k /etc/ceph/ceph.client.#{user}.keyring")
 puts result
+     if result[client][:status] == 0
+        puts "Mapped RBDs on Managed Ceph." + "\n"
+     end
+
+
      end # if userRBD.empty?
 
      tak.loop()
 end
-
-# Mapped RBDs and created File Systems.
-puts "Mapped RBDs and created File Systems." + "\n"
 
 
 # Mount RBDs as File Systems.
@@ -253,6 +258,4 @@ puts result
      tak.loop()
 end
 
-# Mounted RBDs as File Systems.
-puts "Mounted RBDs as File Systems." + "\n"
 
