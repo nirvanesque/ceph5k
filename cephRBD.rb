@@ -224,6 +224,7 @@ puts result1
 puts result2
      tak.exec!("rmdir /mnt/#{argMntProd}")
      tak.exec!("mkdir /mnt/#{argMntProd}")
+puts "Ceph prod (userPool/argRBDName): #{userPool}/#{argRBDName}" 
      result2 = tak.exec!("mount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
 puts result2
      else              # This case is when RBD is already created earlier.
@@ -231,6 +232,7 @@ puts result2
 puts result2
      tak.exec!("rmdir /mnt/#{argMntProd}")
      tak.exec!("mkdir /mnt/#{argMntProd}")
+puts "Ceph prod (userPool/userRBD): #{userPool}/#{userRBD}" 
      result2 = tak.exec!("mount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
 puts result2
      end # if userRBD.empty?
