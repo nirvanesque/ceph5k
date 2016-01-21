@@ -151,7 +151,9 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
 
            # Check if RBD is already created, may contain data
            resultPool = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} ls")
-          userRBD = resultPool[client][:output].include? "#{argRBDName}" ? argRBDName : ""
+          if resultPool[client][:output].include? "#{argRBDName}" 
+             userRBD = argRBDName
+          end
 =begin
           rbdList = resultPool[client][:output].split("\n")
 puts rbdList
