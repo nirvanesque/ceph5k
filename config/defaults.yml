@@ -13,8 +13,8 @@
 # limitations under the License. 
 
 config:
-site: rennes                  # Grid 5000 site for deploying Ceph cluster
-cluster: paravance            # Grid 5000 cluster in specified site
+site: nancy                   # Grid 5000 site for deploying Ceph cluster
+cluster: griffon              # Grid 5000 cluster in specified site
 release: firefly              # Ceph Release name
 env: "wheezy-x64-big"         # G5K environment to be deployed
 env-client: "jessie-x64-big"  # G5K environment for Ceph clients
