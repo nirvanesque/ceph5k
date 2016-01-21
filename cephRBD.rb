@@ -170,7 +170,10 @@ puts userRBD
      end # poolsList.each do
 
      unless userPool.empty?
-        tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
+        if userRBD.empty? # There was no rbd created for the user
+           result = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
+puts result
+        end # if userRBD.empty?
      else
       # Following command cannot be done at CLI on Ceph client
       # tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} mkpool #{argPoolName} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
@@ -201,7 +204,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
 
      # Map RBD & create FS on production cluster
      tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} map #{argRBDName} -k /etc/ceph/ceph.client.#{user}.keyring")
-     if userRBD.empty? # First time that the RBD is created.
+     if userRBD.empty? # Do it only first time when the RBD is created.
         tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{userPool}/#{argRBDName}")
      end # if userRBD.empty?
 
