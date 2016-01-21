@@ -221,6 +221,7 @@ puts result
      tak.exec!("rmdir /mnt/#{argMntDepl}")
      tak.exec!("mkdir /mnt/#{argMntDepl}")
      result = tak.exec!("mount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
+puts result
      if result[client][:status] == 0
         puts "Mounted RBDs as File System on deployed Ceph." + "\n"
      end
