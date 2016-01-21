@@ -209,12 +209,14 @@ puts "Mapped RBDs and created File Systems." + "\n"
 puts "Mounting RBDs as File Systems in deployed and production Ceph clusters ..."
 Cute::TakTuk.start([client], :user => "root") do |tak|
      # mount RBD from deployed cluster
+     tak.exec!("umount -f /mnt/#{argMntDepl}")
      result1 = tak.exec!("rmdir /mnt/#{argMntDepl}")
 puts result1
      tak.exec!("mkdir /mnt/#{argMntDepl}")
      tak.exec!("mount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
 
      # mount RBD from production cluster
+     tak.exec!("umount -f /mnt/#{argMntProd}")
      result2 = tak.exec!("rmdir /mnt/#{argMntProd}")
 puts result2
      tak.exec!("mkdir /mnt/#{argMntProd}")
