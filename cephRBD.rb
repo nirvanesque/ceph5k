@@ -193,9 +193,11 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argPoolName}/#{argRBDName}")
 
      # Map RBD & create FS on production cluster
-     tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} map #{argRBDName} -k /etc/ceph/ceph.client.#{user}.keyring")
-     if userRBD.empty? # Do it only first time when the RBD is created.
+     if userRBD.empty? # Do it only the first time when the RBD is created.
+        tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} map #{argRBDName} -k /etc/ceph/ceph.client.#{user}.keyring")
         tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{userPool}/#{argRBDName}")
+     else              # This case is when RBD is already created earlier.
+        tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} map #{userRBD} -k /etc/ceph/ceph.client.#{user}.keyring")
      end # if userRBD.empty?
 
      tak.loop()
@@ -217,12 +219,21 @@ puts result1
 puts result1
 
      # mount RBD from production cluster
+     if userRBD.empty? # Do it only the first time when the RBD is created.
      result2 = tak.exec!("mount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
 puts result2
      tak.exec!("rmdir /mnt/#{argMntProd}")
      tak.exec!("mkdir /mnt/#{argMntProd}")
      result2 = tak.exec!("mount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
 puts result2
+     else              # This case is when RBD is already created earlier.
+     result2 = tak.exec!("mount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
+puts result2
+     tak.exec!("rmdir /mnt/#{argMntProd}")
+     tak.exec!("mkdir /mnt/#{argMntProd}")
+     result2 = tak.exec!("mount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
+puts result2
+     end # if userRBD.empty?
 
      tak.loop()
 end
