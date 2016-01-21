@@ -144,13 +144,12 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      poolsList = result[client][:output].split("\n")
 
      poolsList.each do |pool|  # logic: it will take the alphabetic-last pool from user
-        myPool = pool.to_s
-puts myPool
-        if myPool.include? "#{user}"
-           userPool = myPool
+        if pool.include? "#{user}"
+           userPool = pool
 
            # Check if RBD is already created, may contain data
            resultPool = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} ls")
+puts resultPool
           if resultPool[client][:output].include? "#{argRBDName}" 
              userRBD = argRBDName
           end
