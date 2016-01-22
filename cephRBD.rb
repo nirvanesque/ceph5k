@@ -155,7 +155,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
                  userRBD = argRBDName # There is an rbd with name argRBDName already
               end # if resultPool[client][:output].include?
            end # unless resultPool[client][:output].nil?
-
+puts userRBD
         end # if pool.include? "#{user}"
 
      end # poolsList.each do
