@@ -163,7 +163,6 @@ puts userRBD
      unless userPool.empty?
         if userRBD.empty? # There was no rbd created for the user. So create it.
            result = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
-puts result
         end # if userRBD.empty?
      else
       # Following command cannot be done at CLI on Ceph client
