@@ -138,34 +138,33 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("rados mkpool #{argPoolName}")
      tak.exec!("rbd create #{argRBDName} --pool #{argPoolName} --size #{argRBDSize}")
 
-     # Create pools & RBD on production cluster
+     # Create RBD on production cluster
      result = tak.exec!("rados -c /root/prod/ceph.conf --id #{user} lspools")
 
-     if result[client][:output].include? "#{user}"
-        poolsList = result[client][:output].split("\n")
-     end
+     poolsList = result[client][:output].split("\n")
 
      poolsList.each do |pool|  # logic: it will take the alphabetic-last pool from user
+        userRBD = ""
         if pool.include? "#{user}"
            userPool = pool
 
            # Check if RBD is already created, may contain data
            resultPool = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} ls")
-puts resultPool
-          rbdList = resultPool[client][:output].split("\n")
-          rbdList.each do |rbd|  # logic: it will take the alphabetic-last pool from user
-             if rbd.include? "#{argRBDName}"
-                userRBD = rbd
-             end # if rbd.include? "#{user}"
 
-          end # rbdList.each do
+           unless resultPool[client][:output].nil? # means no rbd in userPool
+              if resultPool[client][:output].include? "#{argRBDName}" 
+                 userRBD = argRBDName # There is an rbd with name argRBDName already
+              end # if resultPool[client][:output].include?
+           end # unless resultPool[client][:output].nil?
 
         end # if pool.include? "#{user}"
 
      end # poolsList.each do
 
      unless userPool.empty?
-        tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
+        if userRBD.empty? # There was no rbd created for the user. So create it.
+           result = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
+        end # if userRBD.empty?
      else
       # Following command cannot be done at CLI on Ceph client
       # tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} mkpool #{argPoolName} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
@@ -176,7 +175,7 @@ puts resultPool
      tak.loop()
 end
 
-# Created & pushed config file for Ceph clusters.
+# Created Pool & RBD for Ceph clusters.
 puts "Created Ceph pools on deployed (and production) clusters as follows :" + "\n"
 puts "On deployed cluster:\n"
 puts "Pool name: #{argPoolName} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize} " + "\n"
@@ -191,38 +190,63 @@ end # unless userPool.empty?
 puts "Mapping RBDs in deployed and production Ceph clusters ..."
 Cute::TakTuk.start([client], :user => "root") do |tak|
      # Map RBD & create FS on deployed cluster
-     tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
+     result = tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
      tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argPoolName}/#{argRBDName}")
+     if result[client][:status] == 0
+        puts "Mapped RBD #{argRBDName} on deployed Ceph." + "\n"
+     end
 
+
+     myRBDName = ""
      # Map RBD & create FS on production cluster
      tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} map #{argRBDName} -k /etc/ceph/ceph.client.#{user}.keyring")
-     if userRBD.empty? # First time that the RBD is created.
+     if userRBD.empty? # Do it only the first time when the RBD is created.
         tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{userPool}/#{argRBDName}")
+        myRBDName = argRBDName
+     else              # This case is when RBD is already created earlier.
+        myRBDName = userRBD
      end # if userRBD.empty?
+     if result[client][:status] == 0
+        puts "Mapped RBD #{myRBDName} on Managed Ceph." + "\n"
+     end
 
      tak.loop()
 end
-
-# Mapped RBDs and created File Systems.
-puts "Mapped RBDs and created File Systems." + "\n"
 
 
 # Mount RBDs as File Systems.
 puts "Mounting RBDs as File Systems in deployed and production Ceph clusters ..."
 Cute::TakTuk.start([client], :user => "root") do |tak|
+
+     result = nil
      # mount RBD from deployed cluster
+     tak.exec!("umount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
      tak.exec!("rmdir /mnt/#{argMntDepl}")
      tak.exec!("mkdir /mnt/#{argMntDepl}")
-     tak.exec!("mount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
+     result = tak.exec!("mount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
+     if result[client][:status] == 0
+        puts "Mounted RBD as File System on deployed Ceph." + "\n"
+     end
+
 
      # mount RBD from production cluster
-     tak.exec!("rmdir /mnt/#{argMntProd}")
-     tak.exec!("mkdir /mnt/#{argMntProd}")
-     tak.exec!("mount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
+     if userRBD.empty? # Do it only the first time when the RBD is created.
+        tak.exec!("umount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
+        tak.exec!("rmdir /mnt/#{argMntProd}")
+        tak.exec!("mkdir /mnt/#{argMntProd}")
+        result = tak.exec!("mount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
+     else              # This case is when RBD is already created earlier.
+        tak.exec!("umount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
+        tak.exec!("rmdir /mnt/#{argMntProd}")
+        tak.exec!("mkdir /mnt/#{argMntProd}")
+        result = tak.exec!("mount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
+     end # if userRBD.empty?
+
+     if result[client][:status] == 0
+        puts "Mounted RBDs as File System on Managed Ceph." + "\n"
+     end
 
      tak.loop()
 end
 
-# Mounted RBDs as File Systems.
-puts "Mounted RBDs as File Systems." + "\n"
 
