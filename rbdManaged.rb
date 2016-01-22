@@ -163,7 +163,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      unless userPool.empty?
         # If multiple pools from user, then confused, so exit.
         
-        abort("Script exited - multiple Ceph pools for #{user}") if poolCount > 1 && userPool.empty?
+        abort("Script exited - multiple Ceph pools for #{user}") if poolCount > 1 && userPoolMatch.empty?
 
         if userRBD.empty? # There was no rbd created for the user. So create it.
            result = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
