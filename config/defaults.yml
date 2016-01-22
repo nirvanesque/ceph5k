@@ -18,7 +18,7 @@ cluster: granduc              # Grid 5000 cluster in specified site
 release: firefly              # Ceph Release name
 env: "wheezy-x64-big"         # G5K environment to be deployed
 env-client: "jessie-x64-big"  # G5K environment for Ceph clients
-job-name: cephDeploy          # Name of Grid'5000 job if already created
+job-name: Spark               # Name of Grid'5000 job if already created
 job-client: cephClient        # Name of Grid'5000 job if already created
 cluster-name: ceph            # Ceph cluster name
 num-nodes: 10                 # Nodes in Ceph cluster
