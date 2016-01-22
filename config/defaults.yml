@@ -23,7 +23,7 @@ job-client: cephClient        # Name of Grid'5000 job if already created
 cluster-name: ceph            # Ceph cluster name
 num-nodes: 6                  # Nodes in Ceph cluster
 num-clients: 1                # Nodes in Ceph cluster
-walltime: "03:00:00"          # Walltime for Ceph cluster deployed
+walltime: "48:00:00"          # Walltime for Ceph cluster deployed
 multi-osd: true               # Multiple OSDs on each node
 pool-name: pool               # Name of Ceph pool to create (will be "userid_pool")
 pool-size: 57600              # Size of pool to create on Ceph clusters
