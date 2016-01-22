@@ -171,7 +171,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
         puts "Create at least one RBD pool from the Ceph production frontend\n\n"
         puts "Use this link to create pool: https://api.grid5000.fr/sid/storage/ceph/ui/"
         puts "Then rerun this script.\n"
-     end
+     end # if userRBD.empty?
      tak.loop()
 end
 
