@@ -129,6 +129,7 @@ puts "Created & pushed config file for Ceph production cluster to all clients." 
 puts "Creating Ceph pool on production cluster ..."
 poolsList = []
 userPool = ""
+userPoolMatch = ""
 userRBD = ""
 prodCluster = false
 abortFlag = false
@@ -137,14 +138,15 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("modprobe rbd")
      # Create RBD on production cluster
      result = tak.exec!("rados -c /root/prod/ceph.conf --id #{user} lspools")
-puts result
      poolsList = result[client][:output].split("\n")
-puts poolsList
+
+     poolCount = 0
      poolsList.each do |pool|  # logic: it will take the alphabetic-last pool from user
         userRBD = ""
         if pool.include? "#{user}"
            userPool = pool
-
+           poolCount += 1
+           userPoolMatch = pool if pool.include? "#{argPoolName}" # Perfect match of pool name
            # Check if RBD is already created, may contain data
            resultPool = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} ls")
 
@@ -159,6 +161,10 @@ puts poolsList
      end # poolsList.each do
 
      unless userPool.empty?
+        # If multiple pools from user, then confused, so exit.
+        
+        abort("Script exited - multiple Ceph pools for #{user}") if poolCount > 1 && userPool.empty?
+
         if userRBD.empty? # There was no rbd created for the user. So create it.
            result = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
         end # if userRBD.empty?
