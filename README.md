@@ -48,9 +48,10 @@ Note: To create an RBD on the Ceph production cluster, it is required first to c
 At the CLI on a frontend:
 
         ./ceph5k/cephClient.sh
-        ./ceph5k/cephRBD.rb        # Creates RBD and FS on deployed and production Ceph
+        ./ceph5k/rbdDeployed.rb        # Creates RBD & FS on deployed Ceph cluster
+        ./ceph5k/rbdManaged.rb         # Creates RBD & FS on managed Ceph cluster
 
-At end of successful execution of the script, you will have 2 Ceph clusters - a deployed cluster and a production cluster - mounted as file systems on your Ceph client, as follows:
+At the end of successful execution of the scripts, you will have 2 Ceph clusters - a deployed cluster and a managed cluster - mounted as file systems on your Ceph client, as follows:
         /mnt/ceph-depl/
         /mnt/ceph-prod/
 
@@ -102,7 +103,8 @@ And then simply copy & paste the lines of cephDeploy.rb in the PRy shell.
 ### Options for: Creating RBD and installing a File System
 Given a Ceph cluster (deployed cluster or production cluster), one needs to create pools, RBDs in the cluster(s), subsequently, format a File System (FS) and then mount the FS. These tasks are automated on a Grid'5000 frontend using the following command:
 
-        ./ceph5k/cephRBD.rb [options]
+        ./ceph5k/rbdDeployed.rb [options]
+        ./ceph5k/rbdManaged.rb  [options]
 
 where [options] are:
 

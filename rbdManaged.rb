@@ -47,10 +47,10 @@ end
 opts = Trollop::options do
   version "ceph5k 0.0.4 (c) 2015-16 Anirvan BASU, INRIA RBA"
   banner <<-EOS
-cephRBD.rb is a script for creating RBD and FS on deployed Ceph and production Ceph.
+rbdManaged.rb is a script for creating RBD and FS on deployed Ceph and production Ceph.
 
 Usage:
-       cephRBD.rb [options]
+       rbdManaged.rb [options]
 where [options] are:
 EOS
 
@@ -62,7 +62,6 @@ EOS
   opt :'rbd-name', "Name of rbd to create inside Ceph pool", :type => String, :default => defaults["rbd-name"]
   opt :'rbd-size', "Size of rbd to create inside Ceph pool", :default => defaults["rbd-size"]
   opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
-  opt :'mnt-depl', "Mount point for RBD on deployed cluster", :type => String, :default => defaults["mnt-depl"]
   opt :'mnt-prod', "Mount point for RBD on production cluster", :type => String, :default => defaults["mnt-prod"]
 end
 
@@ -74,7 +73,6 @@ argPoolSize = opts[:'pool-size'] # Size of pool to create on clusters.
 argRBDName = "#{user}_" + opts[:'rbd-name'] # Name of pool to create on clusters.
 argRBDSize = opts[:'rbd-size'] # Size of pool to create on clusters.
 argFileSystem = opts[:'file-system'] # File System to be formatted on created RBDs.
-argMntDepl = opts[:'mnt-depl'] # Mount point for RBD on deployed cluster.
 argMntProd = opts[:'mnt-prod'] # Mount point for RBD on production cluster.
 
 # Get all jobs submitted in a cluster
@@ -125,8 +123,8 @@ puts "Created & pushed config file for Ceph production cluster to all clients." 
 
 
 
-# Creating Ceph pools on deployed and production clusters.
-puts "Creating Ceph pools on deployed and production clusters ..."
+# Creating Ceph pools on production cluster.
+puts "Creating Ceph pool on production cluster ..."
 poolsList = []
 userPool = ""
 userRBD = ""
@@ -134,10 +132,6 @@ prodCluster = false
 # Create Ceph pools & RBD
 Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("modprobe rbd")
-     # Create pools & RBD on deployed cluster
-     tak.exec!("rados mkpool #{argPoolName}")
-     tak.exec!("rbd create #{argRBDName} --pool #{argPoolName} --size #{argRBDSize}")
-
      # Create RBD on production cluster
      result = tak.exec!("rados -c /root/prod/ceph.conf --id #{user} lspools")
 
@@ -168,18 +162,16 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      else
       # Following command cannot be done at CLI on Ceph client
       # tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} mkpool #{argPoolName} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
-        puts "Create at least one RBD pool from the Ceph production frontend\n\n"
+        puts "Create at least one RBD pool from the Ceph managed frontend\n\n"
         puts "Use this link to create pool: https://api.grid5000.fr/sid/storage/ceph/ui/"
         puts "Then rerun this script.\n"
      end # if userRBD.empty?
      tak.loop()
 end
 
-# Created Pool & RBD for Ceph clusters.
-puts "Created Ceph pools on deployed (and production) clusters as follows :" + "\n"
-puts "On deployed cluster:\n"
-puts "Pool name: #{argPoolName} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize} " + "\n"
+# Created Pool & RBD for Ceph cluster.
 unless userPool.empty?
+     puts "Created Ceph pool on managed cluster as follows :" + "\n"
      puts "On production cluster:\n"
      puts "Pool name: #{userPool} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize} " + "\n"
 end # unless userPool.empty?
@@ -187,7 +179,7 @@ end # unless userPool.empty?
 
 
 # Map RBD and create File Systems.
-puts "Mapping RBDs in deployed and production Ceph clusters ..."
+puts "Mapping RBD in managed Ceph clusters ..."
 Cute::TakTuk.start([client], :user => "root") do |tak|
      # Map RBD & create FS on deployed cluster
      result = tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
@@ -207,7 +199,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
         myRBDName = userRBD
      end # if userRBD.empty?
      if result[client][:status] == 0
-        puts "Mapped RBD #{myRBDName} on Managed Ceph." + "\n"
+        puts "Mapped RBD #{myRBDName} on managed Ceph." + "\n"
      end
 
      tak.loop()
@@ -215,20 +207,10 @@ end
 
 
 # Mount RBDs as File Systems.
-puts "Mounting RBDs as File Systems in deployed and production Ceph clusters ..."
+puts "Mounting RBD as File Systems in managed Ceph clusters ..."
 Cute::TakTuk.start([client], :user => "root") do |tak|
 
      result = nil
-     # mount RBD from deployed cluster
-     tak.exec!("umount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
-     tak.exec!("rmdir /mnt/#{argMntDepl}")
-     tak.exec!("mkdir /mnt/#{argMntDepl}")
-     result = tak.exec!("mount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
-     if result[client][:status] == 0
-        puts "Mounted RBD as File System on deployed Ceph." + "\n"
-     end
-
-
      # mount RBD from production cluster
      if userRBD.empty? # Do it only the first time when the RBD is created.
         tak.exec!("umount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
@@ -243,7 +225,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      end # if userRBD.empty?
 
      if result[client][:status] == 0
-        puts "Mounted RBDs as File System on Managed Ceph." + "\n"
+        puts "Mounted RBD as File System on managed Ceph." + "\n"
      end
 
      tak.loop()
