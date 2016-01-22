@@ -13,15 +13,15 @@
 # limitations under the License. 
 
 config:
-site: lyon                    # Grid 5000 site for deploying Ceph cluster
-cluster: sagittaire           # Grid 5000 cluster in specified site
+site: luxembourg              # Grid 5000 site for deploying Ceph cluster
+cluster: granduc              # Grid 5000 cluster in specified site
 release: firefly              # Ceph Release name
 env: "wheezy-x64-big"         # G5K environment to be deployed
 env-client: "jessie-x64-big"  # G5K environment for Ceph clients
 job-name: cephDeploy          # Name of Grid'5000 job if already created
 job-client: cephClient        # Name of Grid'5000 job if already created
 cluster-name: ceph            # Ceph cluster name
-num-nodes: 6                  # Nodes in Ceph cluster
+num-nodes: 10                 # Nodes in Ceph cluster
 num-clients: 1                # Nodes in Ceph cluster
 walltime: "48:00:00"          # Walltime for Ceph cluster deployed
 multi-osd: true               # Multiple OSDs on each node
