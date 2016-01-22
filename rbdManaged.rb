@@ -129,6 +129,7 @@ poolsList = []
 userPool = ""
 userRBD = ""
 prodCluster = false
+abortFlag = false
 # Create Ceph pools & RBD
 Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("modprobe rbd")
@@ -165,9 +166,14 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
         puts "Create at least one RBD pool from the Ceph managed frontend\n\n"
         puts "Use this link to create pool: https://api.grid5000.fr/sid/storage/ceph/ui/"
         puts "Then rerun this script.\n"
+        abortFlag = true
+        break
      end # if userRBD.empty?
      tak.loop()
 end
+
+# Abort script if no pool in manged Ceph
+abort("Script exited") if abortFlag
 
 # Created Pool & RBD for Ceph cluster.
 unless userPool.empty?
