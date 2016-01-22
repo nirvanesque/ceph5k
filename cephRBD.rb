@@ -199,6 +199,8 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
 
      myRBDName = ""
      # Map RBD & create FS on production cluster
+     result = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} showmapped -k /etc/ceph/ceph.client.#{user}.keyring")
+puts result
      result = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} map #{argRBDName} -k /etc/ceph/ceph.client.#{user}.keyring")
 puts result
      if userRBD.empty? # Do it only the first time when the RBD is created.
