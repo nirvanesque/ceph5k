@@ -86,6 +86,8 @@ jobs.each do |job|
    end
 end
 
+# Abort script if no deployed Ceph cluster
+abort("No deployed Ceph cluster found. First deploy Ceph cluster, then run script.") if jobCephCluster.nil?
 
 # At this point job details were fetched
 puts "Ceph deployment job details recovered." + "\n"
@@ -137,7 +139,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      result = tak.exec!("rados -c /root/prod/ceph.conf --id #{user} lspools")
 
      poolsList = result[client][:output].split("\n")
-
+puts poolsList
      poolsList.each do |pool|  # logic: it will take the alphabetic-last pool from user
         userRBD = ""
         if pool.include? "#{user}"
@@ -160,7 +162,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
         if userRBD.empty? # There was no rbd created for the user. So create it.
            result = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
         end # if userRBD.empty?
-     else
+     else   # There is no pool created on managed Ceph
       # Following command cannot be done at CLI on Ceph client
       # tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} mkpool #{argPoolName} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
         puts "Create at least one RBD pool from the Ceph managed frontend\n\n"
@@ -172,7 +174,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.loop()
 end
 
-# Abort script if no pool in manged Ceph
+# Abort script if no pool in managed Ceph
 abort("Script exited") if abortFlag
 
 # Created Pool & RBD for Ceph cluster.

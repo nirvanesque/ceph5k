@@ -25,7 +25,7 @@ num-nodes: 6                  # Nodes in Ceph cluster
 num-clients: 1                # Nodes in Ceph cluster
 walltime: "03:00:00"          # Walltime for Ceph cluster deployed
 multi-osd: true               # Multiple OSDs on each node
-pool-name: pool               # Name of pool to create on Ceph clusters
+pool-name: pool               # Name of Ceph pool to create (will be "userid_pool")
 pool-size: 57600              # Size of pool to create on Ceph clusters
 rbd-name: image               # Name of rbd to create inside Ceph pool
 rbd-size: 57600               # Size of rbd to create inside Ceph pool
