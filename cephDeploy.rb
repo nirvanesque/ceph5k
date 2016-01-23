@@ -56,32 +56,36 @@ EOS
 
   opt :ignore, "Ignore incorrect values"
   opt :jobid, "Oarsub ID of the job", :default => 0
+  opt :'job-name', "Name of Grid'5000 job if already created", :type => String, :default => defaults["job-name"]
   opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["site"]
   opt :cluster, "Grid 5000 cluster in specified site", :type => String, :default => defaults["cluster"]
-  opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
   opt :env, "G5K environment to be deployed", :type => String, :default => defaults["env"]
-  opt :'env-client', "G5K environment for client", :type => String, :default => defaults["env-client"]
-  opt :'job-name', "Name of Grid'5000 job if already created", :type => String, :default => defaults["job-name"]
-  opt :'cluster-name', "Ceph cluster name", :type => String, :default => defaults["cluster-name"]
   opt :'num-nodes', "Nodes in Ceph cluster", :default => defaults["num-nodes"]
   opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => defaults["walltime"]
+
+  opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
+  opt :'cluster-name', "Ceph cluster name", :type => String, :default => defaults["cluster-name"]
   opt :'multi-osd', "Multiple OSDs on each node", :default => defaults["multi-osd"]
   opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
+
+  opt :'env-client', "G5K environment for client", :type => String, :default => defaults["env-client"]
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
 argJobID = opts[:jobid] # Oarsub ID of the job. 
+argJobName = opts[:'job-name'] # Grid'5000 ndoes reservation job. 
 argSite = opts[:site] # site name. 
 argG5KCluster = opts[:cluster] # G5K cluster name if specified. 
-argRelease = opts[:release] # Ceph release name. 
 argEnv = opts[:env] # Grid'5000 environment to deploy. 
-argEnvClient = opts[:'env-client'] # Grid'5000 environment to deploy Ceph client. 
-argJobName = opts[:'job-name'] # Grid'5000 ndoes reservation job. 
-argCephCluster = opts[:'cluster-name'] # Ceph cluster name.
 argNumNodes = opts[:'num-nodes'] # number of nodes in Ceph cluster.
 argWallTime = opts[:walltime] # walltime for the reservation.
+
+argRelease = opts[:release] # Ceph release name. 
+argCephCluster = opts[:'cluster-name'] # Ceph cluster name.
 argMultiOSD = opts[:'multi-osd'] # Multiple OSDs on each node.
 argFileSystem = opts[:'file-system'] # File System to be formatted on OSDs.
+
+argEnvClient = opts[:'env-client'] # Grid'5000 environment to deploy Ceph client. 
 
 # Show parameters for creating Ceph cluster
 puts "Deploying Ceph cluster with the following parameters:"

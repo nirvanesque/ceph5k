@@ -21,240 +21,177 @@ require 'erb'
 require 'socket'
 require 'trollop'
 require 'json'
+require "net/http"
+require "uri"
+
 
 g5k = Cute::G5K::API.new()
+user = g5k.g5k_user
 
+if (["--def-conf", "-d"].include?(ARGV[0])  && !ARGV[1].empty? )
+   configFile = ARGV[1] # assign file location to variable configFile
+   ARGV.delete_at(0)    # clean up ARGV array
+   ARGV.delete_at(0)
+else
+   configFile = "ceph5k/config/defaults.yml" # default config file is used.
+end    # if (["--def-conf", "-d"])
+
+# Populate the hash with default parameters from YAML file.
+defaults = begin
+  YAML.load(File.open(configFile))
+rescue ArgumentError => e
+  puts "Could not parse YAML: #{e.message}"
+end
 
 # banner for script
 opts = Trollop::options do
-  version "ceph-deploy 0.0.1 (c) 2015-16 Anirvan BASU, INRIA RBA"
+  version "ceph5k 0.0.4 (c) 2015-16 Anirvan BASU, INRIA RBA"
   banner <<-EOS
-ceph-client.rb is a script for deploying a Ceph client to interact with an already deployed Ceph cluster and/or the Ceph production cluster.
+sparkClient.rb is a script for creating RBD and FS on deployed Ceph cluster.
 
 Usage:
-       ceph-client.rb [options]
+       sparkClient.rb [options]
 where [options] are:
 EOS
 
   opt :ignore, "Ignore incorrect values"
-  opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => "sophia"
-  opt :g5kCluster, "Grid 5000 cluster in specified site", :type => String, :default => ""
-  opt :release, "Ceph Release name", :type => String, :default => "firefly"
-  opt :env, "G5K environment to be deployed", :type => String, :default => "ubuntu-x64-1204"
-  opt :dfsName, "Name of Grid'5000 job for Ceph DFS cluster", :type => String, :default => "cephDeploy"
-  opt :clientName, "Name of Grid'5000 job for Ceph client", :type => String, :default => "cephClient"
-  opt :numClients, "No. of Ceph clients to create", :default => 1
-  opt :walltime, "Wall time for Ceph client to be deployed", :type => String, :default => "01:00:00"
+  opt :jobid, "Oarsub ID of the client job", :default => 0
+  opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["site"]
+  opt :cluster, "Grid 5000 cluster in specified site", :type => String, :default => defaults["cluster"]
+  opt :'job-name', "Grid'5000 job name for deployed Ceph cluster", :type => String, :default => defaults["job-name"]
+  opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => defaults["walltime"]
+
+  opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
+  opt :'pool-name', "Pool name on Ceph cluster (userid_ added)", :type => String, :default => defaults["pool-name"]
+  opt :'pool-size', "Pool size on Ceph cluster", :default => defaults["poolSize"]
+  opt :'rbd-name', "RBD name for Ceph pool (userid_ added)", :type => String, :default => defaults["rbd-name"]
+  opt :'rbd-size', "RBD size on Ceph pool", :default => defaults["rbd-size"]
+  opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
+  opt :'mnt-depl', "Mount point for RBD on deployed cluster", :type => String, :default => defaults["mnt-depl"]
+
+  opt :'job-client', "Grid'5000 job name for Ceph clients", :type => String, :default => defaults["job-client"]
+  opt :'env-client', "G5K environment for client", :type => String, :default => defaults["env-client"]
+  opt :'num-client', "Nodes in Ceph Client cluster", :default => defaults["num-client"]
+  opt :'client-pool-name', "Pool name on each Ceph client (userid_ is added)", :type => String, :default => defaults["client-pool-name"]
+  opt :'client-pool-size', "Pool size for each Ceph client (~ pool-size / num-clients)", :default => defaults["client-pool-size"]
+  opt :'client-rbd-name', "RBD name on each Ceph client (userid_ added)", :type => String, :default => defaults["client-pool-name"]
+  opt :'client-rbd-size', "RBD size for each Ceph client (~ pool-size / num-clients)", :default => defaults["client-pool-size"]
+
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
+argJobID = opts[:jobid] # Oarsub ID of the client job. 
 argSite = opts[:site] # site name. 
-argG5KCluster = opts[:g5kCluster] # G5K cluster name if specified. 
+argJobName = opts[:'job-name'] # Grid'5000 job for deployed Ceph cluster. 
+argG5KCluster = opts[:cluster] # G5K cluster name if specified. 
+argWallTime = opts[:walltime] # walltime for the client reservation.
+
 argRelease = opts[:release] # Ceph release name. 
-argEnvClient = opts[:env] # Grid'5000 environment to deploy Ceph client. 
-argDFSName = opts[:dfsName] # Grid'5000 Ceph cluster job name. 
-argClientName = opts[:clientName] # Grid'5000 Ceph client job name. 
-argNumClients = opts[:numClients] # number of nodes in Ceph cluster.
-argWallTime = opts[:walltime] # walltime for the reservation.
+argPoolName = "#{user}_" + opts[:'pool-name'] # Name of pool to create on clusters.
+argPoolSize = opts[:'pool-size'] # Size of pool to create on clusters.
+argRBDName = "#{user}_" + opts[:'rbd-name'] # Name of pool to create on clusters.
+argRBDSize = opts[:'rbd-size'] # Size of pool to create on clusters.
+argFileSystem = opts[:'file-system'] # File System to be formatted on created RBDs.
+argMntDepl = opts[:'mnt-depl'] # Mount point for RBD in deployed cluster.
+
+argEnvClient = opts[:'env-client'] # Grid'5000 environment to deploy Ceph clients. 
+argJobClient = opts[:'job-client'] # Grid'5000 job name for Ceph clients. 
+argNumClient = opts[:'num-clients'] # Nodes in Ceph Client cluster.
+argClientPoolName = "#{user}_" + opts[:'client-pool-name'] # Pool name on each Ceph client.
+argClientPoolSize = opts[:'client-pool-size'] # Pool size on each Ceph client.
+argClientRBDName = "#{user}_" + opts[:'client-rbd-name'] # RBD name for each Ceph client.
+argClientRBDSize = opts[:'client-rbd-size'] # RBD size for each Ceph client.
 
 
-# Show parameters for creating Ceph cluster
-puts "Creating Ceph client with the following parameters:"
-puts "Grid 5000 site: #{argSite}"
-puts "Ceph Release: #{argRelease}"
-puts "Grid'5000 deployment for Ceph client: #{argEnvClient}"
-puts "For Ceph cluster deployment: #{argDFSName}"
-puts "Total number of Ceph clients: #{argNumClients}"
-puts "Deployment time: #{argWallTime}\n" + "\n"
-
+# get the job with name "cephCluster"
+jobCephCluster = nil # Job for deployed Ceph cluster
+monitor = "" # Monitor for deployed Ceph cluster
 # Get all jobs submitted in a cluster
-jobs = g5k.get_my_jobs(argSite) 
+jobs = g5k.get_my_jobs(argSite, state = "running") 
 
-# get the jobs with name "cephCluster" and "cephClient"
-jobCephCluster = nil
-jobCephClient = nil
+# get the job with name "cephDeploy"
 jobs.each do |job|
-   if job["name"] == argDFSName # Get the Ceph cluster job, if it exists
+   if job["name"] == argJobName # if job exists already, get nodes
       jobCephCluster = job
-   end
-   if job["name"] == argClientName # Get the Ceph client job, if it exists
-      jobCephClient = job
-   end
-end
+      monitor = jobCephCluster["assigned_nodes"][0]
+   end # if job["name"] == argJobName
+end # jobs.each do |job|
 
-nodes = nil
-unless jobCephCluster.nil? # No deployed cluster --> use client with Ceph production only
-   nodes = jobCephCluster["assigned_nodes"] # get nodes for deployed Ceph cluster
+# Abort script if no deployed Ceph cluster
+abort("No deployed Ceph cluster found. First deploy Ceph cluster, then run script.") if jobCephCluster.nil?
+
+# Remind where is the deployed Ceph monitor
+puts "Deployed Ceph cluster details:"
+puts "   monitor on: #{monitor}" + "\n"
+
+
+# Next get job for Ceph clients
+jobCephClient = nil # Ceph client job
+clients = [] # Array of client nodes
+
+unless [nil, 0].include?(argJobID)
+   # If jobID is specified, get the specific job
+   jobCephClient = g5k.get_job(argSite, argJobID)
 else
-   puts "Deployed Ceph cluster does not exist on #{argSite}."
-   puts "Will use Ceph client with production cluster only."
-end
+   # Get all jobs submitted in a cluster
+   jobs = g5k.get_my_jobs(argSite, state = "running") 
 
-if jobCephClient.nil? # reserve node & deploy Ceph Client
-   jobCephClient = g5k.reserve(:name => argClientName, :nodes => argNumClients, :site => argSite, :walltime => argWallTime, :env => argEnvClient, :keys => "~/public/id_rsa")
+   # get the job with name "cephClient"
+   jobs.each do |job|
+      if job["name"] == argJobClient # if client job exists already, get nodes
+         jobCephClient = job
+         clients = jobCephClient["assigned_nodes"]
 
-else # jobCephClient exists already, just redeploy it
-   depCephClient = g5k.deploy(jobCephClient, :env => argEnvClient, :keys => "~/public/id_rsa", :wait => true)
-end
+      end # if job["name"] == argJobName
+   end # jobs.each do |job|
+end # if argJobID
+# At this point job details were fetched
+puts "Ceph client job details recovered." + "\n" if !jobCephClient.nil?
 
-# At this point job was created or fetched
-puts "Ceph Client job created / recovered." + "\n"
 
-# Change to be read/write from YAML file
-nodes = jobCephCluster["assigned_nodes"]
-monitor = nodes[0] # Currently single monitor. Later make multiple monitors.
-clients = jobCephClient["assigned_nodes"] # Currently single client. Later make multiple clients.
 
-# At this point the necessary jobs were created / fetched.
+# Finally, if Ceph client job does not yet exist reserve nodes
+if jobCephClient.nil?
+
+   puts "No existing Ceph client job, creating one with parameters." + "\n" 
+   jobCephClient = g5k.reserve(:name => argJobClient, :nodes => argNumClient, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :type => :deploy)
+   clients = jobCephCluster["assigned_nodes"][1]
+
+end # if jobCephClient.nil?
+
 puts "Deploying Ceph client(s) on nodes: #{clients}" + "\n"
+# Finally, deploy the client nodes with respective environments
+depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClient)
+g5k.wait_for_deploy(jobCephClient)
 
 
-#1 Preflight Checklist
-puts "Doing pre-flight checklist..."
-# Add (release) Keys to each Ceph node
-user = g5k.g5k_user
-puts user
-Cute::TakTuk.start(clients, :user => "root") do |tak|
-     result = tak.put("/home/#{user}/dss5k/release.asc", "/root/release.asc")
-puts result
-     tak.exec!("cat /root/release.asc  | apt-key add -")
-     tak.loop()
-end
 
+# Installing & adding clients to Ceph deployed cluster.
+puts "Adding following clients to deployed Ceph cluster: #{clients}"
 
-# Add Ceph & Extras to each Ceph node ('firefly' is the most complete, later use CLI argument)
-ceph_extras =  'http://ceph.com/packages/ceph-extras/debian wheezy main'
-ceph_update =  'http://ceph.com/debian-#{argRelease}/ wheezy main'
-
-Cute::TakTuk.start(clients, :user => "root") do |tak|
-     tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
-     tak.exec!("echo deb #{ceph_update}  | sudo tee /etc/apt/sources.list.d/ceph.list")
-     tak.exec!("export http_proxy=http://proxy:3128; export https_proxy=https://proxy:3128; sudo apt-get update -y && sudo apt-get install -y ceph-deploy")
-     tak.loop()
-end
-
-
-# Get config file from monitor
-Net::SFTP.start(monitor, 'root') do |sftp|
-  sftp.download!("/root/.ssh/config", "/tmp/config")
-end
-
-# Prepare .ssh/config file locally
-configFile = File.open("/tmp/config", "a") do |file|
-   clients.each do |node|
-      file.puts("Host #{node}")
-      file.puts("   Hostname #{node}")
-      file.puts("   User root")
-      file.puts("   StrictHostKeyChecking no")
-   end
-end
-
-# Copy updated config for Ceph to monitor node
-Cute::TakTuk.start([monitor], :user => "root") do |tak|
-     tak.put("/tmp/config", "/root/.ssh/config") # copy updated config file to monitor
-     tak.loop()
-end
-
-
-# Push ssh public key to all nodes
-ssh_key =  'id_rsa'
-Cute::TakTuk.start(clients, :user => "root") do |tak|
-     tak.put(".ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub")
-     tak.exec!("cat /root/.ssh/#{ssh_key}.pub >> /root/.ssh/authorized_keys")
-     tak.loop()
-end
-
-# Preflight checklist completed.
-puts "Pre-flight checklist completed." + "\n"
-
-
-# Purging any previous Ceph installations.
-puts "Purging any previous Ceph installations..."
-
-clientsShort = clients.map do |node|  # array of short names of nodes
-     node.split(".").first
-end
-clientsList = clientsShort.join(' ') # text list of short names separated by spaces
-
-# Cleanup: Purge previous Ceph installations if any & clear config
-Cute::TakTuk.start([monitor], :user => "root") do |tak|
-     tak.exec!("ceph-deploy purge #{clientsList}")
-     tak.exec!("ceph-deploy forgetkeys")
-     tak.exec!("rm -f ceph.conf")
-     tak.loop()
-end
-
-# Purged previous Ceph installations.
-puts "Purged previous Ceph installations." + "\n"
-
-
-# Installing Ceph client.
-puts "Installing Ceph client..."
-
-# Install ceph on all client nodes
-Cute::TakTuk.start([monitor], :user => "root") do |tak|
-          tak.exec!("export https_proxy=\"https://proxy:3128\"; export http_proxy=\"http://proxy:3128\"; ceph-deploy install --release #{argRelease} #{clientsList}")
+# Install & administer ceph on all clients
+clients.each do |client|
+     clientShort = client.split(".").first
+     Cute::TakTuk.start([monitor], :user => "root") do |tak|
+          tak.exec!("ceph-deploy install --release #{argRelease} #{clientShort}")
+          tak.exec!("ceph-deploy --overwrite-conf admin #{clientShort}")
           tak.loop()
-end
-
-
-# Ceph installation on all client nodes completed.
-puts "Ceph client installation completed." + "\n"
-
-
-# Add Ceph client to deployed Ceph cluster.
-puts "Adding Ceph client(s) #{clients} to cluster ..."
-
-# Push config file and admin keys from monitor node to all ceph clients
-monitorShort = monitor.split(".").first
-Cute::TakTuk.start([monitor], :user => "root") do |tak|
-     tak.exec!("ceph-deploy --overwrite-conf admin #{monitorShort} #{clientsList}")
-     tak.loop()
-end
-
-# Ensure correct permissions for ceph.client.admin.keyring
-Cute::TakTuk.start(clients, :user => "root") do |tak|
-     tak.exec!("chmod +r /etc/ceph/ceph.client.admin.keyring")
-     tak.loop()
-end
-
-# Clients added to cluster.
-puts "Clients #{clients} added to Ceph cluster." + "\n"
-
-
-# Finally check if Ceph Cluster was correctly deployed - result should be "active+clean"
-Cute::TakTuk.start([monitor], :user => "root") do |tak|
-     result = tak.exec!("ceph status")
-     end_result = result[monitor][:output]
-     if end_result.include? "active+clean"
-        puts "Ceph cluster up and running. In state 'active+clean'." + "\n"
      end
-     tak.loop()
-end
+end # clients.each do
+
+# Finally check if Ceph clients correctly deployed - result should be "active+clean"
+clients.each do |client|
+   Cute::TakTuk.start([client], :user => "root") do |tak|
+        result = tak.exec!("ceph status")
+        end_result = result[client][:output]
+        if end_result.include? "active+clean"
+           puts "Ceph client added at: #{client}" + "\n"
+        end
+        tak.loop()
+   end
+end # clients.each do
 
 
-
-# Creating & pushing config file for Ceph production cluster.
-puts "Creating & pushing config file for Ceph production cluster ..."
-
-# Prepare ceph.conf file for production Ceph cluster
-configFile = File.open("/tmp/ceph.conf", "w") do |file|
-   file.puts("[global]")
-   file.puts("  mon initial members = ceph0,ceph1,ceph2")
-   file.puts("  mon host = 172.16.111.30,172.16.111.31,172.16.111.32")
-end
-
-# Then put ceph.conf file to all client nodes
-Cute::TakTuk.start(clients, :user => "root") do |tak|
-     result = tak.exec!("curl -k https://api.grid5000.fr/sid/storage/ceph/auths/#{user}.keyring | cat - > /etc/ceph/ceph.client.#{user}.keyring")
-puts result
-     tak.exec!("rm -rf prod/")
-     tak.exec!("mkdir prod/; touch prod/ceph.conf")
-     tak.put("/tmp/ceph.conf", "prod/ceph.conf")
-     tak.loop()
-end
-
-# Created & pushed config file for Ceph production cluster.
-puts "Created & pushed config file for Ceph production cluster to all clients." + "\n"
-
+# Ceph installation on all nodes completed.
+puts "Ceph client(s) installation completed." + "\n"
 
