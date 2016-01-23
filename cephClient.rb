@@ -167,3 +167,34 @@ g5k.wait_for_deploy(jobCephClient)
 # Deployed Ceph clients.
 puts "Deployed Ceph clients." + "\n"
 
+
+
+# Installing & adding clients to Ceph deployed cluster.
+puts "Adding following clients to deployed Ceph cluster: #{clients}"
+
+# Install & administer ceph on all clients
+clients.each do |client|
+     clientShort = client.split(".").first
+     Cute::TakTuk.start([monitor], :user => "root") do |tak|
+          tak.exec!("ceph-deploy install --release #{argRelease} #{clientShort}")
+          tak.exec!("ceph-deploy --overwrite-conf admin #{clientShort}")
+          tak.loop()
+     end
+end # clients.each do
+
+# Finally check if Ceph clients correctly deployed - result should be "active+clean"
+clients.each do |client|
+   Cute::TakTuk.start([client], :user => "root") do |tak|
+        result = tak.exec!("ceph status")
+        end_result = result[client][:output]
+        if end_result.include? "active+clean"
+           puts "Ceph client added at: #{client}" + "\n"
+        end
+        tak.loop()
+   end
+end # clients.each do
+
+
+# Ceph installation on all nodes completed.
+puts "Ceph client(s) installation completed." + "\n"
+
