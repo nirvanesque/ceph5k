@@ -164,9 +164,6 @@ puts "Deploying Ceph client(s) on nodes: #{clients}" + "\n"
 depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClient)
 g5k.wait_for_deploy(jobCephClient)
 
-# Deployed Ceph clients.
-puts "Deployed Ceph clients." + "\n"
-
 
 
 # Installing & adding clients to Ceph deployed cluster.
@@ -183,14 +180,16 @@ clients.each do |client|
 end # clients.each do
 
 # Finally check if Ceph clients correctly deployed - result should be "active+clean"
-   Cute::TakTuk.start(clients, :user => "root") do |tak|
+clients.each do |client|
+   Cute::TakTuk.start([client], :user => "root") do |tak|
         result = tak.exec!("ceph status")
-        end_result = result[:output]
+        end_result = result[client][:output]
         if end_result.include? "active+clean"
            puts "Ceph client added at: #{client}" + "\n"
         end
         tak.loop()
    end
+end # clients.each do
 
 
 # Ceph installation on all nodes completed.
