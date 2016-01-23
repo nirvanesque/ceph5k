@@ -180,7 +180,7 @@ clients.each do |client|
 end # clients.each do
 
 # Finally check if Ceph clients correctly deployed - result should be "active+clean"
-   Cute::TakTuk.start([client], :user => "root") do |tak|
+   Cute::TakTuk.start(clients, :user => "root") do |tak|
         result = tak.exec!("ceph status")
 puts result
 =begin
