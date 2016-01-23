@@ -140,13 +140,13 @@ else
    jobs.each do |job|
       if job["name"] == argJobClient # if client job exists already, get nodes
          jobCephClient = job
-         clients = jobCephCluster["assigned_nodes"]
+         clients = jobCephClient["assigned_nodes"]
 
       end # if job["name"] == argJobName
    end # jobs.each do |job|
 end # if argJobID
 # At this point job details were fetched
-puts "Ceph client job details recovered." + "\n" if jobCephClient.nil?
+puts "Ceph client job details recovered." + "\n" if !jobCephClient.nil?
 
 
 
