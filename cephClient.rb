@@ -200,16 +200,14 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
      # Map RBD & create FS on deployed cluster
      tak.exec!("rbd map #{argClientRBDName} --pool #{argClientPoolName}")
      result = tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argClientPoolName}/#{argClientRBDName}")
-puts "Make FS: "
-puts result
-
      tak.loop()
 end
 # Mapped RBDs & created FS for clients on Ceph deployed cluster.
 puts "Mapped RBDs #{argRBDName} for clients on deployed Ceph." + "\n"
 
-=begin
 
+# Mount RBDs on clients.
+puts "Mounting RBDs in deployed Ceph clusters on client(s) ..."
 clients.each do |client|
    Cute::TakTuk.start([client], :user => "root") do |tak|
 
@@ -218,12 +216,8 @@ clients.each do |client|
         tak.exec!("rmdir /mnt/#{argMntDepl}")
         tak.exec!("mkdir /mnt/#{argMntDepl}")
         result = tak.exec!("mount /dev/rbd/#{argClientPoolName}/#{argClientRBDName} /mnt/#{argMntDepl}")
-        if result[client][:status] == 0
-           puts "Mounted RBD as File System on client: #{client}" + "\n"
-        end
-
+        puts "Mounted RBD on client: #{client}" + "\n" if result[:status] == 0
         tak.loop()
    end
 end # clients.each do
 
-=end
