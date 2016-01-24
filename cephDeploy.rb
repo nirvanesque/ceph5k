@@ -445,32 +445,6 @@ else # Option for single OSD per node
 end # if-else for single/multi-OSD per node
 
 
-# Write to osdIndex & osdList files locally
-confFile = File.open("osdIndex", "w"){ |file|
-   file.puts("#{osdIndex + 1}") # Incremental number of last OSD data path
-}
-confFile = File.open("osdList", "w"){ |file|
-   osdNodes.each do |node|
-      file.puts("#{node}") # Incremental list of OSD nodes in cluster      
-   end
-}
-confFile = File.open("monList", "w"){ |file|
-   [monitor].each do |node|
-      file.puts("#{node}") # Incremental list of last monitor nodes      
-   end
-}
-
-
-# Then put osdIndex, osdList files to monitor
-Cute::TakTuk.start([monitor], :user => "root") do |tak|
-     tak.exec!("rm osdIndex osdList monList") # Delete old files, if any
-     tak.put("osdIndex", "osdIndex")
-     tak.put("osdList", "osdList")
-     tak.put("monList", "monList")
-     tak.loop()
-end
-
-
 # Distribute config & keyrings for cluster.
 puts "Distributing config and keyrings for cluster..."
 
