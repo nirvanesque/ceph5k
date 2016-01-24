@@ -167,7 +167,7 @@ puts "Deploying Ceph client(s) on nodes: #{clients}" + "\n"
 
 
 # Installing & adding clients to Ceph deployed cluster.
-puts "Adding following clients to deployed Ceph cluster: #{clients}"
+puts "Adding following clients to deployed Ceph cluster:"
 
 # Install & administer ceph on all clients
 clients.each do |client|
@@ -175,8 +175,7 @@ clients.each do |client|
      Cute::TakTuk.start([monitor], :user => "root") do |tak|
           tak.exec!("ceph-deploy install --release #{argRelease} #{clientShort}")
           result = tak.exec!("ceph-deploy --overwrite-conf admin #{clientShort}")
-puts "Ceph admin client:"
-puts result[monitor][:status]
+          puts "#{client}" if result[monitor][:status] == 0
           tak.loop()
      end
 end # clients.each do
