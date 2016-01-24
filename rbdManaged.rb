@@ -92,13 +92,8 @@ abort("No deployed Ceph cluster found. First deploy Ceph cluster, then run scrip
 # At this point job details were fetched
 puts "Ceph deployment job details recovered." + "\n"
 
-# Change to be read/write from YAML file
-nodes = jobCephCluster["assigned_nodes"]
-monitor = nodes[0] # Currently single monitor. Later make multiple monitors.
-client = nodes[1] # Currently single client. Later make multiple clients.
-osdNodes = nodes - [monitor] - [client]
-radosGW = monitor # as of now the machine is the same for monitor & rados GW
-monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
+# Get the client for the deployed Ceph cluster
+client = jobCephCluster["assigned_nodes"][1]
 
 # Remind where is the Ceph client
 puts "Ceph client on: #{client}" + "\n"
@@ -111,7 +106,7 @@ configFile = File.open("ceph5k/prod/ceph.conf", "w") do |file|
    file.puts("  mon host = 172.16.111.30,172.16.111.31,172.16.111.32")
 end
 
-# Then put ceph.conf file to all client nodes
+# Then put ceph.conf file to all clients
 Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("rm -rf prod/")
      tak.exec!("mkdir prod/ && touch prod/ceph.conf")

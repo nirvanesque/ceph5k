@@ -47,10 +47,10 @@ end
 opts = Trollop::options do
   version "ceph5k 0.0.4 (c) 2015-16 Anirvan BASU, INRIA RBA"
   banner <<-EOS
-sparkClient.rb is a script for creating RBD and FS on deployed Ceph cluster.
+cephClient.rb is a script for creating RBD and FS on deployed Ceph cluster.
 
 Usage:
-       sparkClient.rb [options]
+       cephClient.rb [options]
 where [options] are:
 EOS
 

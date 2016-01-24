@@ -93,12 +93,8 @@ abort("No deployed Ceph cluster found. First deploy Ceph cluster, then run scrip
 # At this point job details were fetched
 puts "Ceph deployment job details recovered." + "\n"
 
-# Change to be read/write from YAML file
-nodes = jobCephCluster["assigned_nodes"]
-monitor = nodes[0] # Currently single monitor. Later make multiple monitors.
-client = nodes[1] # Currently single client. Later make multiple clients.
-osdNodes = nodes - [monitor] - [client]
-monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
+# Get the client for the deployed Ceph cluster
+client = jobCephCluster["assigned_nodes"][1]
 
 # Remind where is the Ceph client
 puts "Ceph client on: #{client}" + "\n"
@@ -154,5 +150,3 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
 
      tak.loop()
 end
-
-
