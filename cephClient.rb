@@ -179,22 +179,55 @@ clients.each do |client|
      end
 end # clients.each do
 
-# Finally check if Ceph clients correctly deployed - result should be "active+clean"
+
+puts "Creating Ceph pools on deployed cluster ..." + "\n"
+# Create Ceph pools & RBDs
+Cute::TakTuk.start(clients, :user => "root") do |tak|
+     tak.exec!("modprobe rbd")
+     tak.exec!("rados mkpool #{argClientPoolName}")
+     result = tak.exec!("rbd create #{argClientRBDName} --pool #{argClientPoolName} --size #{argClientRBDSize}")
+puts result
+
+     tak.loop()
+end
+
+# Created Pools & RBDs for Ceph deployed cluster.
+puts "Created Ceph pool on deployed cluster as follows :" + "\n"
+puts "Pool name: #{argClientPoolName} , RBD Name: #{argClientRBDName} , RBD Size: #{argClientRBDSize} " + "\n"
+
+
+# Map RBDs and create File Systems.
+puts "Mapping RBD in deployed Ceph clusters ..."
+Cute::TakTuk.start(clients, :user => "root") do |tak|
+     # Map RBD & create FS on deployed cluster
+     result = tak.exec!("rbd map #{argClientRBDName} --pool #{argClientPoolName}")
+puts result
+     result = tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argClientPoolName}/#{argClientRBDName}")
+puts result
+=begin
+     if result[client][:status] == 0
+        puts "Mapped RBD #{argRBDName} on deployed Ceph." + "\n"
+     end
+=end
+     tak.loop()
+end
+
+
+
 clients.each do |client|
    Cute::TakTuk.start([client], :user => "root") do |tak|
-        result = tak.exec!("ceph status")
-puts result[client][:output]
-=begin
-        end_result = result[client][:output]
-        if end_result.include? "active+clean"
-           puts "Ceph client added at: #{client}" + "\n"
+
+        # mount RBD from deployed cluster
+        tak.exec!("umount /dev/rbd/#{argClientPoolName}/#{argClientRBDName} /mnt/#{argMntDepl}")
+        tak.exec!("rmdir /mnt/#{argMntDepl}")
+        tak.exec!("mkdir /mnt/#{argMntDepl}")
+        result = tak.exec!("mount /dev/rbd/#{argClientPoolName}/#{argClientRBDName} /mnt/#{argMntDepl}")
+        if result[client][:status] == 0
+           puts "Mounted RBD as File System on client: #{client}" + "\n"
         end
-=end
+
         tak.loop()
    end
 end # clients.each do
 
-
-# Ceph installation on all nodes completed.
-puts "Ceph client(s) installation completed." + "\n"
 
