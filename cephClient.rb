@@ -174,12 +174,14 @@ clients.each do |client|
      clientShort = client.split(".").first
      Cute::TakTuk.start([monitor], :user => "root") do |tak|
           tak.exec!("ceph-deploy install --release #{argRelease} #{clientShort}")
-          tak.exec!("ceph-deploy --overwrite-conf admin #{clientShort}")
+          result = tak.exec!("ceph-deploy --overwrite-conf admin #{clientShort}")
+puts "Ceph admin client:"
+puts result[monitor][:output]
           tak.loop()
      end
 end # clients.each do
 
-
+=begin
 puts "Creating Ceph pools on deployed cluster ..." + "\n"
 # Create Ceph pools & RBDs
 Cute::TakTuk.start(clients, :user => "root") do |tak|
@@ -204,11 +206,10 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
 puts result
      result = tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argClientPoolName}/#{argClientRBDName}")
 puts result
-=begin
+
      if result[client][:status] == 0
         puts "Mapped RBD #{argRBDName} on deployed Ceph." + "\n"
      end
-=end
      tak.loop()
 end
 
@@ -230,4 +231,4 @@ clients.each do |client|
    end
 end # clients.each do
 
-
+=end
