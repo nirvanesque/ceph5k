@@ -141,9 +141,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("rmdir /mnt/#{argMntDepl}")
      tak.exec!("mkdir /mnt/#{argMntDepl}")
      result = tak.exec!("mount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
-     if result[client][:status] == 0
-        puts "Mounted RBD as File System on deployed Ceph." + "\n"
-     end
+     puts "Mounted RBD on deployed Ceph client." + "\n" if result[client][:status] == 0
 
      tak.loop()
 end
