@@ -205,7 +205,7 @@ end
 # Mapped RBDs & created FS for clients on Ceph deployed cluster.
 puts "Mapped RBDs #{argRBDName} for clients on deployed Ceph." + "\n"
 
-
+=begin
 # Mount RBDs on clients.
 puts "Mounting RBDs in deployed Ceph clusters on client(s) ..."
 clients.each do |client|
@@ -219,4 +219,4 @@ puts result
         tak.loop()
    end
 end # clients.each do
-
+=end
