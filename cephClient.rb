@@ -198,13 +198,8 @@ puts "Pool name: #{argClientPoolName} , RBD Name: #{argClientRBDName} , RBD Size
 puts "Mapping RBD in deployed Ceph clusters ..."
 Cute::TakTuk.start(clients, :user => "root") do |tak|
      # Map RBD & create FS on deployed cluster
-     result = tak.exec!("rbd map #{argClientRBDName} --pool #{argClientPoolName}")
-puts "Map RBD: "
-puts result
-     result = tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argClientPoolName}/#{argClientRBDName}")
-puts "Make FS: "
-puts result
-
+     tak.exec!("rbd map #{argClientRBDName} --pool #{argClientPoolName}")
+     tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argClientPoolName}/#{argClientRBDName}")
      tak.loop()
 end
 # Mapped RBDs & created FS for clients on Ceph deployed cluster.
