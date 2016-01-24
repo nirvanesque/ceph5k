@@ -176,7 +176,7 @@ clients.each do |client|
           tak.exec!("ceph-deploy install --release #{argRelease} #{clientShort}")
           result = tak.exec!("ceph-deploy --overwrite-conf admin #{clientShort}")
 puts "Ceph admin client:"
-puts result[monitor][:output]
+puts result[monitor][:status]
           tak.loop()
      end
 end # clients.each do
