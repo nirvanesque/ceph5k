@@ -166,10 +166,8 @@ puts "Deploying #{argEnvClient} on client node(s): #{clients}" + "\n"
 
 
 
-# Installing & adding clients to Ceph deployed cluster.
+# Install & administer clients to Ceph deployed cluster.
 puts "Adding following clients to deployed Ceph cluster:"
-
-# Install & administer ceph on all clients
 clients.each do |client|
      clientShort = client.split(".").first
      Cute::TakTuk.start([monitor], :user => "root") do |tak|
@@ -180,18 +178,17 @@ clients.each do |client|
      end
 end # clients.each do
 
-puts "Creating Ceph pools on deployed cluster ..." + "\n"
+
+# Create Ceph pools on deployed cluster.
+puts "Creating Ceph pools on deployed cluster ..."
 # Create Ceph pools & RBDs
 Cute::TakTuk.start(clients, :user => "root") do |tak|
      tak.exec!("modprobe rbd")
      tak.exec!("rados mkpool #{argClientPoolName}")
-     result = tak.exec!("rbd create #{argClientRBDName} --pool #{argClientPoolName} --size #{argClientRBDSize}")
-puts result
-
+     tak.exec!("rbd create #{argClientRBDName} --pool #{argClientPoolName} --size #{argClientRBDSize}")
      tak.loop()
 end
 
-=begin
 # Created Pools & RBDs for Ceph deployed cluster.
 puts "Created Ceph pool on deployed cluster as follows :" + "\n"
 puts "Pool name: #{argClientPoolName} , RBD Name: #{argClientRBDName} , RBD Size: #{argClientRBDSize} " + "\n"
@@ -202,17 +199,17 @@ puts "Mapping RBD in deployed Ceph clusters ..."
 Cute::TakTuk.start(clients, :user => "root") do |tak|
      # Map RBD & create FS on deployed cluster
      result = tak.exec!("rbd map #{argClientRBDName} --pool #{argClientPoolName}")
+puts "Map RBD: "
 puts result
      result = tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argClientPoolName}/#{argClientRBDName}")
+puts "Make FS: "
 puts result
 
-     if result[client][:status] == 0
-        puts "Mapped RBD #{argRBDName} on deployed Ceph." + "\n"
-     end
      tak.loop()
 end
+puts "Mapped RBDs #{argRBDName} for clients on deployed Ceph." + "\n"
 
-
+=begin
 
 clients.each do |client|
    Cute::TakTuk.start([client], :user => "root") do |tak|
