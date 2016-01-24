@@ -161,8 +161,8 @@ end # if jobCephClient.nil?
 
 puts "Deploying Ceph client(s) on nodes: #{clients}" + "\n"
 # Finally, deploy the client nodes with respective environments
-depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClient)
-g5k.wait_for_deploy(jobCephClient)
+# depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClient)
+# g5k.wait_for_deploy(jobCephClient)
 
 
 
