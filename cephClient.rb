@@ -183,7 +183,7 @@ end # clients.each do
 clients.each do |client|
    Cute::TakTuk.start([client], :user => "root") do |tak|
         result = tak.exec!("ceph status")
-puts result
+puts result[client]
 =begin
         end_result = result[client][:output]
         if end_result.include? "active+clean"
