@@ -13,12 +13,12 @@
 # limitations under the License. 
 
 config:
-site: luxembourg              # Grid 5000 site for deploying Ceph cluster
-cluster: granduc              # Grid 5000 cluster in specified site
+site: rennes                  # Grid 5000 site for deploying Ceph cluster
+cluster: paravance            # Grid 5000 cluster in specified site
 job-name: cephDeploy          # Grid'5000 job name for deployed Ceph cluster
 env: "wheezy-x64-big"         # G5K environment to be deployed
 num-nodes: 6                  # Nodes in Ceph cluster
-walltime: "48:00:00"          # Walltime for Ceph cluster deployed
+walltime: "8:00:00"           # Walltime for Ceph cluster deployed
 
 release: firefly              # Ceph Release name
 cluster-name: ceph            # Ceph cluster name
@@ -31,7 +31,7 @@ file-system: ext4             # File System format on OSD disks and in created R
 mnt-depl: "ceph-depl"         # Mount point for RBD on deployed cluster
 mnt-prod: "ceph-prod"         # Mount point for RBD on production cluster
 
-job-client: Spark             # Grid'5000 job name for Ceph clients
+job-client: cephClient        # Grid'5000 job name for Ceph clients
 num-client: 10                # Nodes in Ceph Client cluster
 env-client: "jessie-x64-big"  # G5K environment for Ceph clients
 client-pool-name: cpool       # Pool name on each Ceph client (added "userid_")
