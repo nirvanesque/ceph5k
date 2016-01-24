@@ -100,12 +100,9 @@ client = jobCephCluster["assigned_nodes"][1]
 puts "Ceph client on: #{client}" + "\n"
 
 
-# Creating Ceph pools on deployed and production clusters.
+# Creating Ceph pools on deployed clusters.
 puts "Creating Ceph pool on deployed cluster ..."
-poolsList = []
-userPool = ""
-userRBD = ""
-prodCluster = false
+
 # Create Ceph pools & RBD
 Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("modprobe rbd")
