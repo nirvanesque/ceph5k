@@ -93,23 +93,16 @@ abort("No deployed Ceph cluster found. First deploy Ceph cluster, then run scrip
 # At this point job details were fetched
 puts "Ceph deployment job details recovered." + "\n"
 
-# Change to be read/write from YAML file
-nodes = jobCephCluster["assigned_nodes"]
-monitor = nodes[0] # Currently single monitor. Later make multiple monitors.
-client = nodes[1] # Currently single client. Later make multiple clients.
-osdNodes = nodes - [monitor] - [client]
-monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
+# Get the client for the deployed Ceph cluster
+client = jobCephCluster["assigned_nodes"][1]
 
 # Remind where is the Ceph client
 puts "Ceph client on: #{client}" + "\n"
 
 
-# Creating Ceph pools on deployed and production clusters.
+# Creating Ceph pools on deployed clusters.
 puts "Creating Ceph pool on deployed cluster ..."
-poolsList = []
-userPool = ""
-userRBD = ""
-prodCluster = false
+
 # Create Ceph pools & RBD
 Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("modprobe rbd")
@@ -148,11 +141,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("rmdir /mnt/#{argMntDepl}")
      tak.exec!("mkdir /mnt/#{argMntDepl}")
      result = tak.exec!("mount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
-     if result[client][:status] == 0
-        puts "Mounted RBD as File System on deployed Ceph." + "\n"
-     end
+     puts "Mounted RBD on deployed Ceph client." + "\n" if result[client][:status] == 0
 
      tak.loop()
 end
-
-

@@ -47,10 +47,10 @@ end
 opts = Trollop::options do
   version "ceph5k 0.0.4 (c) 2015-16 Anirvan BASU, INRIA RBA"
   banner <<-EOS
-sparkClient.rb is a script for creating RBD and FS on deployed Ceph cluster.
+cephClient.rb is a script for creating RBD and FS on deployed Ceph cluster.
 
 Usage:
-       sparkClient.rb [options]
+       cephClient.rb [options]
 where [options] are:
 EOS
 
@@ -159,39 +159,67 @@ if jobCephClient.nil?
 
 end # if jobCephClient.nil?
 
-puts "Deploying Ceph client(s) on nodes: #{clients}" + "\n"
+puts "Deploying #{argEnvClient} on client node(s): #{clients}" + "\n"
 # Finally, deploy the client nodes with respective environments
 depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClient)
 g5k.wait_for_deploy(jobCephClient)
 
 
 
-# Installing & adding clients to Ceph deployed cluster.
-puts "Adding following clients to deployed Ceph cluster: #{clients}"
-
-# Install & administer ceph on all clients
+# Install & administer clients to Ceph deployed cluster.
+puts "Adding following clients to deployed Ceph cluster:"
 clients.each do |client|
      clientShort = client.split(".").first
      Cute::TakTuk.start([monitor], :user => "root") do |tak|
           tak.exec!("ceph-deploy install --release #{argRelease} #{clientShort}")
-          tak.exec!("ceph-deploy --overwrite-conf admin #{clientShort}")
+          result = tak.exec!("ceph-deploy --overwrite-conf admin #{clientShort}")
+          puts "Added client: #{client}" if result[monitor][:status] == 0
           tak.loop()
      end
 end # clients.each do
 
-# Finally check if Ceph clients correctly deployed - result should be "active+clean"
+
+# Create Ceph pools on deployed cluster.
+puts "Creating Ceph pools on deployed cluster ..."
+# Create Ceph pools & RBDs
+Cute::TakTuk.start(clients, :user => "root") do |tak|
+     tak.exec!("modprobe rbd")
+     tak.exec!("rados mkpool #{argClientPoolName}")
+     tak.exec!("rbd create #{argClientRBDName} --pool #{argClientPoolName} --size #{argClientRBDSize}")
+     tak.loop()
+end
+
+# Created Pools & RBDs for Ceph deployed cluster.
+puts "Created Ceph pool on deployed cluster as follows :" + "\n"
+puts "Pool name: #{argClientPoolName} , RBD Name: #{argClientRBDName} , RBD Size: #{argClientRBDSize} " + "\n"
+
+
+# Map RBDs and create File Systems.
+puts "Mapping RBD in deployed Ceph clusters ..."
+Cute::TakTuk.start(clients, :user => "root") do |tak|
+     # Map RBD & create FS on deployed cluster
+     tak.exec!("rbd map #{argClientRBDName} --pool #{argClientPoolName}")
+     tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argClientPoolName}/#{argClientRBDName}")
+     tak.loop()
+end
+# Mapped RBDs & created FS for clients on Ceph deployed cluster.
+puts "Mapped RBDs #{argRBDName} for clients on deployed Ceph." + "\n"
+
+
+# Mount RBDs on Ceph client(s).
+puts "Mounting RBDs in deployed Ceph cluster on client(s) ..."
 clients.each do |client|
    Cute::TakTuk.start([client], :user => "root") do |tak|
-        result = tak.exec!("ceph status")
-        end_result = result[client][:output]
-        if end_result.include? "active+clean"
-           puts "Ceph client added at: #{client}" + "\n"
-        end
+
+        # mount RBD from deployed cluster
+        tak.exec!("umount /dev/rbd/#{argClientPoolName}/#{argClientRBDName} /mnt/#{argMntDepl}")
+        tak.exec!("rmdir /mnt/#{argMntDepl}")
+        tak.exec!("mkdir /mnt/#{argMntDepl}")
+        result = tak.exec!("mount /dev/rbd/#{argClientPoolName}/#{argClientRBDName} /mnt/#{argMntDepl}")
+        puts "Mounted RBD as File System on client: #{client}" if result[client][:status] == 0
+
         tak.loop()
    end
 end # clients.each do
 
-
-# Ceph installation on all nodes completed.
-puts "Ceph client(s) installation completed." + "\n"
 
