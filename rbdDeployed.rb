@@ -109,7 +109,6 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      # Create pools & RBD on deployed cluster
      tak.exec!("rados mkpool #{argPoolName}")
      tak.exec!("rbd create #{argRBDName} --pool #{argPoolName} --size #{argRBDSize}")
-
      tak.loop()
 end
 
@@ -124,10 +123,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      # Map RBD & create FS on deployed cluster
      result = tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
      tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argPoolName}/#{argRBDName}")
-     if result[client][:status] == 0
-        puts "Mapped RBD #{argRBDName} on deployed Ceph." + "\n"
-     end
-
+     puts "Mapped RBD #{argRBDName} on deployed Ceph." if result[client][:status] == 0
      tak.loop()
 end
 
@@ -141,7 +137,6 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("rmdir /mnt/#{argMntDepl}")
      tak.exec!("mkdir /mnt/#{argMntDepl}")
      result = tak.exec!("mount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
-     puts "Mounted RBD on deployed Ceph client." + "\n" if result[client][:status] == 0
-
+     puts "Mounted RBD on deployed Ceph client." if result[client][:status] == 0
      tak.loop()
 end
