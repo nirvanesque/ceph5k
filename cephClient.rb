@@ -159,7 +159,7 @@ if jobCephClient.nil?
 
 end # if jobCephClient.nil?
 
-puts "Deploying Ceph client(s) on nodes: #{clients}" + "\n"
+puts "Deploying #{argEnvClient} on client node(s): #{clients}" + "\n"
 # Finally, deploy the client nodes with respective environments
 # depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClient)
 # g5k.wait_for_deploy(jobCephClient)
@@ -175,7 +175,7 @@ clients.each do |client|
      Cute::TakTuk.start([monitor], :user => "root") do |tak|
           tak.exec!("ceph-deploy install --release #{argRelease} #{clientShort}")
           result = tak.exec!("ceph-deploy --overwrite-conf admin #{clientShort}")
-          puts "#{client}" if result[monitor][:status] == 0
+          puts "Adde client: #{client}" if result[monitor][:status] == 0
           tak.loop()
      end
 end # clients.each do
