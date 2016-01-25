@@ -231,7 +231,7 @@ puts "Flink directory setup completed." + "\n"
 template = ERB.new File.new("./ceph5k/flink/flink-conf.yaml.erb").read, nil, "%"
 # Write result to config file flink-conf.yaml
 flinkFileText = template.result(binding)
-File.open("ceph5k/config/flink/flink-conf.yaml", 'w+') do |file|
+File.open("ceph5k/config/flink/flink-conf.yaml", "w") do |file|
    file.write(flinkFileText)
 end
 
