@@ -218,7 +218,7 @@ clients.each do |client|
         tak.exec!("rmdir /mnt/#{argMntDepl}")
         tak.exec!("mkdir /mnt/#{argMntDepl}")
         result = tak.exec!("mount /dev/rbd/#{argClientPoolName}/#{argClientRBDName} /mnt/#{argMntDepl}")
-puts result[client]
+puts result[client][:status]
 #        puts "Mounted RBD as File System on client: #{client}" if result[client][:status] == 0
 
         tak.loop()
