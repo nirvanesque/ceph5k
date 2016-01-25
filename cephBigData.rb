@@ -210,6 +210,8 @@ end
 puts "ssh key-sharing completed." + "\n"
 
 
+# Flink directory setup 
+puts "Getting Flink tar and setting up directory ..."
 
 # Push flink tar file to all nodes
 flinkLink = "http://mirrors.ircam.fr/pub/apache/flink/flink-0.10.1/flink-0.10.1-bin-hadoop1-scala_2.10.tgz"
@@ -224,27 +226,27 @@ end
 # Flink directory setup completed
 puts "Flink directory setup completed." + "\n"
 
-=begin
+
 # Read template file flink-conf.yaml.erb
-template = ERB.new File.new("./ceph5k/config/flink-conf.yaml.erb").read, nil, "%"
-# Fill up variables
-mon_initial_members = monAllNodesList
-mon_host = monAllNodesIPList
-public_network = monAllNodesIP[0]
-radosgw_host = monAllNodes[0]
-# Write result to config file ceph.conf
+template = ERB.new File.new("./ceph5k/flink/flink-conf.yaml.erb").read, nil, "%"
+# Write result to config file flink-conf.yaml
 flinkFileText = template.result(binding)
-File.open("#{flinkDir}/", 'w+') do |file|
-   file.write(cephFileText)
+File.open("ceph5k/config/flink/flink-conf.yaml", 'w+') do |file|
+   file.write(flinkFileText)
 end
 
+# Prepare config file "slaves" locally
+slavesFile = File.open("ceph5k/config/flink/slaves", "w") do |file|
+   slaves.each do |slave|
+      file.puts("#{slave}")
+   end
+end
 
-# Then put ceph.conf file to all nodes
+# Then put 2 config files to all nodes
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.exec!("rm ceph.conf")
-     tak.exec!("mkdir /etc/ceph; touch /etc/ceph/ceph.conf")
-     tak.put("ceph.conf", "ceph.conf")
-     tak.put("ceph.conf", "/etc/ceph/ceph.conf")
+     tak.exec!("rm /root/#{flinkDir}/conf/flink-conf.yaml; rm /root/#{flinkDir}/conf/slaves")
+     tak.put("ceph5k/config/flink/flink-conf.yaml", "/root/#{flinkDir}/conf/flink-conf.yaml")
+     tak.put("ceph5k/config/flink/slaves", "/root/#{flinkDir}/conf/slaves")
      tak.loop()
 end
 =end
