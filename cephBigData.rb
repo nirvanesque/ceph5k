@@ -216,7 +216,7 @@ flinkLink = "http://mirrors.ircam.fr/pub/apache/flink/flink-0.10.1/flink-0.10.1-
 flinkDir = "flink-0.10.1"
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm flink.tgz ; rm -rf #{flinkDir}")
-     tak.put("/home/abasu/public/flink.tgz" "/root/flink.tgz")
+     tak.put("/home/abasu/public/flink.tgz", "/root/flink.tgz")
      tak.exec!("tar -xzf /root/flink.tgz")
      tak.loop()
 end
