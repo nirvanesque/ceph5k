@@ -99,10 +99,10 @@ argJobClient = opts[:'job-client'] # Grid'5000 job name for Ceph clients.
 argNumClient = opts[:'num-client'] # Nodes in Ceph Client cluster.
 argClientPoolName = "#{user}_" + opts[:'client-pool-name'] # Pool name on each Ceph client.
 argClientRBDName = "#{user}_" + opts[:'client-rbd-name'] # RBD name for each Ceph client.
-# argClientPoolSize = opts[:'client-pool-size'] # Pool size on each Ceph client.
-# argClientRBDSize = opts[:'client-rbd-size'] # RBD size for each Ceph client.
-argClientPoolSize = (argPoolSize.to_i / argNumClient.to_i).floor # Calc. pool size automatically.
-argClientRBDSize = (argRBDSize.to_i / argNumClient.to_i).floor # Calc. RBD size automatically.
+argClientPoolSize = opts[:'client-pool-size'] # Pool size on each Ceph client.
+argClientRBDSize = opts[:'client-rbd-size'] # RBD size for each Ceph client.
+# argClientPoolSize = (argPoolSize.to_i / argNumClient.to_i).floor # Calc. pool size automatically.
+# argClientRBDSize = (argRBDSize.to_i / argNumClient.to_i).floor # Calc. RBD size automatically.
 
 
 # get the job with name "cephCluster"
