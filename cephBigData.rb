@@ -214,8 +214,8 @@ puts "ssh key-sharing completed." + "\n"
 puts "Getting Flink tar and setting up directory ..."
 
 # Push flink tar file to all nodes
-flinkLink = "http://mirrors.ircam.fr/pub/apache/flink/flink-0.10.1/flink-0.10.1-bin-hadoop1-scala_2.10.tgz"
 flinkDir = "flink-0.10.1"
+flinkLink = "http://mirrors.ircam.fr/pub/apache/flink/flink-0.10.1/flink-0.10.1-bin-hadoop1-scala_2.10.tgz"
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm flink.tgz ; rm -rf #{flinkDir}")
      tak.put("/home/abasu/public/flink.tgz", "/root/flink.tgz")
@@ -249,4 +249,24 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.put("ceph5k/config/flink/slaves", "/root/#{flinkDir}/conf/slaves")
      tak.loop()
 end
+
+# Flink config files copied
+puts "Flink config files copied." + "\n"
+
+
+# Starting Flink 
+puts "Starting Flink on master node ..."
+Cute::TakTuk.start([master], :user => "root") do |tak|
+     tak.exec!("/root/#{flinkDir}/bin/start-cluster.sh")
+     tak.loop()
+end
+
+# Flink started
+puts "Flink started on Master node: #{master}" + "\n"
+puts "Login to master node to submit jobs!" + "\n"
+
+
+
+
+
 
