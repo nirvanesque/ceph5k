@@ -249,5 +249,4 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.put("ceph5k/config/flink/slaves", "/root/#{flinkDir}/conf/slaves")
      tak.loop()
 end
-=end
 
