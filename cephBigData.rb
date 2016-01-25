@@ -215,12 +215,37 @@ puts "ssh key-sharing completed." + "\n"
 flinkLink = "http://mirrors.ircam.fr/pub/apache/flink/flink-0.10.1/flink-0.10.1-bin-hadoop1-scala_2.10.tgz"
 flinkDir = "flink-0.10.1"
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.exec!("rm flink.tgz ; rm -rf flink-0.10.1")
-     tak.exec!("curl -o flink.tgz #{flinkLink}")
-     tak.exec!("tar -xzf flink.tgz")
+     tak.exec!("rm flink.tgz ; rm -rf #{flinkDir}")
+     tak.put("/home/abasu/public/flink.tgz /root/flink.tgz")
+     tak.exec!("tar -xzf /root/flink.tgz")
      tak.loop()
 end
 
-# Flink directory steup completed
-puts "Flink directory steup completed." + "\n"
+# Flink directory setup completed
+puts "Flink directory setup completed." + "\n"
+
+=begin
+# Read template file flink-conf.yaml.erb
+template = ERB.new File.new("./ceph5k/config/flink-conf.yaml.erb").read, nil, "%"
+# Fill up variables
+mon_initial_members = monAllNodesList
+mon_host = monAllNodesIPList
+public_network = monAllNodesIP[0]
+radosgw_host = monAllNodes[0]
+# Write result to config file ceph.conf
+flinkFileText = template.result(binding)
+File.open("#{flinkDir}/", 'w+') do |file|
+   file.write(cephFileText)
+end
+
+
+# Then put ceph.conf file to all nodes
+Cute::TakTuk.start(nodes, :user => "root") do |tak|
+     tak.exec!("rm ceph.conf")
+     tak.exec!("mkdir /etc/ceph; touch /etc/ceph/ceph.conf")
+     tak.put("ceph.conf", "ceph.conf")
+     tak.put("ceph.conf", "/etc/ceph/ceph.conf")
+     tak.loop()
+end
+=end
 
