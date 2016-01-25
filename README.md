@@ -80,7 +80,8 @@ Following are options related to reserving resources on Grid'5000:
 
 Ceph-specific options :
 
-        -d, --def-conf=<s>                 Default configuration file (default: dssk/config/defaults.yml)
+Following are options related to Ceph cluster characteristics:
+
         -r, --release=<s>                  Ceph Release name (default: firefly)
         -p, --ceph-name=<s>                Ceph cluster name (default: ceph)
         -m, --multi-osd, --no-multi-osd    Multiple OSDs on each node (default: true)
@@ -99,7 +100,7 @@ If interested in using the PRy shell interface, type at CLI
 
 And then simply copy & paste the lines of cephDeploy.rb in the PRy shell.
 
-### Options for: Creating RBD and installing a File System
+### Options for: Creating RBD and installing a File System on Ceph clusters
 Given a Ceph cluster (deployed cluster or production cluster), one needs to create pools, RBDs in the cluster(s), subsequently, format a File System (FS) and then mount the FS. These tasks are automated on a Grid'5000 frontend using the following command:
 
         ./ceph5k/rbdDeployed.rb [options]
@@ -109,7 +110,7 @@ where [options] are:
 
 RBD & Ceph-specific options :
 
-Following are options related to reserving resources on Grid'5000:
+Following are options related to Ceph cluster characteristics:
 
         -d, --def-conf=string                  Default configuration file (default: dssk/config/defaults.yml)
         -p, --pool-name=string                 Name of pool to create on Ceph clusters (default: pool)
@@ -119,6 +120,57 @@ Following are options related to reserving resources on Grid'5000:
         -f, --file-system=string               File System to format on created RBDs (default: ext4)
         -t, --mnt-depl=string                  Mount point for RBD on deployed cluster (default: ceph-depl)
         -P, --mnt-prod=string                  Mount point for RBD on production cluster (default: ceph-prod)
+
+Other generic options :
+
+        -v, --version            Print version and exit
+        -h, --help               Show this message
+        -i, --ignore             Ignore incorrect values
+
+
+### Options for: Creating multiple Ceph clients (RBD + FS) on deployed cluster
+Given a Ceph cluster (deployed cluster or production cluster), one needs to create pools, RBDs in the cluster(s), subsequently, format a File System (FS) and then mount the FS. Once can even create multiple Ceph clients each with its own RBD mounted as File System, which can be further used in experimental setup (e.g. Big Data experiments with 'n' nodes, each of which is a Ceph client accessing data chunks in a data storage cluster. These tasks are automated on a Grid'5000 frontend using the following command:
+
+        ./ceph5k/cephClient.rb [options]
+
+where [options] are:
+
+Grid'5000-specific options :
+
+Following are options related to reserving resources on Grid'5000:
+
+        --def-conf=string                      Default configuration file (default: dssk/config/defaults.yml)
+        -j, --jobid=int                        Oarsub ID of the client job (default: 0)
+        -s, --site=string                      Grid 5000 site for deploying Ceph cluster (default: rennes)
+        -c, --cluster=string                   Grid 5000 cluster in specified site (default: paravance)
+        -o, --job-name=string                  Grid'5000 job name for deployed Ceph cluster (default: cephDeploy)
+        -w, --walltime=hour:min:sec            Wall time for deployment (default: 03:00:00)
+        -e, --job-client=string                Grid'5000 job name for Ceph clients (default: cephClient)
+        -n, --env-client=string                G5K environment for client (default: jessie-x64-big)
+        -u, --num-client=int                   Nodes in Ceph Client cluster (default: 10)
+
+RBD & Ceph-specific options :
+
+Following are options related to Ceph cluster characteristics:
+
+        -p, --pool-name=string                 Name of pool to create on Ceph clusters (default: pool)
+        -o, --pool-size=int                    Size of pool in MB, to create on Ceph clusters (default: 57600)
+        -b, --rbd-name=string                  Name of RBD to create inside Ceph pool (default: image)
+        -d, --rbd-size=int                     Size of RBD in MB, to create inside Ceph pool (default: 57600)
+        -f, --file-system=string               File System to format on created RBDs (default: ext4)
+        -t, --mnt-depl=string                  Mount point for RBD on deployed cluster (default: ceph-depl)
+        -P, --mnt-prod=string                  Mount point for RBD on production cluster (default: ceph-prod)
+        -r, --release=string                   Ceph Release name (default: firefly)
+        -p, --pool-name=string                 Pool name on Ceph cluster (userid_ added) (default: pool)
+        -l, --pool-size=int                    Pool size on Ceph cluster
+        -b, --rbd-name=string                  RBD name for Ceph pool (userid_ added) (default: image)
+        --rbd-size=int                         RBD size on Ceph pool (default: 57600)
+        -f, --file-system=string               File System to be formatted on created RBDs (default: ext4)
+        -m, --mnt-depl=string                  Mount point for RBD on deployed cluster (default: ceph-depl)
+        -t, --client-pool-name=string          Pool name on each Ceph client (userid_ is added) (default: cpool)
+        -z, --client-pool-size=int             Pool size for each Ceph client (~ pool-size / num-clients) (default: 5760)
+        -a, --client-rbd-name=string           RBD name on each Ceph client (userid_ added) (default: cpool)
+        --client-rbd-size=int                  RBD size for each Ceph client (~ pool-size / num-clients) (default: 5760)
 
 Other generic options :
 
