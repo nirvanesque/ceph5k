@@ -31,7 +31,7 @@ file-system: ext4             # File System format on OSD disks and in created R
 mnt-depl: "ceph-depl"         # Mount point for RBD on deployed cluster
 mnt-prod: "ceph-prod"         # Mount point for RBD on production cluster
 
-job-client: Hadoop            # Grid'5000 job name for Ceph clients
+job-client: cephClient        # Grid'5000 job name for Ceph clients
 num-client: 10                # Nodes in Ceph Client cluster
 env-client: "jessie-x64-big"  # G5K environment for Ceph clients
 client-pool-name: cpool       # Pool name on each Ceph client (added "userid_")
