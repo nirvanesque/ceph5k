@@ -155,7 +155,7 @@ if jobCephClient.nil?
 
    puts "No existing Ceph client job, creating one with parameters." + "\n" 
    jobCephClient = g5k.reserve(:name => argJobClient, :nodes => argNumClient, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :type => :deploy)
-   clients = jobCephCluster["assigned_nodes"][1]
+   clients = jobCephClient["assigned_nodes"]
 
 end # if jobCephClient.nil?
 
