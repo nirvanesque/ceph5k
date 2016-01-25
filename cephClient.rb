@@ -96,7 +96,7 @@ argMntDepl = opts[:'mnt-depl'] # Mount point for RBD in deployed cluster.
 
 argEnvClient = opts[:'env-client'] # Grid'5000 environment to deploy Ceph clients. 
 argJobClient = opts[:'job-client'] # Grid'5000 job name for Ceph clients. 
-argNumClient = opts[:'num-clients'] # Nodes in Ceph Client cluster.
+argNumClient = opts[:'num-client'] # Nodes in Ceph Client cluster.
 argClientPoolName = "#{user}_" + opts[:'client-pool-name'] # Pool name on each Ceph client.
 argClientPoolSize = opts[:'client-pool-size'] # Pool size on each Ceph client.
 argClientRBDName = "#{user}_" + opts[:'client-rbd-name'] # RBD name for each Ceph client.
@@ -154,11 +154,6 @@ puts "Ceph client job details recovered." + "\n" if !jobCephClient.nil?
 if jobCephClient.nil?
 
    puts "No existing Ceph client job, creating one with parameters." + "\n" 
-puts argJobClient
-puts argNumClient
-puts argSite
-puts argG5KCluster
-puts argWallTime
    jobCephClient = g5k.reserve(:name => argJobClient, :nodes => argNumClient, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :type => :deploy)
    clients = jobCephClient["assigned_nodes"]
 
