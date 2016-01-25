@@ -206,8 +206,21 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.loop()
 end
 
-# Preflight checklist completed.
+# ssh key-sharing completed.
 puts "ssh key-sharing completed." + "\n"
 
 
+
+# Push flink tar file to all nodes
+flinkLink = "http://mirrors.ircam.fr/pub/apache/flink/flink-0.10.1/flink-0.10.1-bin-hadoop1-scala_2.10.tgz"
+flinkDir = "flink-0.10.1"
+Cute::TakTuk.start(nodes, :user => "root") do |tak|
+     tak.exec!("rm flink.tgz ; rm -rf flink-0.10.1")
+     tak.exec!("curl -o flink.tgz #{flinkLink}")
+     tak.exec!("tar -xzf flink.tgz")
+     tak.loop()
+end
+
+# Flink directory steup completed
+puts "Flink directory steup completed." + "\n"
 
