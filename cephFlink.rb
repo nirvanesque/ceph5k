@@ -118,7 +118,7 @@ jobs.each do |job|
 end # jobs.each do |job|
 
 # Abort script if no deployed Ceph cluster
-abort("No deployed Ceph cluster found. First deploy Ceph cluster, then run script.") if jobCephCluster.nil?
+abort("No deployed Ceph cluster found. First run cephDeploy & cephClient scripts, then run this script.") if jobCephCluster.nil?
 
 # Remind where is the deployed Ceph monitor
 puts "Deployed Ceph cluster details:"
@@ -148,77 +148,125 @@ end # if argJobID
 # At this point job details were fetched
 puts "Ceph client job details recovered." + "\n" if !jobCephClient.nil?
 
+abort("No Ceph client(s) found. First run cephClient script, then run this script.") if jobCephClient.nil?
+
+# At this point Big Data nodes were created or fetched
+puts "Big Data job details recovered." + "\n"
 
 
-# Finally, if Ceph client job does not yet exist reserve nodes
-if jobCephClient.nil?
+# Change to be read/write from YAML file
+nodes = jobCephClient["assigned_nodes"]
+master = nodes[0] # The first node in the list becomes the master
+slaves = nodes - [monitor]
 
-   puts "No existing Ceph client job, creating one with parameters." + "\n" 
-   jobCephClient = g5k.reserve(:name => argJobClient, :nodes => argNumClient, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :type => :deploy)
-   clients = jobCephClient["assigned_nodes"]
-
-end # if jobCephClient.nil?
-
-puts "Deploying #{argEnvClient} on client node(s): #{clients}" + "\n"
-# Finally, deploy the client nodes with respective environments
-depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClient)
-g5k.wait_for_deploy(jobCephClient)
+# At this point job was created / fetched
+puts "Deploying Big Data cluster as follows:"
+puts " All nodes: #{nodes}" 
+puts "Master node on: #{master}"
+puts "Slave node(s) on: #{slaves}" + "\n"
 
 
+# ssh key-sharing for password-less access from master node.
+puts "ssh key-sharing for password-less access from master node ..."
 
-# Install & administer clients to Ceph deployed cluster.
-puts "Adding following clients to deployed Ceph cluster:"
-clients.each do |client|
-     clientShort = client.split(".").first
-     Cute::TakTuk.start([monitor], :user => "root") do |tak|
-          tak.exec!("ceph-deploy install --release #{argRelease} #{clientShort}")
-          result = tak.exec!("ceph-deploy --overwrite-conf admin #{clientShort}")
-          puts "Added client: #{client}" if result[monitor][:status] == 0
-          tak.loop()
-     end
-end # clients.each do
-
-
-# Create Ceph pools on deployed cluster.
-puts "Creating Ceph pools on deployed cluster ..."
-# Create Ceph pools & RBDs
-Cute::TakTuk.start(clients, :user => "root") do |tak|
-     tak.exec!("modprobe rbd")
-     tak.exec!("rados mkpool #{argClientPoolName}")
-     tak.exec!("rbd create #{argClientRBDName} --pool #{argClientPoolName} --size #{argClientRBDSize}")
-     tak.loop()
-end
-
-# Created Pools & RBDs for Ceph deployed cluster.
-puts "Created Ceph pool on deployed cluster as follows :" + "\n"
-puts "Pool name: #{argClientPoolName} , RBD Name: #{argClientRBDName} , RBD Size: #{argClientRBDSize} " + "\n"
-
-
-# Map RBDs and create File Systems.
-puts "Mapping RBD in deployed Ceph clusters ..."
-Cute::TakTuk.start(clients, :user => "root") do |tak|
-     # Map RBD & create FS on deployed cluster
-     tak.exec!("rbd map #{argClientRBDName} --pool #{argClientPoolName}")
-     tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argClientPoolName}/#{argClientRBDName}")
-     tak.loop()
-end
-# Mapped RBDs & created FS for clients on Ceph deployed cluster.
-puts "Mapped RBDs #{argRBDName} for clients on deployed Ceph." + "\n"
-
-
-# Mount RBDs on Ceph client(s).
-puts "Mounting RBDs in deployed Ceph cluster on client(s) ..."
-clients.each do |client|
-   Cute::TakTuk.start([client], :user => "root") do |tak|
-
-        # mount RBD from deployed cluster
-        tak.exec!("umount /dev/rbd/#{argClientPoolName}/#{argClientRBDName} /mnt/#{argMntDepl}")
-        tak.exec!("rmdir /mnt/#{argMntDepl}")
-        tak.exec!("mkdir /mnt/#{argMntDepl}")
-        result = tak.exec!("mount /dev/rbd/#{argClientPoolName}/#{argClientRBDName} /mnt/#{argMntDepl}")
-        puts "Mounted RBD as File System on client: #{client}" if result[client][:status] == 0
-
-        tak.loop()
+# Prepare .ssh/config file locally
+configFile = File.open("config", "w") do |file|
+   nodes.each do |node|
+      file.puts("Host #{node}")
+      file.puts("   Hostname #{node}")
+      file.puts("   User root")
+      file.puts("   StrictHostKeyChecking no")
    end
-end # clients.each do
+end
+
+# Get ssh_config file from master/monitor
+Net::SFTP.start(master, 'root') do |sftp|
+  sftp.download!("/etc/ssh/ssh_config", "ssh_config")
+end
+
+# In ssh_config file (local) add a line to avoid StrictHostKeyChecking
+configFile = File.open("ssh_config", "a") do |file|
+   file.puts("    StrictHostKeyChecking no") # append only once
+end
+
+# Copy ssh keys & config for Ceph on master node
+ssh_key =  'id_rsa'
+Cute::TakTuk.start([master], :user => "root") do |tak|
+     tak.put("/home/#{user}/.ssh/#{ssh_key}", "/root/.ssh/#{ssh_key}") # copy the config file to master/monitor
+     tak.put("/home/#{user}/.ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub") # copy the config file to master/monitor
+     tak.put("config", "/root/.ssh/config") # copy the config file to master/monitor
+     tak.loop()
+end
+
+# Push ssh_config file & ssh public key to all nodes
+Cute::TakTuk.start(nodes, :user => "root") do |tak|
+     tak.put("ssh_config", "/etc/ssh/ssh_config")
+     tak.put("/home/#{user}/.ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub")
+     tak.exec!("cat /root/.ssh/#{ssh_key}.pub >> /root/.ssh/authorized_keys")
+     tak.loop()
+end
+
+# ssh key-sharing completed.
+puts "ssh key-sharing completed." + "\n"
+
+
+# Flink directory setup 
+puts "Getting Flink tar and setting up directory ..."
+
+# Push flink tar file to all nodes
+flinkDir = "flink-0.10.1"
+flinkLink = "http://mirrors.ircam.fr/pub/apache/flink/flink-0.10.1/flink-0.10.1-bin-hadoop1-scala_2.10.tgz"
+Cute::TakTuk.start(nodes, :user => "root") do |tak|
+     tak.exec!("rm flink.tgz ; rm -rf #{flinkDir}")
+     tak.put("/home/abasu/public/flink.tgz", "/root/flink.tgz")
+     tak.exec!("tar -xzf /root/flink.tgz")
+     tak.loop()
+end
+
+# Flink directory setup completed
+puts "Flink directory setup completed." + "\n"
+
+
+# Read template file flink-conf.yaml.erb
+template = ERB.new File.new("./ceph5k/flink/flink-conf.yaml.erb").read, nil, "%"
+# Write result to config file flink-conf.yaml
+flinkFileText = template.result(binding)
+File.open("ceph5k/config/flink/flink-conf.yaml", "w") do |file|
+   file.write(flinkFileText)
+end
+
+# Prepare config file "slaves" locally
+slavesFile = File.open("ceph5k/config/flink/slaves", "w") do |file|
+   slaves.each do |slave|
+      file.puts("#{slave}")
+   end
+end
+
+# Then put 2 config files to all nodes
+Cute::TakTuk.start(nodes, :user => "root") do |tak|
+     tak.exec!("rm /root/#{flinkDir}/conf/flink-conf.yaml; rm /root/#{flinkDir}/conf/slaves")
+     tak.put("ceph5k/config/flink/flink-conf.yaml", "/root/#{flinkDir}/conf/flink-conf.yaml")
+     tak.put("ceph5k/config/flink/slaves", "/root/#{flinkDir}/conf/slaves")
+     tak.loop()
+end
+
+# Flink config files copied
+puts "Flink config files copied." + "\n"
+
+
+# Starting Flink 
+puts "Starting Flink on master node ..."
+Cute::TakTuk.start([master], :user => "root") do |tak|
+     tak.exec!("/root/#{flinkDir}/bin/start-cluster.sh")
+     tak.loop()
+end
+
+# Flink started
+puts "Flink started on Master node: #{master}" + "\n"
+puts "Login to master node to submit jobs!" + "\n"
+
+
+
+
+
 
