@@ -125,7 +125,7 @@ else
    end # jobs.each do |job|
 end # if argJobID
 # At this point job details were fetched
-puts "Ceph client job details recovered." + "\n" if !jobCephClient.nil?
+puts "Ceph client job details recovered." + "\n"  unless jobCephClient.nil?
 
 
 # Finally, if Ceph client job does not yet exist reserve nodes
@@ -137,13 +137,13 @@ if jobCephClient.nil?
 
 end # if jobCephClient.nil?
 
-# At this point job details were fetched
-puts "Ceph Client job details recovered." + "\n"
 
 # Get the client for the managed Ceph cluster
 # This is the 'first' node of the job
 client = jobCephClient["assigned_nodes"][0]
 
+deployDetails = jobCephClient["deploy"]
+puts deployDetails
 # Check if Ceph client is already connected to deployed Cluster.
 deployFlag = false
 if jobCephClient["deploy"].include?(client) # if client deployment was already done
