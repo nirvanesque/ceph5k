@@ -145,10 +145,10 @@ puts "Ceph Client job details recovered." + "\n"
 client = jobCephClient["assigned_nodes"][0]
 
 puts client
-puts jobCephClient["deploy"]["key"]
+puts jobCephClient["deploy"]
 # Check if Ceph client is already connected to deployed Cluster.
 deployFlag = false
-if jobCephClient["deploy"]["nodes"].include?(client) # if deployment was already done
+if jobCephClient["deploy"].include?(client) # if deployment was already done
    Cute::TakTuk.start([client], :user => "root") do |tak|
         result = tak.exec!("ceph status")
         deployFlag = true if result[client][:output].include? "active+clean"
