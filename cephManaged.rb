@@ -58,7 +58,6 @@ EOS
   opt :jobid, "Oarsub ID of the client job", :default => 0
   opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["site"]
   opt :cluster, "Grid 5000 cluster in specified site", :type => String, :default => defaults["cluster"]
-  opt :'job-name', "Grid'5000 job name for deployed Ceph cluster", :type => String, :default => defaults["job-name"]
   opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => defaults["walltime"]
 
   opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
@@ -67,7 +66,7 @@ EOS
   opt :'rbd-name', "RBD name for Ceph pool (userid_ added)", :type => String, :default => defaults["rbd-name"]
   opt :'rbd-size', "RBD size on Ceph pool", :default => defaults["rbd-size"]
   opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
-  opt :'mnt-depl', "Mount point for RBD on deployed cluster", :type => String, :default => defaults["mnt-depl"]
+  opt :'mnt-prod', "Mount point for RBD on managed cluster", :type => String, :default => defaults["mnt-prod"]
 
   opt :'job-client', "Grid'5000 job name for Ceph clients", :type => String, :default => defaults["job-client"]
   opt :'env-client', "G5K environment for client", :type => String, :default => defaults["env-client"]
@@ -82,7 +81,6 @@ end
 # Move CLI arguments into variables. Later change to class attributes.
 argJobID = opts[:jobid] # Oarsub ID of the client job. 
 argSite = opts[:site] # site name. 
-argJobName = opts[:'job-name'] # Grid'5000 job for deployed Ceph cluster. 
 argG5KCluster = opts[:cluster] # G5K cluster name if specified. 
 argWallTime = opts[:walltime] # walltime for the client reservation.
 
@@ -92,7 +90,8 @@ argPoolSize = opts[:'pool-size'] # Size of pool to create on clusters.
 argRBDName = "#{user}_" + opts[:'rbd-name'] # Name of pool to create on clusters.
 argRBDSize = opts[:'rbd-size'] # Size of pool to create on clusters.
 argFileSystem = opts[:'file-system'] # File System to be formatted on created RBDs.
-argMntDepl = opts[:'mnt-depl'] # Mount point for RBD in deployed cluster.
+argMntProd = opts[:'mnt-prod'] # Mount point for RBD on production cluster.
+
 
 argEnvClient = opts[:'env-client'] # Grid'5000 environment to deploy Ceph clients. 
 argJobClient = opts[:'job-client'] # Grid'5000 job name for Ceph clients. 
@@ -138,19 +137,19 @@ if jobCephClient.nil?
 
 end # if jobCephClient.nil?
 
-puts "Deploying #{argEnvClient} on client node(s): #{clients}" + "\n"
-# Finally, deploy the client nodes with respective environments
-depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClient)
-g5k.wait_for_deploy(jobCephClient)
-
-
-
 # At this point job details were fetched
 puts "Ceph Client job details recovered." + "\n"
 
-# Get the client for the deployed Ceph cluster
+# Get the client for the managed Ceph cluster
 # This is the 'first' node of the job
 client = jobCephClient["assigned_nodes"][0]
+
+
+puts "Deploying #{argEnvClient} on client node: #{client}" + "\n"
+# Finally, deploy the client nodes with respective environments
+depCephClient = g5k.deploy(jobCephClient, :nodes => [client], :env => argEnvClient)
+g5k.wait_for_deploy(jobCephClient)
+
 
 # Remind where is the Ceph client
 puts "Managed Ceph client on: #{client}" + "\n"
@@ -163,7 +162,7 @@ configFile = File.open("ceph5k/prod/ceph.conf", "w") do |file|
    file.puts("  mon host = 172.16.111.30")
 end
 
-# Then put ceph.conf file to all clients
+# Then put ceph.conf file to the client
 Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("rm -rf prod/")
      tak.exec!("mkdir prod/ && touch prod/ceph.conf")
