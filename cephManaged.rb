@@ -144,7 +144,8 @@ puts "Ceph Client job details recovered." + "\n"
 # This is the 'first' node of the job
 client = jobCephClient["assigned_nodes"][0]
 
-
+puts client
+puts jobCephClient["deploy"]["nodes"]
 # Check if Ceph client is already connected to deployed Cluster.
 deployFlag = false
 if jobCephClient["deploy"]["nodes"].include?(client) # if deployment was already done
