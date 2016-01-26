@@ -145,11 +145,25 @@ puts "Ceph Client job details recovered." + "\n"
 client = jobCephClient["assigned_nodes"][0]
 
 
-puts "Deploying #{argEnvClient} on client node: #{client}" + "\n"
-# Finally, deploy the client nodes with respective environments
-depCephClient = g5k.deploy(jobCephClient, :nodes => [client], :env => argEnvClient)
-g5k.wait_for_deploy(jobCephClient)
+# Check if Ceph client is already connected to deployed Cluster.
+deployFlag = false
+if jobCephClient["deploy"]["nodes"].include?(client) # if deployment was already done
+   Cute::TakTuk.start([client], :user => "root") do |tak|
+        result = tak.exec!("ceph status")
+        deployFlag = true if result[client][:output].include? "active+clean"
+        tak.loop()
+   end # Cute::TakTuk.start([client]
+end # if jobCephClient["deploy"]["nodes"].include?(client)
 
+# Deploy the client node ONLY if not connected to deployed Ceph
+if deployFlag
+   puts "Client node #{client} already connected to deployed Ceph cluster" + "\n"
+   puts "Moving forward to add client to managed Ceph cluster without deployment" + "\n"
+else
+   puts "Deploying #{argEnvClient} on client node: #{client}" + "\n"
+   depCephClient = g5k.deploy(jobCephClient, :nodes => [client], :env => argEnvClient) 
+   g5k.wait_for_deploy(jobCephClient)
+end
 
 # Remind where is the Ceph client
 puts "Managed Ceph client on: #{client}" + "\n"
