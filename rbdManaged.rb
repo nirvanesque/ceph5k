@@ -240,4 +240,3 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.loop()
 end
 
-
