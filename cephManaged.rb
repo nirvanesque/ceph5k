@@ -142,15 +142,14 @@ end # if jobCephClient.nil?
 # This is the 'first' node of the job
 client = jobCephClient["assigned_nodes"][0]
 
-deployDetails = jobCephClient["deploy"]
-puts deployDetails
 # Check if Ceph client is already connected to deployed Cluster.
 deployFlag = false
-unless jobCephClient["deploy"].nil? # if client deployment was already done
+if jobCephClient["deploy"].include?(client) # if client deployment was already done
 
    # Check to see if client is already connected to deployed Ceph
    Cute::TakTuk.start([client], :user => "root") do |tak|
         result = tak.exec!("ceph status")
+puts result
         deployFlag = true if result[client][:output].include? "active+clean"
         tak.loop()
    end # Cute::TakTuk.start([client]
