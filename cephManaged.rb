@@ -146,7 +146,7 @@ deployDetails = jobCephClient["deploy"]
 puts deployDetails
 # Check if Ceph client is already connected to deployed Cluster.
 deployFlag = false
-if jobCephClient["deploy"].include?(client) # if client deployment was already done
+unless jobCephClient["deploy"].nil? # if client deployment was already done
 
    # Check to see if client is already connected to deployed Ceph
    Cute::TakTuk.start([client], :user => "root") do |tak|
