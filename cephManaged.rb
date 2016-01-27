@@ -142,29 +142,12 @@ end # if jobCephClient.nil?
 # This is the 'first' node of the job
 client = jobCephClient["assigned_nodes"][0]
 
-# Check if Ceph client is already connected to deployed Cluster.
-deployFlag = false
-unless jobCephClient["deploy"].nil? # if client deployment was already done
-
-   # Check to see if client is already connected to deployed Ceph
-   Cute::TakTuk.start([client], :user => "root") do |tak|
-        result = tak.exec!("ceph status")
-puts result
-        deployFlag = true if result[client][:output].include? "active+clean"
-        tak.loop()
-   end # Cute::TakTuk.start([client]
-
-end # if jobCephClient["deploy"].include?(client)
-
-# Deploy the client node ONLY if not connected to deployed Ceph
-if deployFlag
-   puts "Client node #{client} already connected to deployed Ceph cluster" + "\n"
-   puts "Moving on to add client to managed Ceph cluster without deployment" + "\n"
-else
+# if not yet deployed, then deploy it
+if jobCephClient["deploy"].nil?
    puts "Deploying #{argEnvClient} on client node: #{client}" + "\n"
    depCephClient = g5k.deploy(jobCephClient, :nodes => [client], :env => argEnvClient) 
    g5k.wait_for_deploy(jobCephClient)
-end
+end # if jobCephClient["deploy"].nil?
 
 # Remind where is the Ceph client
 puts "Managed Ceph client on: #{client}" + "\n"
