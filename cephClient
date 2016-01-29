@@ -45,12 +45,12 @@ end
 
 # banner for script
 opts = Trollop::options do
-  version "ceph5k 0.0.4 (c) 2015-16 Anirvan BASU, INRIA RBA"
+  version "ceph5k 0.0.5 (c) 2015-16 Anirvan BASU, INRIA RBA"
   banner <<-EOS
-cephClient.rb is a script for creating RBD and FS on deployed Ceph cluster.
+cephClient is a script for creating RBD and FS on a deployed Ceph cluster.
 
 Usage:
-       cephClient.rb [options]
+       cephClient [options]
 where [options] are:
 EOS
 
@@ -218,7 +218,6 @@ clients.each do |client|
         tak.exec!("rmdir /mnt/#{argMntDepl}")
         tak.exec!("mkdir /mnt/#{argMntDepl}")
         result = tak.exec!("mount /dev/rbd/#{argClientPoolName}/#{argClientRBDName} /mnt/#{argMntDepl}")
-# puts result[client][:status]
         puts "Mounted RBD as File System on client: #{client}" if result[client][:status] == 0
 
         tak.loop()
