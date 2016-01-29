@@ -46,13 +46,15 @@ Note: To create an RBD on the Ceph production cluster, it is required first to c
 
 At the CLI on a frontend:
 
+        ./ceph5k/cephClient.rb        # Creates RBD & FS on deployed Ceph cluster
         ./ceph5k/cephClient.sh
-        ./ceph5k/rbdDeployed.rb        # Creates RBD & FS on deployed Ceph cluster
-        ./ceph5k/rbdManaged.rb         # Creates RBD & FS on managed Ceph cluster
+        ./ceph5k/cephManaged.rb       # Creates RBD & FS on managed Ceph cluster
 
 At the end of successful execution of the scripts, you will have 2 Ceph clusters - a deployed cluster and a managed cluster - mounted as file systems on your Ceph client, as follows:
         /mnt/ceph-depl/
         /mnt/ceph-prod/
+
+Important: To have access from a Ceph client to both deployed and managed Ceph storages, it is essential to follow the above sequence of steps, i.e. first operate on deployed Ceph cluster and then on the managed Ceph cluster.
 
 ##Detailed Usage of Options
 
