@@ -70,8 +70,8 @@ EOS
   opt :'mnt-depl', "Mount point for RBD on deployed cluster", :type => String, :default => defaults["mnt-depl"]
 
   opt :'job-client', "Grid'5000 job name for Ceph clients", :type => String, :default => defaults["job-client"]
+  opt :'num-client', "Number of Ceph client(s)", :default => defaults["num-client"]
   opt :'env-client', "G5K environment for client", :type => String, :default => defaults["env-client"]
-  opt :'num-client', "Nodes in Ceph Client cluster", :default => defaults["num-client"]
   opt :'client-pool-name', "Pool name on each Ceph client (userid_ is added)", :type => String, :default => defaults["client-pool-name"]
   opt :'client-pool-size', "Pool size for each Ceph client (~ pool-size / num-clients)", :default => defaults["client-pool-size"]
   opt :'client-rbd-name', "RBD name on each Ceph client (userid_ added)", :type => String, :default => defaults["client-pool-name"]
