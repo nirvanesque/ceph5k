@@ -99,14 +99,14 @@ where [options] are:
 
 Following are options related to reserving resources on Grid'5000:
 
-        -d, --def-conf=string                 Alternative configuration file (default: ceph5k/config/defaults.yml)
-        -j, --jobid=int                       Oarsub ID of the Grid'5000 job
-        -o, --job-name=string                 Name of Grid'5000 job if resources already reserved (default: cephDeploy)
-        -s, --site=string                     Grid'5000 site for cluster (default: rennes)
-        -c, --cluster=string                  Grid'5000 cluster in site (default: paravance)
-        -n, --num-nodes=integer               Nodes in Ceph cluster (default: 5)
-        -w, --walltime=hour:min:sec           Wall time for deployment (default: 03:00:00)
-        -e, --env=string                      Grid'5000 environment to be deployed (default: wheezy-x64-big)
+        -d, --def-conf=string            Alternative configuration file (default: ceph5k/config/defaults.yml)
+        -j, --jobid=int                  Oarsub ID of the Grid'5000 job
+        -o, --job-name=string            Name of Grid'5000 job if resources already reserved (default: cephDeploy)
+        -s, --site=string                Grid'5000 site for cluster (default: rennes)
+        -c, --cluster=string             Grid'5000 cluster in site (default: paravance)
+        -n, --num-nodes=integer          Total nodes in Ceph cluster (default: 5)
+        -w, --walltime=hour:min:sec      Wall time for deployment (default: 03:00:00)
+        -e, --env=string                 Grid'5000 environment to be deployed (default: wheezy-x64-big)
 
 - Ceph-specific options :
 
@@ -147,15 +147,15 @@ Following are options related to reserving resources on Grid'5000:
 
 Following are options related to Ceph cluster characteristics:
 
-        -p, --pool-name=string           Pool name on Ceph cluster (userid_ added) (default: pool)
+        -p, --pool-name=string           Pool name on Ceph cluster ("userid_" added) (default: pool)
         -l, --pool-size                  Pool size on Ceph cluster
         -b, --rbd-name=string            RBD name for Ceph pool ("userid_" added) (default: image)
         -d, --rbd-size=int               RBD size on Ceph pool (default: 57600)
         -f, --file-system=string         File System to be formatted on created RBDs (default: ext4)
-        -m, --mnt-depl=string            Mount point for RBD on deployed cluster (default: ceph-depl)
+        -m, --mnt-depl=string            Mount point on client for RBD of deployed Ceph cluster (default: ceph-depl)
         -e, --job-client=string          Grid'5000 job name for Ceph clients (default: cephClient)
-        -n, --env-client=string          G5K environment for client (default: jessie-x64-big)
-        -u, --num-client=int             Nodes in Ceph Client cluster (default: 4)
+        -v, --env-client=string          G5K environment for client (default: jessie-x64-big)
+        -n, --num-client=int             Nodes in Ceph Client cluster (default: 4)
         -t, --client-pool-name=string    Pool name on each Ceph client ("userid_" added) (default: cpool)
         -z, --client-pool-size=int       Pool size for each Ceph client (~ pool-size / num-clients) (default: 14400)
         -a, --client-rbd-name=string     RBD name on each Ceph client ("userid_" added) (default: cpool)
@@ -192,12 +192,12 @@ Following are options related to reserving resources on Grid'5000:
 
 Following are options related to Ceph cluster characteristics:
 
-        -p, --pool-name=string           Pool name on Ceph cluster (userid_ added) (default: pool)
+        -p, --pool-name=string           Pool name on Ceph cluster ("userid_" added) (default: pool)
         -l, --pool-size                  Pool size on Ceph cluster
         -b, --rbd-name=string            RBD name for Ceph pool ("userid_" added) (default: image)
         -d, --rbd-size=int               RBD size on Ceph pool (default: 57600)
         -f, --file-system=string         File System to be formatted on created RBDs (default: ext4)
-        -m, --mnt-depl=string            Mount point for RBD on deployed cluster (default: ceph-depl)
+        -m, --mnt-prod=string            Mount point on client for RBD of managed Ceph cluster (default: ceph-prod)
         -e, --job-client=string          Grid'5000 job name for Ceph clients (default: cephClient)
         -n, --env-client=string          G5K environment for client (default: jessie-x64-big)
         -n, --num-client=int             Nodes in Ceph Client cluster (default: 4)
@@ -210,6 +210,8 @@ Following are options related to Ceph cluster characteristics:
 
 
 ## Advanced usages of Ceph5k tool suite
+The following sections give advanced usages of the Ceph5k tool suite and corrections for errors, supplementary tools for Big Data use cases, etc.
+
 ### Copying data from managed Ceph cluster to deployed Ceph cluster
 Once the Ceph cluster + client are deployed and block devices mapped and mounted, it is possible to copy data as normal files between the deployed Ceph cluster and the production Ceph cluster. This is required during the initial phase of preparing data before the run of experiments. On your Ceph client node, login as root@client-node. 
 
@@ -233,7 +235,7 @@ It is possible to run some benchmarking tests to check the performance of your d
 ### Improving performance through higher parallelism (more OSDs)
 Another way of improving the performance is by increasing the number of OSDs in the Ceph cluster deployed. This can be done by re-deploying the Ceph cluster as follows. On a front-end, deploy the Ceph cluster with following option:
 
-        ./ceph5k/cephDeploy --numNodes=12    # Deploy Ceph cluster with 10 OSDs
+        ./ceph5k/cephDeploy --numNodes=11    # Deploy Ceph cluster with 10 nodes for OSDs
 
 Then run the benchmarking steps as above.
 
@@ -254,4 +256,11 @@ The scripts in the Ceph5k tool suite are written in Ruby using the Ruby-Cute fra
         cute
 
 And then simply copy & paste the lines of any of the tool scripts (cephDeploy, cephClient, cephManaged) in the PRy shell.
+
+### Big Data automation - Apache Flink
+In the Ceph5k toolsuite, supplementary scripts are provided to use the deployed and managed Ceph clusters and client nodes in Big Data experiments. Currently, the Apache Flink framework can be installed and configured on the Ceph client nodes, in Master-Slaves clucter configuration. This assumes that the deployed Ceph cluster is up and running (cephDeploy executed) AND the Ceph clients are installed to access the deployed Ceph cluster (cephClient executed). Then the script cephFlink can be executed at any frontend by typing at CLI:
+
+        ./ceph5k/cephFlink               # Deploy Ceph cluster with 10 OSDs
+
+The above script installs the Apache Flink framework with the first client as Master node and the remaining clients as Slaves/Workers. Subsequently, you can launch your Big Data jobs (e.g. WordCount, PageRank, ... ) from the Master node. Please see the Wiki page for further details: https://www.grid5000.fr/mediawiki/index.php/Moving_Data_around_Grid'5000
 
