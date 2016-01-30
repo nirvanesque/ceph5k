@@ -175,7 +175,7 @@ The cephManaged tool offers the following options at the command-line:
 
 where [options] are:
 
-- Grid'5000-specific options :
+- Grid'5000-specific options:
 
 Following are options related to reserving resources on Grid'5000:
 
@@ -188,7 +188,7 @@ Following are options related to reserving resources on Grid'5000:
         -w, --walltime=hour:min:sec      Wall time for deployment (default: 03:00:00)
         -n, --env-client=string          G5K environment for client (default: jessie-x64-big)
 
-- RBD & Ceph-specific options :
+- RBD & Ceph-specific options:
 
 Following are options related to Ceph cluster characteristics:
 
@@ -200,9 +200,9 @@ Following are options related to Ceph cluster characteristics:
         -m, --mnt-depl=string            Mount point for RBD on deployed cluster (default: ceph-depl)
         -e, --job-client=string          Grid'5000 job name for Ceph clients (default: cephClient)
         -n, --env-client=string          G5K environment for client (default: jessie-x64-big)
-        -u, --num-client=int             Nodes in Ceph Client cluster (default: 4)
+        -n, --num-client=int             Nodes in Ceph Client cluster (default: 4)
 
-- Other generic options :
+- Other generic options:
 
         -v, --version                    Print version and exit
         -h, --help                       Show this message
