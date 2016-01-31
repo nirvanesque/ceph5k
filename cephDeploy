@@ -68,7 +68,6 @@ EOS
   opt :'multi-osd', "Multiple OSDs on each node", :default => defaults["multi-osd"]
   opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
 
-  opt :'env-client', "G5K environment for client", :type => String, :default => defaults["env-client"]
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
@@ -85,15 +84,12 @@ argCephCluster = opts[:'cluster-name'] # Ceph cluster name.
 argMultiOSD = opts[:'multi-osd'] # Multiple OSDs on each node.
 argFileSystem = opts[:'file-system'] # File System to be formatted on OSDs.
 
-argEnvClient = opts[:'env-client'] # Grid'5000 environment to deploy Ceph client. 
-
 # Show parameters for creating Ceph cluster
 puts "Deploying Ceph cluster with the following parameters:"
 puts "Grid 5000 site: #{argSite}"
 puts "Grid 5000 cluster: #{argG5KCluster}"
 puts "Ceph Release: #{argRelease}"
 puts "Grid'5000 deployment: #{argEnv}"
-puts "Grid'5000 deployment for Ceph client: #{argEnvClient}"
 puts "Job name (for nodes reservation): #{argJobName}"
 puts "Ceph cluster name: #{argCephCluster}"
 puts "Total nodes in Ceph cluster: #{argNumNodes}"
@@ -102,7 +98,6 @@ puts "Option for multiple OSDs per node: #{argMultiOSD}\n" + "\n"
 
 #Initialise some global variables
 jobCephCluster = nil
-clientNode = ""
 dfsNodes = []
 
 unless [nil, 0].include?(argJobID)
@@ -116,8 +111,7 @@ else
    jobs.each do |job|
       if job["name"] == argJobName # if job exists already, get nodes
          jobCephCluster = job
-         clientNode = jobCephCluster["assigned_nodes"][1]
-         dfsNodes = jobCephCluster["assigned_nodes"] - [clientNode]
+         dfsNodes = jobCephCluster["assigned_nodes"]
 
       end # if job["name"] == argJobName
    end # jobs.each do |job|
@@ -127,14 +121,12 @@ end # if argJobID
 if jobCephCluster.nil?
    jobCephCluster = g5k.reserve(:name => argJobName, :nodes => argNumNodes, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :type => :deploy)
 
-   clientNode = jobCephCluster["assigned_nodes"][1]
-   dfsNodes = jobCephCluster["assigned_nodes"] - [clientNode]
+   dfsNodes = jobCephCluster["assigned_nodes"]
 
 end # if jobCephCluster.nil?
 
 # Finally, deploy the nodes with respective environments
 depCeph = g5k.deploy(jobCephCluster, :nodes => dfsNodes, :env => argEnv)
-depCephClient = g5k.deploy(jobCephCluster, :nodes => [clientNode], :env => argEnvClient)
 g5k.wait_for_deploy(jobCephCluster)
 
 
@@ -145,8 +137,7 @@ puts "Ceph deployment job details recovered." + "\n"
 # Change to be read/write from YAML file
 nodes = jobCephCluster["assigned_nodes"]
 monitor = nodes[0] # Currently single monitor. Later make multiple monitors.
-client = nodes[1] # Currently single client. Later make multiple clients.
-osdNodes = nodes - [monitor] - [client]
+osdNodes = nodes - [monitor]
 radosGW = monitor # as of now the machine is the same for monitor & rados GW
 monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
 
@@ -154,7 +145,6 @@ monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
 puts "Deploying Ceph cluster #{argCephCluster} as follows:"
 puts "Cluster on nodes: #{nodes}" 
 puts "Monitor(s) node on: #{monAllNodes}"
-puts "Client(s) node on: #{client}"
 puts "OSDs on: #{osdNodes}" + "\n"
 
 
@@ -342,7 +332,7 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Monitor added and prepared.
-puts "Monitor & Client added to Ceph cluster." + "\n"
+puts "Monitor added to Ceph cluster." + "\n"
 
 
 # Prepare & Activate OSDs.
