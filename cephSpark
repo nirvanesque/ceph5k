@@ -225,15 +225,22 @@ end
 # Spark directory setup completed
 puts "Spark directory setup completed." + "\n"
 
-=begin
+
 # Read template file spark-env.sh.erb
 template = ERB.new File.new("./ceph5k/spark/spark-env.sh.erb").read, nil, "%"
 # Write result to config file spark-env.sh
-sparkFileText = template.result(binding)
+sparkEnvFile = template.result(binding)
 File.open("ceph5k/config/spark/spark-env.sh", "w") do |file|
-   file.write(sparkFileText)
+   file.write(sparkEnvFile)
 end
-=end
+
+# Read template file spark-defaults.conf.erb
+template = ERB.new File.new("./ceph5k/spark/spark-defaults.conf.erb").read, nil, "%"
+# Write result to config file spark-defaults.conf
+sparkDefaultsFile = template.result(binding)
+File.open("ceph5k/config/spark/spark-defaults.conf", "w") do |file|
+   file.write(sparkDefaultsFile)
+end
 
 # Prepare config file "slaves" locally
 slavesFile = File.open("ceph5k/config/spark/slaves", "w") do |file|
@@ -244,8 +251,9 @@ end
 
 # Then put 2 config files to all nodes
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.exec!("rm /root/#{sparkDir}/conf/slaves")
-#     tak.put("ceph5k/config/spark/spark-conf.yaml", "/root/#{sparkDir}/conf/spark-conf.yaml")
+     tak.exec!("rm /root/#{sparkDir}/conf/slaves && rm /root/#{sparkDir}/conf/spark-env.sh && rm /root/#{sparkDir}/conf/spark-defaults.conf")
+     tak.put("ceph5k/config/spark/spark-env.sh", "/root/#{sparkDir}/conf/spark-env.sh")
+     tak.put("ceph5k/config/spark/spark-defaults.conf", "/root/#{sparkDir}/conf/spark-defaults.conf")
      tak.put("ceph5k/config/spark/slaves", "/root/#{sparkDir}/conf/slaves")
      tak.loop()
 end
