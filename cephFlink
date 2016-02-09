@@ -214,12 +214,11 @@ puts "ssh key-sharing completed." + "\n"
 puts "Getting Flink tar and setting up directory ..."
 
 # Push flink tar file to all nodes
-flinkDir = "flink-0.10.1"
-flinkLink = "http://mirrors.ircam.fr/pub/apache/flink/flink-0.10.1/flink-0.10.1-bin-hadoop1-scala_2.10.tgz"
+flinkDir = "flink"
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.exec!("rm flink.tgz ; rm -rf #{flinkDir}")
+     tak.exec!("rm flink.tgz ; rm -rf #{flinkDir} ; mkdir #{flinkDir}")
      tak.put("/home/abasu/public/flink.tgz", "/root/flink.tgz")
-     tak.exec!("tar -xzf /root/flink.tgz")
+     tak.exec!("tar xzf flink.tgz -C #{flinkDir} --strip-components=1")
      tak.loop()
 end
 

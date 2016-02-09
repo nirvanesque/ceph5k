@@ -214,11 +214,11 @@ puts "ssh key-sharing completed." + "\n"
 puts "Getting Spark tar and setting up directory ..."
 
 # Push spark tar file to all nodes
-sparkDir = "spark-1.6.0"
+sparkDir = "spark"
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.exec!("rm spark.tgz ; rm -rf #{sparkDir}")
+     tak.exec!("rm spark.tgz ; rm -rf #{sparkDir} ; mkdir #{sparkDir}")
      tak.put("/home/abasu/public/spark.tgz", "/root/spark.tgz")
-     tak.exec!("tar -xzf /root/spark.tgz")
+     tak.exec!("tar xzf spark.tgz -C #{sparkDir} --strip-components=1")
      tak.loop()
 end
 
