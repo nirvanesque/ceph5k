@@ -29,15 +29,18 @@ require "fileutils"
 g5k = Cute::G5K::API.new()
 user = g5k.g5k_user
 
+# Get the script dir
+scriptDir = File.expand_path(File.dirname(__FILE__))
 if (["--def-conf", "-d"].include?(ARGV[0])  && !ARGV[1].empty? )
    configFile = ARGV[1] # assign file location to variable configFile
    ARGV.delete_at(0)    # clean up ARGV array
    ARGV.delete_at(0)
 else
-   configFile = "ceph5k/config/defaults.yml" # default config file is used.
+   configFile = scriptDir + "/config/defaults.yml" # default config file is used.
+puts configFile
 end    # if (["--def-conf", "-d"])
 
-puts File.expand_path(File.dirname(__FILE__))
+ 
 
 # Populate the hash with default parameters from YAML file.
 defaults = begin
