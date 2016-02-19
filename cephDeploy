@@ -31,20 +31,28 @@ user = g5k.g5k_user
 
 # Get the script dir
 scriptDir = File.expand_path(File.dirname(__FILE__))
+# Make the temporary files directory (if not created already)
+tempDir = scriptDir + "/.generated"
+FileUtils.mkpath(tempDir)
+
 if (["--def-conf", "-d"].include?(ARGV[0])  && !ARGV[1].empty? )
-   configFile = ARGV[1] # assign file location to variable configFile
+   configFile = ARGV[1] # assign config file location to variable configFile
    ARGV.delete_at(0)    # clean up ARGV array
    ARGV.delete_at(0)
 else
-   configFile = scriptDir + "/config/defaults.yml" # default config file is used.
-puts configFile
+   configFile = "ceph5k/config/defaults.yml.example" # example config file from github.
 end    # if (["--def-conf", "-d"])
 
- 
+# Finally copy the config file to the temporary files directory.
+FileUtils.mkpath(tempDir + "/config")
+currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
+puts currentConfigFile
+FileUtils.cp(configFile, currentConfigFile)
+
 
 # Populate the hash with default parameters from YAML file.
 defaults = begin
-  YAML.load(File.open(configFile))
+  YAML.load(File.open(currentConfigFile))
 rescue ArgumentError => e
   puts "Could not parse YAML: #{e.message}"
 end
