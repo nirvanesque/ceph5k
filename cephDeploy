@@ -185,7 +185,7 @@ end
 
 
 # Prepare .ssh/config file locally
-configFile = File.open("#{tempDir}/config", "w") do |file|
+configFile = File.open("#{tempDir}/config/config", "w") do |file|
    nodes.each do |node|
       file.puts("Host #{node}")
       file.puts("   Hostname #{node}")
@@ -196,11 +196,11 @@ end
 
 # Get ssh_config file from master/monitor
 Net::SFTP.start(monitor, 'root') do |sftp|
-  sftp.download!("/etc/ssh/ssh_config", "#{tempDir}/ssh_config")
+  sftp.download!("/etc/ssh/ssh_config", "#{tempDir}/config/ssh_config")
 end
 
 # In ssh_config file (local) add a line to avoid StrictHostKeyChecking
-configFile = File.open("#{tempDir}/ssh_config", "a") do |file|
+configFile = File.open("#{tempDir}/config/ssh_config", "a") do |file|
    file.puts("    StrictHostKeyChecking no") # append only once
 end
 
@@ -209,13 +209,13 @@ ssh_key =  'id_rsa'
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
      tak.put("/home/#{user}/.ssh/#{ssh_key}", "/root/.ssh/#{ssh_key}") # copy the config file to master/monitor
      tak.put("/home/#{user}/.ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub") # copy the config file to master/monitor
-     tak.put("#{tempDir}/config", "/root/.ssh/config") # copy the config file to master/monitor
+     tak.put("#{tempDir}/config/config", "/root/.ssh/config") # copy the config file to master/monitor
      tak.loop()
 end
 
 # Push ssh_config file & ssh public key to all nodes
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.put("#{tempDir}/ssh_config", "/etc/ssh/ssh_config")
+     tak.put("#{tempDir}/config/ssh_config", "/etc/ssh/ssh_config")
      tak.put("/home/#{user}/.ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub")
      tak.exec!("cat /root/.ssh/#{ssh_key}.pub >> /root/.ssh/authorized_keys")
      tak.loop()
@@ -258,12 +258,12 @@ end
 
 # Get initial config file from ceph master/monitor
 Net::SFTP.start(monitor, 'root') do |sftp|
-  sftp.download!("ceph.conf", "#{tempDir}/ceph.conf")
+  sftp.download!("ceph.conf", "#{tempDir}/config/ceph.conf")
 end
 
 # Read the following important parameters from file & keep in memory
 fsid = ""
-confFile = File.open("#{tempDir}/ceph.conf", "r") do |file|
+confFile = File.open("#{tempDir}/config/ceph.conf", "r") do |file|
    file.each_line do |line|
       if line.include? "fsid"
          fsid = line.split(" = ").last.split("\n").first
@@ -293,7 +293,7 @@ public_network = monAllNodesIP[0]
 radosgw_host = monAllNodes[0]
 # Write result to config file ceph.conf
 cephFileText = template.result(binding)
-File.open("#{tempDir}/ceph.conf", 'w+') do |file|
+File.open("#{tempDir}/config/ceph.conf", 'w+') do |file|
    file.write(cephFileText)
 end
 
@@ -302,8 +302,8 @@ end
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm ceph.conf")
      tak.exec!("mkdir /etc/ceph; touch /etc/ceph/ceph.conf")
-     tak.put("#{tempDir}/ceph.conf", "ceph.conf")
-     tak.put("#{tempDir}/ceph.conf", "/etc/ceph/ceph.conf")
+     tak.put("#{tempDir}/config/ceph.conf", "ceph.conf")
+     tak.put("#{tempDir}/config/ceph.conf", "/etc/ceph/ceph.conf")
      tak.loop()
 end
 
