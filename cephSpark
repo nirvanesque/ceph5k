@@ -23,10 +23,17 @@ require 'trollop'
 require 'json'
 require "net/http"
 require "uri"
+require "fileutils"
 
 
 g5k = Cute::G5K::API.new()
 user = g5k.g5k_user
+
+# Get the script dir
+scriptDir = File.expand_path(File.dirname(__FILE__))
+# Make the temporary files directory (if not created already)
+tempDir = scriptDir + "/.generated"
+FileUtils.mkpath(tempDir)
 
 if (["--def-conf", "-d"].include?(ARGV[0])  && !ARGV[1].empty? )
    configFile = ARGV[1] # assign file location to variable configFile
@@ -35,6 +42,14 @@ if (["--def-conf", "-d"].include?(ARGV[0])  && !ARGV[1].empty? )
 else
    configFile = "ceph5k/config/defaults.yml" # default config file is used.
 end    # if (["--def-conf", "-d"])
+
+# Finally copy the config file to the temporary files directory.
+FileUtils.mkpath(tempDir + "/config")
+FileUtils.mkpath(tempDir + "/config/spark")
+currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
+puts currentConfigFile
+FileUtils.cp(configFile, currentConfigFile)
+
 
 # Populate the hash with default parameters from YAML file.
 defaults = begin
@@ -170,7 +185,7 @@ puts "Slave node(s) on: #{slaves}" + "\n"
 puts "ssh key-sharing for password-less access from master node ..."
 
 # Prepare .ssh/config file locally
-configFile = File.open("config", "w") do |file|
+configFile = File.open("#{tempDir}/config/config", "w") do |file|
    nodes.each do |node|
       file.puts("Host #{node}")
       file.puts("   Hostname #{node}")
@@ -181,11 +196,11 @@ end
 
 # Get ssh_config file from master/monitor
 Net::SFTP.start(master, 'root') do |sftp|
-  sftp.download!("/etc/ssh/ssh_config", "ssh_config")
+  sftp.download!("/etc/ssh/ssh_config", "#{tempDir}/config/ssh_config")
 end
 
 # In ssh_config file (local) add a line to avoid StrictHostKeyChecking
-configFile = File.open("ssh_config", "a") do |file|
+configFile = File.open("#{tempDir}/config/ssh_config", "a") do |file|
    file.puts("    StrictHostKeyChecking no") # append only once
 end
 
@@ -194,13 +209,13 @@ ssh_key =  'id_rsa'
 Cute::TakTuk.start([master], :user => "root") do |tak|
      tak.put("/home/#{user}/.ssh/#{ssh_key}", "/root/.ssh/#{ssh_key}") # copy the config file to master/monitor
      tak.put("/home/#{user}/.ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub") # copy the config file to master/monitor
-     tak.put("config", "/root/.ssh/config") # copy the config file to master/monitor
+     tak.put("#{tempDir}/config/config", "/root/.ssh/config") # copy the config file to master/monitor
      tak.loop()
 end
 
 # Push ssh_config file & ssh public key to all nodes
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.put("ssh_config", "/etc/ssh/ssh_config")
+     tak.put("#{tempDir}/config/ssh_config", "/etc/ssh/ssh_config")
      tak.put("/home/#{user}/.ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub")
      tak.exec!("cat /root/.ssh/#{ssh_key}.pub >> /root/.ssh/authorized_keys")
      tak.loop()
@@ -230,7 +245,7 @@ puts "Spark directory setup completed." + "\n"
 template = ERB.new File.new("./ceph5k/spark/spark-env.sh.erb").read, nil, "%"
 # Write result to config file spark-env.sh
 sparkEnvFile = template.result(binding)
-File.open("ceph5k/config/spark/spark-env.sh", "w") do |file|
+File.open("#{tempDir}/config/spark/spark-env.sh", "w") do |file|
    file.write(sparkEnvFile)
 end
 
@@ -238,12 +253,12 @@ end
 template = ERB.new File.new("./ceph5k/spark/spark-defaults.conf.erb").read, nil, "%"
 # Write result to config file spark-defaults.conf
 sparkDefaultsFile = template.result(binding)
-File.open("ceph5k/config/spark/spark-defaults.conf", "w") do |file|
+File.open("#{tempDir}/config/spark/spark-defaults.conf", "w") do |file|
    file.write(sparkDefaultsFile)
 end
 
 # Prepare config file "slaves" locally
-slavesFile = File.open("ceph5k/config/spark/slaves", "w") do |file|
+slavesFile = File.open("#{tempDir}/config/spark/slaves", "w") do |file|
    slaves.each do |slave|
       file.puts("#{slave}")
    end
@@ -252,9 +267,9 @@ end
 # Then put 2 config files to all nodes
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm /root/#{sparkDir}/conf/slaves && rm /root/#{sparkDir}/conf/spark-env.sh && rm /root/#{sparkDir}/conf/spark-defaults.conf")
-     tak.put("ceph5k/config/spark/spark-env.sh", "/root/#{sparkDir}/conf/spark-env.sh")
-     tak.put("ceph5k/config/spark/spark-defaults.conf", "/root/#{sparkDir}/conf/spark-defaults.conf")
-     tak.put("ceph5k/config/spark/slaves", "/root/#{sparkDir}/conf/slaves")
+     tak.put("#{tempDir}/config/spark/spark-env.sh", "/root/#{sparkDir}/conf/spark-env.sh")
+     tak.put("#{tempDir}/config/spark-defaults.conf", "/root/#{sparkDir}/conf/spark-defaults.conf")
+     tak.put("#{tempDir}/config/spark/slaves", "/root/#{sparkDir}/conf/slaves")
      tak.loop()
 end
 
