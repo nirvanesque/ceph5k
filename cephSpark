@@ -40,12 +40,12 @@ if (["--def-conf", "-d"].include?(ARGV[0])  && !ARGV[1].empty? )
    ARGV.delete_at(0)    # clean up ARGV array
    ARGV.delete_at(0)
 else
-   configFile = "ceph5k/config/defaults.yml.example" # default config file is used.
+   configFile = "ceph5k/config/defaults.yml" # default config file is used.
 end    # if (["--def-conf", "-d"])
 
 # Finally copy the config file to the temporary files directory.
 FileUtils.mkpath(tempDir + "/config")
-FileUtils.mkpath(tempDir + "/config/flink")
+FileUtils.mkpath(tempDir + "/config/spark")
 currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
 puts currentConfigFile
 FileUtils.cp(configFile, currentConfigFile)
@@ -60,12 +60,12 @@ end
 
 # banner for script
 opts = Trollop::options do
-  version "ceph5k 0.0.5 (c) 2015-16 Anirvan BASU, INRIA RBA"
+  version "ceph5k 0.0.6 (c) 2015-16 Anirvan BASU, INRIA RBA"
   banner <<-EOS
-cephFlink is a script for deploying Apache Flink on a deployed Ceph cluster+clients.
+cephSpark is a script for deploying Apache Spark on a deployed Ceph cluster+clients.
 
 Usage:
-       cephClient [options]
+       cephSpark [options]
 where [options] are:
 EOS
 
@@ -225,32 +225,40 @@ end
 puts "ssh key-sharing completed." + "\n"
 
 
-# Flink directory setup 
-puts "Getting Flink tar and setting up directory ..."
+# Spark directory setup 
+puts "Getting Spark tar and setting up directory ..."
 
-# Push flink tar file to all nodes
-flinkDir = "flink"
+# Push spark tar file to all nodes
+sparkDir = "spark"
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.exec!("rm flink.tgz ; rm -rf #{flinkDir} ; mkdir #{flinkDir}")
-     tak.put("/home/abasu/public/flink.tgz", "/root/flink.tgz")
-     tak.exec!("tar xzf flink.tgz -C #{flinkDir} --strip-components=1")
+     tak.exec!("rm spark.tgz ; rm -rf #{sparkDir} ; mkdir #{sparkDir}")
+     tak.put("/home/abasu/public/spark.tgz", "/root/spark.tgz")
+     tak.exec!("tar xzf spark.tgz -C #{sparkDir} --strip-components=1")
      tak.loop()
 end
 
-# Flink directory setup completed
-puts "Flink directory setup completed." + "\n"
+# Spark directory setup completed
+puts "Spark directory setup completed." + "\n"
 
 
-# Read template file flink-conf.yaml.erb
-template = ERB.new File.new("./ceph5k/flink/flink-conf.yaml.erb").read, nil, "%"
-# Write result to config file flink-conf.yaml
-flinkFileText = template.result(binding)
-File.open("#{tempDir}/config/flink/flink-conf.yaml", "w") do |file|
-   file.write(flinkFileText)
+# Read template file spark-env.sh.erb
+template = ERB.new File.new("./ceph5k/spark/spark-env.sh.erb").read, nil, "%"
+# Write result to config file spark-env.sh
+sparkEnvFile = template.result(binding)
+File.open("#{tempDir}/config/spark/spark-env.sh", "w") do |file|
+   file.write(sparkEnvFile)
+end
+
+# Read template file spark-defaults.conf.erb
+template = ERB.new File.new("./ceph5k/spark/spark-defaults.conf.erb").read, nil, "%"
+# Write result to config file spark-defaults.conf
+sparkDefaultsFile = template.result(binding)
+File.open("#{tempDir}/config/spark/spark-defaults.conf", "w") do |file|
+   file.write(sparkDefaultsFile)
 end
 
 # Prepare config file "slaves" locally
-slavesFile = File.open("#{tempDir}/config/flink/slaves", "w") do |file|
+slavesFile = File.open("#{tempDir}/config/spark/slaves", "w") do |file|
    slaves.each do |slave|
       file.puts("#{slave}")
    end
@@ -258,25 +266,26 @@ end
 
 # Then put 2 config files to all nodes
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.exec!("rm /root/#{flinkDir}/conf/flink-conf.yaml; rm /root/#{flinkDir}/conf/slaves")
-     tak.put("#{tempDir}/config/flink/flink-conf.yaml", "/root/#{flinkDir}/conf/flink-conf.yaml")
-     tak.put("#{tempDir}/config/flink/slaves", "/root/#{flinkDir}/conf/slaves")
+     tak.exec!("rm /root/#{sparkDir}/conf/slaves && rm /root/#{sparkDir}/conf/spark-env.sh && rm /root/#{sparkDir}/conf/spark-defaults.conf")
+     tak.put("#{tempDir}/config/spark/spark-env.sh", "/root/#{sparkDir}/conf/spark-env.sh")
+     tak.put("#{tempDir}/config/spark/spark-defaults.conf", "/root/#{sparkDir}/conf/spark-defaults.conf")
+     tak.put("#{tempDir}/config/spark/slaves", "/root/#{sparkDir}/conf/slaves")
      tak.loop()
 end
 
-# Flink config files copied
-puts "Flink config files copied." + "\n"
+# Spark config files copied
+puts "Spark config files copied." + "\n"
 
 
-# Starting Flink 
-puts "Starting Flink on master node ..."
+# Starting Spark 
+puts "Starting Spark on master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
-     tak.exec!("/root/#{flinkDir}/bin/start-cluster.sh")
+     tak.exec!("/root/#{sparkDir}/sbin/start-all.sh")
      tak.loop()
 end
 
-# Flink started
-puts "Flink started on Master node: #{master}" + "\n"
+# Spark started
+puts "Spark started on Master node: #{master}" + "\n"
 puts "Login to master node to submit jobs!" + "\n"
 
 
