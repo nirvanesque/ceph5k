@@ -268,7 +268,7 @@ end
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm /root/#{sparkDir}/conf/slaves && rm /root/#{sparkDir}/conf/spark-env.sh && rm /root/#{sparkDir}/conf/spark-defaults.conf")
      tak.put("#{tempDir}/config/spark/spark-env.sh", "/root/#{sparkDir}/conf/spark-env.sh")
-     tak.put("#{tempDir}/config/spark-defaults.conf", "/root/#{sparkDir}/conf/spark-defaults.conf")
+     tak.put("#{tempDir}/config/spark/spark-defaults.conf", "/root/#{sparkDir}/conf/spark-defaults.conf")
      tak.put("#{tempDir}/config/spark/slaves", "/root/#{sparkDir}/conf/slaves")
      tak.loop()
 end
