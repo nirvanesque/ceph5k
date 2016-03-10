@@ -49,13 +49,13 @@ else
    end # unless File.exist?
 end    # if (["--def-conf", "-d"])
 
-
 # Populate the hash with default parameters from YAML file.
 defaults = begin
   YAML.load(File.open(currentConfigFile))
 rescue ArgumentError => e
   puts "Could not parse YAML: #{e.message}"
 end
+
 
 # banner for script
 opts = Trollop::options do

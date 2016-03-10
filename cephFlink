@@ -34,29 +34,28 @@ scriptDir = File.expand_path(File.dirname(__FILE__))
 # Make the temporary files directory (if not created already)
 tempDir = scriptDir + "/.generated"
 FileUtils.mkpath(tempDir)
+FileUtils.mkpath(tempDir + "/config")
 
+currentConfigFile = ""
 if (["--def-conf", "-d"].include?(ARGV[0])  && !ARGV[1].empty? )
-   configFile = ARGV[1] # assign file location to variable configFile
+   currentConfigFile = ARGV[1] # assign config file location to variable configFile
    ARGV.delete_at(0)    # clean up ARGV array
    ARGV.delete_at(0)
-else
-   configFile = "ceph5k/config/defaults.yml.example" # default config file is used.
+else 
+   currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
+   unless File.exist?(currentConfigFile)
+     configFile = scriptDir + "/config/defaults.yml.example" # example config file
+     FileUtils.cp(configFile, currentConfigFile)
+   end # unless File.exist?
 end    # if (["--def-conf", "-d"])
-
-# Finally copy the config file to the temporary files directory.
-FileUtils.mkpath(tempDir + "/config")
-FileUtils.mkpath(tempDir + "/config/flink")
-currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
-puts currentConfigFile
-FileUtils.cp(configFile, currentConfigFile)
-
 
 # Populate the hash with default parameters from YAML file.
 defaults = begin
-  YAML.load(File.open(configFile))
+  YAML.load(File.open(currentConfigFile))
 rescue ArgumentError => e
   puts "Could not parse YAML: #{e.message}"
 end
+
 
 # banner for script
 opts = Trollop::options do
