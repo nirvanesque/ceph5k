@@ -35,6 +35,7 @@ scriptDir = File.expand_path(File.dirname(__FILE__))
 tempDir = scriptDir + "/.generated"
 FileUtils.mkpath(tempDir)
 FileUtils.mkpath(tempDir + "/config")
+FileUtils.mkpath(tempDir + "/config/flink")
 
 currentConfigFile = ""
 if (["--def-conf", "-d"].include?(ARGV[0])  && !ARGV[1].empty? )
