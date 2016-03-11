@@ -23,25 +23,43 @@ require 'trollop'
 require 'json'
 require "net/http"
 require "uri"
+require "fileutils"
 
 
 g5k = Cute::G5K::API.new()
 user = g5k.g5k_user
 
+# Get the script dir
+scriptDir = File.expand_path(File.dirname(__FILE__))
+# Make the temporary files directory (if not created already)
+tempDir = scriptDir + "/.generated"
+FileUtils.mkpath(tempDir)
+FileUtils.mkpath(tempDir + "/config")
+
+# Additionally create a directory for managed Ceph config files
+prodDir = tempDir + "/config/prod"
+FileUtils.mkpath(prodDir)
+
+currentConfigFile = ""
 if (["--def-conf", "-d"].include?(ARGV[0])  && !ARGV[1].empty? )
-   configFile = ARGV[1] # assign file location to variable configFile
+   currentConfigFile = ARGV[1] # assign config file location to variable configFile
    ARGV.delete_at(0)    # clean up ARGV array
    ARGV.delete_at(0)
-else
-   configFile = "ceph5k/config/defaults.yml" # default config file is used.
+else 
+   currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
+   unless File.exist?(currentConfigFile)
+     configFile = scriptDir + "/config/defaults.yml.example" # example config file
+     FileUtils.cp(configFile, currentConfigFile)
+   end # unless File.exist?
 end    # if (["--def-conf", "-d"])
 
 # Populate the hash with default parameters from YAML file.
 defaults = begin
-  YAML.load(File.open(configFile))
+  YAML.load(File.open(currentConfigFile))
 rescue ArgumentError => e
   puts "Could not parse YAML: #{e.message}"
 end
+
 
 # banner for script
 opts = Trollop::options do
@@ -144,7 +162,7 @@ puts "Managed Ceph client on: #{client}" + "\n"
 
 
 # Prepare ceph.conf file for managed Ceph cluster
-configFile = File.open("ceph5k/prod/ceph.conf", "w") do |file|
+configFile = File.open(prodDir + "/ceph.conf", "w") do |file|
    file.puts("[global]")
    file.puts("  mon initial members = ceph0")
    file.puts("  mon host = 172.16.111.30")
@@ -154,7 +172,7 @@ end
 Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("rm -rf prod/")
      tak.exec!("mkdir prod/ && touch prod/ceph.conf")
-     tak.put("ceph5k/prod/ceph.conf", "/root/prod/ceph.conf")
+     tak.put("#{prodDir}/ceph.conf", "/root/prod/ceph.conf")
      tak.put("/tmp/ceph.client.#{user}.keyring", "/etc/ceph/ceph.client.#{user}.keyring")
      tak.loop()
 end

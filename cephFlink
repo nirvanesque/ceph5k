@@ -35,7 +35,10 @@ scriptDir = File.expand_path(File.dirname(__FILE__))
 tempDir = scriptDir + "/.generated"
 FileUtils.mkpath(tempDir)
 FileUtils.mkpath(tempDir + "/config")
-FileUtils.mkpath(tempDir + "/config/flink")
+
+# Additionally create a directory for Spark config files
+flinkConfDir = tempDir + "/config/flink"
+FileUtils.mkpath(flinkConfDir)
 
 currentConfigFile = ""
 if (["--def-conf", "-d"].include?(ARGV[0])  && !ARGV[1].empty? )
@@ -245,12 +248,12 @@ puts "Flink directory setup completed." + "\n"
 template = ERB.new File.new("./ceph5k/flink/flink-conf.yaml.erb").read, nil, "%"
 # Write result to config file flink-conf.yaml
 flinkFileText = template.result(binding)
-File.open("#{tempDir}/config/flink/flink-conf.yaml", "w") do |file|
+File.open("#{flinkConfDir}/flink-conf.yaml", "w") do |file|
    file.write(flinkFileText)
 end
 
 # Prepare config file "slaves" locally
-slavesFile = File.open("#{tempDir}/config/flink/slaves", "w") do |file|
+slavesFile = File.open("#{flinkConfDir}/slaves", "w") do |file|
    slaves.each do |slave|
       file.puts("#{slave}")
    end
@@ -259,8 +262,8 @@ end
 # Then put 2 config files to all nodes
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm /root/#{flinkDir}/conf/flink-conf.yaml; rm /root/#{flinkDir}/conf/slaves")
-     tak.put("#{tempDir}/config/flink/flink-conf.yaml", "/root/#{flinkDir}/conf/flink-conf.yaml")
-     tak.put("#{tempDir}/config/flink/slaves", "/root/#{flinkDir}/conf/slaves")
+     tak.put("#{flinkConfDir}/flink-conf.yaml", "/root/#{flinkDir}/conf/flink-conf.yaml")
+     tak.put("#{flinkConfDir}/slaves", "/root/#{flinkDir}/conf/slaves")
      tak.loop()
 end
 
