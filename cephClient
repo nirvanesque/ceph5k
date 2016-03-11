@@ -80,6 +80,7 @@ EOS
   opt :'pool-size', "Pool size on Ceph cluster", :default => defaults["poolSize"]
   opt :'rbd-name', "RBD name for Ceph pool (userid_ added)", :type => String, :default => defaults["rbd-name"]
   opt :'rbd-size', "RBD size on Ceph pool", :default => defaults["rbd-size"]
+  opt :'file', "File with machine list, same option as in kadeploy3", :type => String, :default => ""
   opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
   opt :'mnt-depl', "Mount point for RBD on deployed cluster", :type => String, :default => defaults["mnt-depl"]
 
