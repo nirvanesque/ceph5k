@@ -87,6 +87,7 @@ EOS
   opt :'job-client', "Grid'5000 job name for Ceph clients", :type => String, :default => defaults["job-client"]
   opt :'num-client', "Number of Ceph client(s)", :default => defaults["num-client"]
   opt :'env-client', "G5K environment for client", :type => String, :default => defaults["env-client"]
+  opt :'only-deploy', "Only deploy linux but don't configure Ceph client", :type => String, :default => defaults["only-deploy"]
   opt :'client-pool-name', "Pool name on each Ceph client (userid_ is added)", :type => String, :default => defaults["client-pool-name"]
   opt :'client-pool-size', "Pool size for each Ceph client (~ pool-size / num-clients)", :default => defaults["client-pool-size"]
   opt :'client-rbd-name', "RBD name on each Ceph client (userid_ added)", :type => String, :default => defaults["client-pool-name"]
@@ -112,6 +113,7 @@ argMntDepl = opts[:'mnt-depl'] # Mount point for RBD in deployed cluster.
 argEnvClient = opts[:'env-client'] # Grid'5000 environment to deploy Ceph clients. 
 argJobClient = opts[:'job-client'] # Grid'5000 job name for Ceph clients. 
 argNumClient = opts[:'num-client'] # Nodes in Ceph Client cluster.
+argOnlyDeploy = opts[:'only-deploy'] # Only deploy linux but don't configure Ceph client.
 argClientPoolName = "#{user}_" + opts[:'client-pool-name'] # Pool name on each Ceph client.
 argClientRBDName = "#{user}_" + opts[:'client-rbd-name'] # RBD name for each Ceph client.
 argClientPoolSize = opts[:'client-pool-size'] # Pool size on each Ceph client.
@@ -180,6 +182,17 @@ puts "Deploying #{argEnvClient} on client node(s): #{clients}" + "\n"
 # Finally, deploy the client nodes with respective environments
 depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClient)
 g5k.wait_for_deploy(jobCephClient)
+
+
+# Prepare clients-list-file locally
+clientsFile = File.open("#{tempDir}/clients-list", "w") do |file|
+   clients.each do |client|
+      file.puts("#{client}")
+   end
+end
+
+# Abort script if only Linux deployment flag was set
+abort("Linux #{} deployed on clients: #{clients}. Clients list file in: #{tempDir}/clients-list. Rerun script with option -f <nodes list file> to configure Ceph clients.") if argOnlyDeploy
 
 
 

@@ -34,6 +34,7 @@ mnt-prod: "ceph-prod"         # Mount point for RBD on production cluster
 job-client: cephClient        # Grid'5000 job name for Ceph clients
 num-client: 4                 # Nodes in Ceph Client cluster
 env-client: "jessie-x64-big"  # G5K environment for Ceph clients
+only-deploy: false            # Only deploy linux but don't configure Ceph client
 client-pool-name: cpool       # Pool name on each Ceph client (added "userid_")
 client-pool-size: 14400       # Pool size for each Ceph client (~ pool-size/num-clients)
 client-rbd-name: cimage       # RBD name on each Ceph client (added "userid_")
