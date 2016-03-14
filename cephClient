@@ -156,6 +156,7 @@ puts clients[0]
 
    # Recover job details of client-list
    jobs = g5k.get_my_jobs(argSite, state = "running") 
+puts jobs
    jobs.each do |job|
       if job["assigned_nodes"][0] == clients[0] # get job where first node is same as clients[0]
          jobCephClient = job
@@ -163,41 +164,37 @@ puts clients[0]
    end # jobs.each do |job|
 puts jobCephClient
 else
-unless [nil, 0].include?(argJobID)
-   # If jobID is specified, get the specific job
-   jobCephClient = g5k.get_job(argSite, argJobID)
-else
-   # Get all jobs submitted in a cluster
-   jobs = g5k.get_my_jobs(argSite, state = "running") 
+   unless [nil, 0].include?(argJobID)
+      # If jobID is specified, get the specific job
+      jobCephClient = g5k.get_job(argSite, argJobID)
+   else
+      # Get all jobs submitted in a cluster
+      jobs = g5k.get_my_jobs(argSite, state = "running") 
 
-   # get the job with name "cephClient"
-   jobs.each do |job|
-      if job["name"] == argJobClient # if client job exists already, get nodes
-         jobCephClient = job
-         clients = jobCephClient["assigned_nodes"]
+      # get the job with name "cephClient"
+      jobs.each do |job|
+         if job["name"] == argJobClient # if client job exists already, get nodes
+            jobCephClient = job
+            clients = jobCephClient["assigned_nodes"]
 
-      end # if job["name"] == argJobName
-   end # jobs.each do |job|
-end # if argJobID
-# At this point job details were fetched
-puts "Ceph client job details recovered." + "\n" if !jobCephClient.nil?
+         end # if job["name"] == argJobName
+      end # jobs.each do |job|
+   end # if argJobID
+   # At this point job details were fetched
+   puts "Ceph client job details recovered." + "\n" if !jobCephClient.nil?
 
+   # Finally, if Ceph client job does not yet exist reserve nodes
+   if jobCephClient.nil?
 
+      puts "No existing Ceph client job, creating one with parameters." + "\n" 
+      jobCephClient = g5k.reserve(:name => argJobClient, :nodes => argNumClient, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :type => :deploy)
+      clients = jobCephClient["assigned_nodes"]
+   end # if jobCephClient.nil?
 
-# Finally, if Ceph client job does not yet exist reserve nodes
-if jobCephClient.nil?
-
-   puts "No existing Ceph client job, creating one with parameters." + "\n" 
-   jobCephClient = g5k.reserve(:name => argJobClient, :nodes => argNumClient, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :type => :deploy)
-   clients = jobCephClient["assigned_nodes"]
-
-end # if jobCephClient.nil?
-
-puts "Deploying #{argEnvClient} on client node(s): #{clients}" + "\n"
-# Finally, deploy the client nodes with respective environments
-depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClient)
-g5k.wait_for_deploy(jobCephClient)
-
+   puts "Deploying #{argEnvClient} on client node(s): #{clients}" + "\n"
+   # Finally, deploy the client nodes with respective environments
+   depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClient)
+   g5k.wait_for_deploy(jobCephClient)
 end # unless argClientList.empty?
 
 # Additionally create a directory for saving details of clients deployed
