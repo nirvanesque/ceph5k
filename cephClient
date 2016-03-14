@@ -152,13 +152,14 @@ unless argClientList.empty?
    File.open(argClientList, "r") do |file|
       clients = file.readlines
    end
-puts clients[0]
+puts clients
 
    # Recover job details of client-list
    jobs = g5k.get_my_jobs(argSite, state = "running") 
-puts jobs
+
    jobs.each do |job|
-      if job["assigned_nodes"][0] == clients[0] # get job where first node is same as clients[0]
+puts job["assigned_nodes"]
+      if job["assigned_nodes"].include?(clients[0]) # get job where first node is same as clients[0]
          jobCephClient = job
        end # if job["assigned_nodes"][0]
    end # jobs.each do |job|
