@@ -138,7 +138,7 @@ jobs.each do |job|
 end # jobs.each do |job|
 
 # Abort script if no deployed Ceph cluster
-abort("No deployed Ceph cluster found. First deploy Ceph cluster, then run script.") if jobCephCluster.nil?
+#abort("No deployed Ceph cluster found. First deploy Ceph cluster, then run script.") if jobCephCluster.nil?
 
 # Remind where is the deployed Ceph monitor
 puts "Deployed Ceph cluster details:"
