@@ -80,7 +80,7 @@ EOS
   opt :'pool-size', "Pool size on Ceph cluster", :default => defaults["poolSize"]
   opt :'rbd-name', "RBD name for Ceph pool (userid_ added)", :type => String, :default => defaults["rbd-name"]
   opt :'rbd-size', "RBD size on Ceph pool", :default => defaults["rbd-size"]
-  opt :'file', "File with machine list, same option as in kadeploy3", :type => String, :default => ""
+  opt :'file', "File with clients list, same option as in kadeploy3", :type => String, :default => ""
   opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
   opt :'mnt-depl', "Mount point for RBD on deployed cluster", :type => String, :default => defaults["mnt-depl"]
 
@@ -110,6 +110,7 @@ argRBDSize = opts[:'rbd-size'] # Size of pool to create on clusters.
 argFileSystem = opts[:'file-system'] # File System to be formatted on created RBDs.
 argMntDepl = opts[:'mnt-depl'] # Mount point for RBD in deployed cluster.
 
+argClientList = opts[:'file'] # File with clients list.
 argEnvClient = opts[:'env-client'] # Grid'5000 environment to deploy Ceph clients. 
 argJobClient = opts[:'job-client'] # Grid'5000 job name for Ceph clients. 
 argNumClient = opts[:'num-client'] # Nodes in Ceph Client cluster.
@@ -143,11 +144,16 @@ abort("No deployed Ceph cluster found. First deploy Ceph cluster, then run scrip
 puts "Deployed Ceph cluster details:"
 puts "   monitor on: #{monitor}" + "\n"
 
-
 # Next get job for Ceph clients
 jobCephClient = nil # Ceph client job
 clients = [] # Array of client nodes
 
+unless argClientList.empty?
+   File.open(argClientList, "r") do |file|
+      clients = file.readlines
+   end
+puts clients[0]
+else
 unless [nil, 0].include?(argJobID)
    # If jobID is specified, get the specific job
    jobCephClient = g5k.get_job(argSite, argJobID)
@@ -183,6 +189,7 @@ puts "Deploying #{argEnvClient} on client node(s): #{clients}" + "\n"
 depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClient)
 g5k.wait_for_deploy(jobCephClient)
 
+end # unless argClientList.empty?
 
 # Additionally create a directory for saving details of clients deployed
 jobID = jobCephClient["uid"]
@@ -198,7 +205,6 @@ end
 
 # Abort script if only Linux deployment flag was set
 abort("Linux #{argEnvClient} deployed on clients: #{clients}. Clients list file in: #{tempDir}/clients-list. Rerun script with option -f <nodes list file> to configure Ceph clients.") if argOnlyDeploy
-
 
 
 # Install & administer clients to Ceph deployed cluster.
