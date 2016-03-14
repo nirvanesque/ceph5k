@@ -161,7 +161,7 @@ puts clients[0]
          jobCephClient = job
        end # if job["assigned_nodes"][0]
    end # jobs.each do |job|
-
+puts jobCephClient
 else
 unless [nil, 0].include?(argJobID)
    # If jobID is specified, get the specific job
