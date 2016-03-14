@@ -185,7 +185,7 @@ g5k.wait_for_deploy(jobCephClient)
 
 
 # Additionally create a directory for saving details of clients deployed
-jobID = jobCephCluster["uid"]
+jobID = jobCephClient["uid"]
 clientStateDir = tempDir + "/#{argSite}/#{jobID}"
 FileUtils.mkpath(clientStateDir)
 
