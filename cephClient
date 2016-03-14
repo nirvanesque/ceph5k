@@ -184,15 +184,20 @@ depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClien
 g5k.wait_for_deploy(jobCephClient)
 
 
+# Additionally create a directory for saving details of clients deployed
+jobID = jobCephCluster["uid"]
+clientStateDir = tempDir + "/#{argSite}/#{jobID}"
+FileUtils.mkpath(clientStateDir)
+
 # Prepare clients-list-file locally
-clientsFile = File.open("#{tempDir}/clients-list", "w") do |file|
+clientsFile = File.open("#{clientStateDir}/clients-list", "w") do |file|
    clients.each do |client|
       file.puts("#{client}")
    end
 end
 
 # Abort script if only Linux deployment flag was set
-abort("Linux #{} deployed on clients: #{clients}. Clients list file in: #{tempDir}/clients-list. Rerun script with option -f <nodes list file> to configure Ceph clients.") if argOnlyDeploy
+abort("Linux #{argEnvClient} deployed on clients: #{clients}. Clients list file in: #{tempDir}/clients-list. Rerun script with option -f <nodes list file> to configure Ceph clients.") if argOnlyDeploy
 
 
 
