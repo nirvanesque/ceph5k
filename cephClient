@@ -150,7 +150,7 @@ clients = [] # Array of client nodes
 
 unless argClientList.empty?
    File.open(argClientList, "r").readlines.each do |line|
-      clients += line
+      clients += "#{line}"
    end
 puts clients
 clients.each do |client|
