@@ -159,7 +159,7 @@ puts clients[0]
 
    jobs.each do |job|
 puts job["assigned_nodes"]
-      if job["assigned_nodes"] == clients # get job where first node is same as clients[0]
+      unless (job["assigned_nodes"] & clients[0).empty? # get job where first node is same as clients[0]
          jobCephClient = job
        end # if job["assigned_nodes"][0]
    end # jobs.each do |job|
