@@ -152,6 +152,7 @@ unless argClientList.empty?
    File.open(argClientList, "r") do |file|
       clients = file.readlines
    end
+puts clients
 clients.each do |client|
    client = client.strip
 end
