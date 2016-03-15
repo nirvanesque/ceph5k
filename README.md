@@ -141,7 +141,7 @@ Following are options related to reserving resources on Grid'5000:
         -c, --cluster=string             Grid'5000 cluster in site (default: paravance)
         -u, --num-client=integer         Number of Ceph client(s) (default: 4)
         -w, --walltime=hour:min:sec      Wall time for deployment (default: 03:00:00)
-        -n, --env-client=string          G5K environment for client (default: jessie-x64-big)
+        -v, --env-client=string          G5K environment for client (default: jessie-x64-big)
 
 - Ceph-specific options :
 
@@ -151,11 +151,11 @@ Following are options related to Ceph cluster characteristics:
         -l, --pool-size                  Pool size on Ceph cluster
         -b, --rbd-name=string            RBD name for Ceph pool ("userid_" added) (default: image)
         -d, --rbd-size=int               RBD size on Ceph pool (default: 57600)
-        -f, --file-system=string         File System to be formatted on created RBDs (default: ext4)
+        -f, --file=string                File with clients nodes list, same option as in kadeploy3
+        -e, --file-system=string         File System to be formatted on created RBDs (default: ext4)
         -m, --mnt-depl=string            Mount point on client for RBD of deployed Ceph cluster (default: ceph-depl)
-        -e, --job-client=string          Grid'5000 job name for Ceph clients (default: cephClient)
-        -v, --env-client=string          G5K environment for client (default: jessie-x64-big)
-        -n, --num-client=int             Nodes in Ceph Client cluster (default: 4)
+        -n, --job-client=string          Grid'5000 job name for Ceph clients (default: cephClient)
+        -y, --only-deploy                Only deploy linux but don't configure Ceph client
         -t, --client-pool-name=string    Pool name on each Ceph client ("userid_" added) (default: cpool)
         -z, --client-pool-size=int       Pool size for each Ceph client (~ pool-size / num-clients) (default: 14400)
         -a, --client-rbd-name=string     RBD name on each Ceph client ("userid_" added) (default: cpool)
@@ -163,7 +163,7 @@ Following are options related to Ceph cluster characteristics:
 
 - Other generic options :
 
-        -v, --version                    Print version and exit
+        --version                        Print version and exit
         -h, --help                       Show this message
         -i, --ignore                     Ignore incorrect values
 
@@ -196,7 +196,8 @@ Following are options related to Ceph cluster characteristics:
         -l, --pool-size                  Pool size on Ceph cluster
         -b, --rbd-name=string            RBD name for Ceph pool ("userid_" added) (default: image)
         -d, --rbd-size=int               RBD size on Ceph pool (default: 57600)
-        -f, --file-system=string         File System to be formatted on created RBDs (default: ext4)
+        -f, --file=string                File with clients nodes list, same option as in kadeploy3
+        -e, --file-system=string         File System to be formatted on created RBDs (default: ext4)
         -m, --mnt-prod=string            Mount point on client for RBD of managed Ceph cluster (default: ceph-prod)
         -e, --job-client=string          Grid'5000 job name for Ceph clients (default: cephClient)
         -n, --env-client=string          G5K environment for client (default: jessie-x64-big)
