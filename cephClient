@@ -158,13 +158,13 @@ unless argClientList.empty?
    jobs = g5k.get_my_jobs(argSite, state = "running") 
 
    jobs.each do |job|
-      if job["assigned_nodes"] == clients # get job where first node is same as clients[0]
-         puts "recovered Ceph client job"
+      if job["assigned_nodes"] == clients # get job where nodes are same as client-list
          jobCephClient = job
-       end # if job["assigned_nodes"][0]
+         puts "Ceph client job recovered with nodes: #{clients}"
+       end # if job["assigned_nodes"] == clients
    end # jobs.each do |job|
 
-else
+else # when no client-list is specified. Do deployment or start from scratch.
 
    unless [nil, 0].include?(argJobID)
       # If jobID is specified, get the specific job
@@ -183,7 +183,7 @@ else
       end # jobs.each do |job|
    end # if argJobID
    # At this point job details were fetched
-   puts "Ceph client job details recovered." + "\n" if !jobCephClient.nil?
+   puts "Ceph client job recovered with nodes: #{clients}" unless jobCephClient.nil?
 
    # Finally, if Ceph client job does not yet exist reserve nodes
    if jobCephClient.nil?
