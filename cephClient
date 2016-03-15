@@ -138,7 +138,7 @@ jobs.each do |job|
 end # jobs.each do |job|
 
 # Abort script if no deployed Ceph cluster
-#abort("No deployed Ceph cluster found. First deploy Ceph cluster, then run script.") if jobCephCluster.nil?
+abort("No deployed Ceph cluster found. First deploy Ceph cluster, then run script.") if jobCephCluster.nil?
 
 # Remind where is the deployed Ceph monitor
 puts "Deployed Ceph cluster details:"
@@ -149,22 +149,20 @@ jobCephClient = nil # Ceph client job
 clients = [] # Array of client nodes
 
 unless argClientList.empty?
-   File.open(argClientList, "r").readlines.each do |line|
-      clients += "#{line}"
+   File.open(argClientList, "r") do |file|
+      clients = file.readlines
    end
-puts clients
-clients.each do |client|
-   client = client.strip
-end
+puts clients[0]
+puts clients[1]
 
    # Recover job details of client-list
    jobs = g5k.get_my_jobs(argSite, state = "running") 
 
    jobs.each do |job|
 puts job["assigned_nodes"]
-      unless (job["assigned_nodes"] & clients).empty? # get job where first node is same as clients[0]
+      if job["assigned_nodes"].include?(clients[0]) # get job where first node is same as clients[0]
          jobCephClient = job
-      end # if job["assigned_nodes"][0]
+       end # if job["assigned_nodes"][0]
    end # jobs.each do |job|
 puts jobCephClient
 else
@@ -214,7 +212,7 @@ clientsFile = File.open("#{clientStateDir}/clients-list", "w") do |file|
 end
 
 # Abort script if only Linux deployment flag was set
-abort("Linux #{argEnvClient} deployed on clients: #{clients}. Clients list file in: #{tempDir}/clients-list. Rerun script with option -f <nodes list file> to configure Ceph clients.") if argOnlyDeploy
+abort("Linux #{argEnvClient} deployed on clients: #{clients}. \n Clients list file in: #{clientStateDir}/clients-list. \n Rerun script with option -f <nodes list file> to configure Ceph clients.") if argOnlyDeploy
 
 
 # Install & administer clients to Ceph deployed cluster.
