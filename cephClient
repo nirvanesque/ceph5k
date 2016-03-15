@@ -159,6 +159,7 @@ unless argClientList.empty?
 
    jobs.each do |job|
       if job["assigned_nodes"] == clients # get job where first node is same as clients[0]
+         puts "recovered Ceph client job"
          jobCephClient = job
        end # if job["assigned_nodes"][0]
    end # jobs.each do |job|
