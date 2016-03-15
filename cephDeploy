@@ -161,6 +161,20 @@ puts "Cluster on nodes: #{nodes}"
 puts "Monitor(s) node on: #{monAllNodes}"
 puts "OSDs on: #{osdNodes}" + "\n"
 
+# Additionally create a directory for saving details of deployment
+jobID = jobCephCluster["uid"]
+depStateDir = tempDir + "/#{argSite}/#{jobID}"
+FileUtils.mkpath(depStateDir)
+FileUtils.cp(currentConfigFile, depStateDir + "/defaults.yml")
+
+# Copy deployed-list file at frontend
+depListFile = File.open("#{depStateDir}/deployed-list", "w") do |file|
+   nodes.each do |node|
+      file.puts("#{node}")
+   end
+end
+
+
 
 #1 Preflight Checklist
 puts "Doing pre-flight checklist..."
@@ -260,6 +274,9 @@ end
 Net::SFTP.start(monitor, 'root') do |sftp|
   sftp.download!("ceph.conf", "#{tempDir}/config/ceph.conf")
 end
+
+# Copy the Ceph config file to the deployment directory
+FileUtils.cp("#{tempDir}/config/ceph.conf", "#{depStateDir}/ceph.conf")
 
 # Read the following important parameters from file & keep in memory
 fsid = ""
