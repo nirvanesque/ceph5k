@@ -142,7 +142,7 @@ abort("No deployed Ceph cluster found. First deploy Ceph cluster, then run scrip
 
 # Remind where is the deployed Ceph monitor
 puts "Deployed Ceph cluster details:"
-puts "   monitor on: #{monitor}" + "\n"
+puts "   monitor on: #{monitor} \n"
 
 # Next get job for Ceph clients
 jobCephClient = nil # Ceph client job
@@ -150,7 +150,8 @@ clients = [] # Array of client nodes
 
 unless argClientList.empty?
    File.open(argClientList, "r") do |file|
-      clients = file.readlines
+      puts file.readlines
+puts "next line"
    end
 puts clients[0]
 puts clients[1]
