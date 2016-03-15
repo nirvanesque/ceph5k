@@ -149,10 +149,9 @@ jobCephClient = nil # Ceph client job
 clients = [] # Array of client nodes
 
 unless argClientList.empty?
-   File.open(argClientList, "r") do |file|
-      puts file.readlines
-puts "next line"
-   end
+   clients = File.open(argClientList, 'r'){ |file| 
+      file.readlines.collect{ |line| line.chomp }
+   }
 puts clients[0]
 puts clients[1]
 
