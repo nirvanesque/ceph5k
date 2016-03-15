@@ -286,7 +286,8 @@ FileUtils.mkpath(clientStateDir)
 
 # Copy spark configuration files to spark state directory
 FileUtils.mkpath(clientStateDir + "/spark")
-FileUtils.cp("#{sparkConfDir}/spark-conf.yaml", "#{clientStateDir}/spark/spark-conf.yaml")
+FileUtils.cp("#{sparkConfDir}/spark-env.sh", "#{clientStateDir}/spark/spark-env.sh")
+FileUtils.cp("#{sparkConfDir}/spark-defaults.conf", "#{clientStateDir}/spark/spark-defaults.conf")
 FileUtils.cp("#{sparkConfDir}/slaves", "#{clientStateDir}/spark/slaves")
 
 
