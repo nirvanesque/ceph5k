@@ -270,6 +270,17 @@ end
 # Flink config files copied
 puts "Flink config files copied." + "\n"
 
+# Additionally create a directory for saving details of Flink deployed
+jobID = jobCephClient["uid"]
+clientStateDir = tempDir + "/#{argSite}/#{jobID}"
+FileUtils.mkpath(clientStateDir)
+
+# Copy Flink configuration files to Flink state directory
+FileUtils.mkpath(clientStateDir + "/flink")
+FileUtils.cp("#{flinkConfDir}/flink-conf.yaml", "#{clientStateDir}/flink/flink-conf.yaml")
+FileUtils.cp("#{flinkConfDir}/slaves", "#{clientStateDir}/flink/slaves")
+
+
 
 # Starting Flink 
 puts "Starting Flink on master node ..."
@@ -279,7 +290,7 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
 end
 
 # Flink started
-puts "Flink started on Master node: #{master}" + "\n"
+puts "Flink cluster started with Master node: #{master}" + "\n"
 puts "Login to master node to submit jobs!" + "\n"
 
 
