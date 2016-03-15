@@ -63,7 +63,7 @@ end
 
 # banner for script
 opts = Trollop::options do
-  version "ceph5k 0.0.5 (c) 2015-16 Anirvan BASU, INRIA RBA"
+  version "ceph5k 0.0.6 (c) 2015-16 Anirvan BASU, INRIA RBA"
   banner <<-EOS
 cephManaged is a script for creating RBD and FS on the Managed Ceph clusters in Grid'5000
 
@@ -83,6 +83,7 @@ EOS
   opt :'pool-size', "Pool size on Ceph cluster", :default => defaults["poolSize"]
   opt :'rbd-name', "RBD name for Ceph pool (userid_ added)", :type => String, :default => defaults["rbd-name"]
   opt :'rbd-size', "RBD size on Ceph pool", :default => defaults["rbd-size"]
+  opt :'file', "File with clients list, same option as in kadeploy3", :type => String, :default => ""
   opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
   opt :'mnt-prod', "Mount point for RBD on managed cluster", :type => String, :default => defaults["mnt-prod"]
 
@@ -106,7 +107,8 @@ argRBDSize = opts[:'rbd-size'] # Size of pool to create on clusters.
 argFileSystem = opts[:'file-system'] # File System to be formatted on created RBDs.
 argMntProd = opts[:'mnt-prod'] # Mount point for RBD on production cluster.
 
-
+argClientList = opts[:'file'] # File with clients list.
+argOnlyDeploy = opts[:'only-deploy'] # Only deploy linux but don't configure Ceph client.
 argEnvClient = opts[:'env-client'] # Grid'5000 environment to deploy Ceph clients. 
 argJobClient = opts[:'job-client'] # Grid'5000 job name for Ceph clients. 
 argNumClient = opts[:'num-client'] # Nodes in Ceph Client cluster.
@@ -116,34 +118,71 @@ argNumClient = opts[:'num-client'] # Nodes in Ceph Client cluster.
 jobCephClient = nil # Ceph client job
 clients = [] # Array of client nodes
 
-unless [nil, 0].include?(argJobID)
-   # If jobID is specified, get the specific job
-   jobCephClient = g5k.get_job(argSite, argJobID)
-else
-   # Get all jobs submitted in a cluster
+# If client-list specified in CLI argument, get list of clients & fill variable
+unless argClientList.empty?
+   clients = File.open(argClientList, 'r'){ |file| 
+      file.readlines.collect{ |line| line.chomp }
+   }
+
+   # Recover job details of client-list
    jobs = g5k.get_my_jobs(argSite, state = "running") 
 
-   # get the job with name "cephClient"
    jobs.each do |job|
-      if job["name"] == argJobClient # if client job exists already, get nodes
+      if job["assigned_nodes"] == clients # get job where nodes are same as client-list
          jobCephClient = job
-         clients = jobCephClient["assigned_nodes"]
-
-      end # if job["name"] == argJobName
+         puts "Ceph client job recovered with nodes: #{clients}"
+       end # if job["assigned_nodes"] == clients
    end # jobs.each do |job|
-end # if argJobID
-# At this point job details were fetched
-puts "Ceph client job details recovered." + "\n"  unless jobCephClient.nil?
 
+else # when no client-list is specified. Do deployment or start from scratch.
 
-# Finally, if Ceph client job does not yet exist reserve nodes
-if jobCephClient.nil?
+   unless [nil, 0].include?(argJobID)
+      # If jobID is specified, get the specific job
+      jobCephClient = g5k.get_job(argSite, argJobID)
+   else
+      # Get all jobs submitted in a cluster
+      jobs = g5k.get_my_jobs(argSite, state = "running") 
 
-   puts "No existing Ceph client job, creating one with parameters." + "\n" 
-   jobCephClient = g5k.reserve(:name => argJobClient, :nodes => argNumClient, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :type => :deploy)
-   clients = jobCephClient["assigned_nodes"]
+      # get the job with name "cephClient"
+      jobs.each do |job|
+         if job["name"] == argJobClient # if client job exists already, get nodes
+            jobCephClient = job
+            clients = jobCephClient["assigned_nodes"]
 
-end # if jobCephClient.nil?
+         end # if job["name"] == argJobName
+      end # jobs.each do |job|
+   end # if argJobID
+   # At this point job details were fetched
+   puts "Ceph client job recovered with nodes: #{clients}" unless jobCephClient.nil?
+
+   # Finally, if Ceph client job does not yet exist reserve nodes
+   if jobCephClient.nil?
+
+      puts "No existing Ceph client job, creating one with parameters." + "\n" 
+      jobCephClient = g5k.reserve(:name => argJobClient, :nodes => argNumClient, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :type => :deploy)
+      clients = jobCephClient["assigned_nodes"]
+   end # if jobCephClient.nil?
+
+   puts "Deploying #{argEnvClient} on client node(s): #{clients}" + "\n"
+   # Finally, deploy the client nodes with respective environments
+   depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClient)
+   g5k.wait_for_deploy(jobCephClient)
+end # unless argClientList.empty?
+
+# Additionally create a directory for saving details of clients deployed
+jobID = jobCephClient["uid"]
+clientStateDir = tempDir + "/#{argSite}/#{jobID}"
+FileUtils.mkpath(clientStateDir)
+
+# Prepare clients-list-file locally
+clientsFile = File.open("#{clientStateDir}/clients-list", "w") do |file|
+   clients.each do |client|
+      file.puts("#{client}")
+   end
+end
+
+# Abort script if only Linux deployment flag was set
+abort("Linux #{argEnvClient} deployed on clients: #{clients}. \n Clients list file in: #{clientStateDir}/clients-list. \n Rerun script with option -f <nodes list file> to configure Ceph clients.") if argOnlyDeploy
 
 
 # Get the client for the managed Ceph cluster
@@ -168,6 +207,11 @@ configFile = File.open(prodDir + "/ceph.conf", "w") do |file|
    file.puts("  mon host = 172.16.111.30")
 end
 
+# Copy ceph.conf file to client state directory
+FileUtils.mkpath(clientStateDir + "/prod")
+FileUtils.cp("#{prodDir}/ceph.conf", "#{clientStateDir}/prod/ceph.conf")
+FileUtils.cp("/tmp/ceph.client.#{user}.keyring", "#{clientStateDir}/prod/ceph.client.#{user}.keyring")
+
 # Then put ceph.conf file to the client
 Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("rm -rf prod/")
@@ -178,7 +222,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
 end
 
 # Created & pushed config file for Managed Ceph cluster.
-puts "Created & pushed config file for managed Ceph cluster to client." + "\n"
+puts "Created & pushed config file for managed Ceph cluster to client."
 
 
 # Creating Ceph pools on managed cluster.
@@ -237,7 +281,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
 end
 
 # Abort script if no pool in managed Ceph
-abort("Script exited") if abortFlag
+abort("Script exited - no pool for user in Managed Ceph clusters") if abortFlag
 
 # Created Pool & RBD for Ceph cluster.
 unless userPool.empty?

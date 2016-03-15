@@ -63,7 +63,7 @@ end
 
 # banner for script
 opts = Trollop::options do
-  version "ceph5k 0.0.5 (c) 2015-16 Anirvan BASU, INRIA RBA"
+  version "ceph5k 0.0.6 (c) 2015-16 Anirvan BASU, INRIA RBA"
   banner <<-EOS
 cephFlink is a script for deploying Apache Flink on a deployed Ceph cluster+clients.
 
