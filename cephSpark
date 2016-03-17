@@ -279,6 +279,17 @@ end
 # Spark config files copied
 puts "Spark config files copied." + "\n"
 
+# Additionally create a directory for saving details of spark deployed
+jobID = jobCephClient["uid"]
+clientStateDir = tempDir + "/#{argSite}/#{jobID}"
+FileUtils.mkpath(clientStateDir)
+
+# Copy spark configuration files to spark state directory
+FileUtils.mkpath(clientStateDir + "/spark")
+FileUtils.cp("#{sparkConfDir}/spark-env.sh", "#{clientStateDir}/spark/spark-env.sh")
+FileUtils.cp("#{sparkConfDir}/spark-defaults.conf", "#{clientStateDir}/spark/spark-defaults.conf")
+FileUtils.cp("#{sparkConfDir}/slaves", "#{clientStateDir}/spark/slaves")
+
 
 # Starting Spark 
 puts "Starting Spark on master node ..."
@@ -288,7 +299,7 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
 end
 
 # Spark started
-puts "Spark started on Master node: #{master}" + "\n"
+puts "Spark cluster started with Master node: #{master}" + "\n"
 puts "Login to master node to submit jobs!" + "\n"
 
 

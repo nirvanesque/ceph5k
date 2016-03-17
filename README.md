@@ -141,7 +141,7 @@ Following are options related to reserving resources on Grid'5000:
         -c, --cluster=string             Grid'5000 cluster in site (default: paravance)
         -u, --num-client=integer         Number of Ceph client(s) (default: 4)
         -w, --walltime=hour:min:sec      Wall time for deployment (default: 03:00:00)
-        -n, --env-client=string          G5K environment for client (default: jessie-x64-big)
+        -v, --env-client=string          G5K environment for client (default: jessie-x64-big)
 
 - Ceph-specific options :
 
@@ -151,11 +151,11 @@ Following are options related to Ceph cluster characteristics:
         -l, --pool-size                  Pool size on Ceph cluster
         -b, --rbd-name=string            RBD name for Ceph pool ("userid_" added) (default: image)
         -d, --rbd-size=int               RBD size on Ceph pool (default: 57600)
-        -f, --file-system=string         File System to be formatted on created RBDs (default: ext4)
+        -f, --file=string                File with clients nodes list, same option as in kadeploy3
+        -e, --file-system=string         File System to be formatted on created RBDs (default: ext4)
         -m, --mnt-depl=string            Mount point on client for RBD of deployed Ceph cluster (default: ceph-depl)
-        -e, --job-client=string          Grid'5000 job name for Ceph clients (default: cephClient)
-        -v, --env-client=string          G5K environment for client (default: jessie-x64-big)
-        -n, --num-client=int             Nodes in Ceph Client cluster (default: 4)
+        -n, --job-client=string          Grid'5000 job name for Ceph clients (default: cephClient)
+        -y, --only-deploy                Only deploy linux but don't configure Ceph client
         -t, --client-pool-name=string    Pool name on each Ceph client ("userid_" added) (default: cpool)
         -z, --client-pool-size=int       Pool size for each Ceph client (~ pool-size / num-clients) (default: 14400)
         -a, --client-rbd-name=string     RBD name on each Ceph client ("userid_" added) (default: cpool)
@@ -163,7 +163,7 @@ Following are options related to Ceph cluster characteristics:
 
 - Other generic options :
 
-        -v, --version                    Print version and exit
+        --version                        Print version and exit
         -h, --help                       Show this message
         -i, --ignore                     Ignore incorrect values
 
@@ -181,6 +181,7 @@ Following are options related to reserving resources on Grid'5000:
 
         -d, --def-conf=string            Alternative configuration file (default: ceph5k/config/defaults.yml)
         -j, --jobid=int                  Oarsub ID of the Grid'5000 client job
+        -e, --job-client=string          Grid'5000 job name for Ceph clients (default: cephClient)
         -o, --job-name=string            Name of Grid'5000 job if resources already reserved (default: cephClient)
         -s, --site=string                Grid'5000 site for clients (default: rennes)
         -c, --cluster=string             Grid'5000 cluster in site (default: paravance)
@@ -196,10 +197,9 @@ Following are options related to Ceph cluster characteristics:
         -l, --pool-size                  Pool size on Ceph cluster
         -b, --rbd-name=string            RBD name for Ceph pool ("userid_" added) (default: image)
         -d, --rbd-size=int               RBD size on Ceph pool (default: 57600)
-        -f, --file-system=string         File System to be formatted on created RBDs (default: ext4)
+        -f, --file=string                File with clients nodes list, same option as in kadeploy3
+        -l, --file-system=string         File System to be formatted on created RBDs (default: ext4)
         -m, --mnt-prod=string            Mount point on client for RBD of managed Ceph cluster (default: ceph-prod)
-        -e, --job-client=string          Grid'5000 job name for Ceph clients (default: cephClient)
-        -n, --env-client=string          G5K environment for client (default: jessie-x64-big)
         -n, --num-client=int             Nodes in Ceph Client cluster (default: 4)
 
 - Other generic options:
@@ -258,9 +258,19 @@ The scripts in the Ceph5k tool suite are written in Ruby using the Ruby-Cute fra
 And then simply copy & paste the lines of any of the tool scripts (cephDeploy, cephClient, cephManaged) in the PRy shell.
 
 ### Big Data automation - Apache Flink
-In the Ceph5k toolsuite, supplementary scripts are provided to use the deployed and managed Ceph clusters and client nodes in Big Data experiments. Currently, the Apache Flink framework can be installed and configured on the Ceph client nodes, in Master-Slaves clucter configuration. This assumes that the deployed Ceph cluster is up and running (cephDeploy executed) AND the Ceph clients are installed to access the deployed Ceph cluster (cephClient executed). Then the script cephFlink can be executed at any frontend by typing at CLI:
+In the Ceph5k toolsuite, supplementary scripts are provided to use the deployed and managed Ceph clusters and client nodes in Big Data experiments. Currently, the Apache Flink and the Apache Spark frameworks can be installed and configured on the Ceph client nodes, in Master-Slaves cluster configuration. This assumes that the deployed Ceph cluster is up and running (cephDeploy executed) AND the Ceph clients are installed to access the deployed Ceph cluster (cephClient executed). 
 
-        ./ceph5k/cephFlink               # Deploy Ceph cluster with 10 OSDs
+#### Apache Flink
+Then the script cephFlink can be executed at any frontend by typing at CLI:
+
+        ./ceph5k/cephFlink               # Install and run the Flink framework
 
 The above script installs the Apache Flink framework with the first client as Master node and the remaining clients as Slaves/Workers. Subsequently, you can launch your Big Data jobs (e.g. WordCount, PageRank, ... ) from the Master node. Please see the Wiki page for further details: https://www.grid5000.fr/mediawiki/index.php/Moving_Data_around_Grid'5000
+
+#### Apache Spark
+Then the script cephSpark can be executed at any frontend by typing at CLI:
+
+        ./ceph5k/cephSpark               # Install and run the Spark framework
+
+The above script installs the Apache Spark framework with the first client as Master node and the remaining clients as Slaves/Workers. Subsequently, you can launch your Big Data jobs (e.g. WordCount, PageRank, ... ) from the Master node. Please see the Wiki page for further details: https://www.grid5000.fr/mediawiki/index.php/Moving_Data_around_Grid'5000
 
