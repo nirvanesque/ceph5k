@@ -136,18 +136,18 @@ else
 end # if argJobID
 
 # If job state is "waiting" then wait for resources to be assigned
-if jobCephCluster["state"] == "waiting"
-   begin
-      job = g5k.wait_for_job(jobCephCluster, :wait_time => 60)
-   rescue Cute::G5K::EventTimeout
-      puts "Waited too long in site #{argSite}, releasing job #{argJobName}"
-      g5k.release(job)
-   end
-end # if jobCephCluster["state"] == "waiting"
-
-
-# Finally, if job does not yet exist reserve nodes
-jobCephCluster = g5k.reserve(:name => argJobName, :nodes => argNumNodes, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :type => :deploy) if jobCephCluster.nil?
+unless jobCephCluster.nil?
+   if jobCephCluster["state"] == "waiting"
+      begin
+         job = g5k.wait_for_job(jobCephCluster, :wait_time => 60)
+      rescue Cute::G5K::EventTimeout
+         puts "Waited too long in site #{argSite}, releasing job #{argJobName}"
+         g5k.release(job)
+      end
+   end # if jobCephCluster["state"] == "waiting"
+else # Finally, if job does not yet exist reserve nodes
+   jobCephCluster = g5k.reserve(:name => argJobName, :nodes => argNumNodes, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :type => :deploy) 
+end
 
 
 # Assign roles to each node
