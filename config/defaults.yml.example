@@ -14,7 +14,7 @@
 
 config:
 site: rennes                  # Grid 5000 site for deploying Ceph cluster
-cluster: parasilo             # Grid 5000 cluster in specified site
+cluster: paravance            # Grid 5000 cluster in specified site
 job-name: cephDeploy          # Grid'5000 job name for deployed Ceph cluster
 env: "wheezy-x64-big"         # G5K environment to be deployed
 num-nodes: 6                  # Nodes in Ceph cluster
