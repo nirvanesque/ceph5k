@@ -129,20 +129,13 @@ monitor = "" # Monitor for deployed Ceph cluster
 # Get all jobs submitted in a cluster
 jobs = g5k.get_my_jobs(argSite, state = "running") 
 
-# get the job with name "cephDeploy"
+# get the Ceph deploy job with name "cephDeploy" or argJobName
 jobs.each do |job|
    if job["name"] == argJobName # if job exists already, get nodes
       jobCephCluster = job
       monitor = jobCephCluster["assigned_nodes"][0]
    end # if job["name"] == argJobName
 end # jobs.each do |job|
-
-# Abort script if no deployed Ceph cluster
-abort("No deployed Ceph cluster found. First deploy Ceph cluster, then run script.") if jobCephCluster.nil?
-
-# Remind where is the deployed Ceph monitor
-puts "Deployed Ceph cluster details:"
-puts "   monitor on: #{monitor}"
 
 # Initialise some global variables
 jobCephClient = nil # Ceph client job
@@ -232,6 +225,14 @@ end
 
 # Abort script if only Linux deployment flag was set
 abort("Linux #{argEnvClient} deployed on clients: #{clients}. \n Clients list file in: #{clientStateDir}/clients-list. \n Rerun script with option -f <nodes list file> to configure Ceph clients.") if argOnlyDeploy
+
+
+# Abort script if no deployed Ceph cluster
+abort("No deployed Ceph cluster found. First deploy Ceph cluster, then run script.") if jobCephCluster.nil?
+
+# Remind where is the deployed Ceph monitor
+puts "Deployed Ceph cluster details:"
+puts "   monitor on: #{monitor}"
 
 
 # Install & administer clients to Ceph deployed cluster.
