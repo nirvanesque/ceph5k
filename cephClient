@@ -129,20 +129,13 @@ monitor = "" # Monitor for deployed Ceph cluster
 # Get all jobs submitted in a cluster
 jobs = g5k.get_my_jobs(argSite, state = "running") 
 
-# get the job with name "cephDeploy"
+# get the Ceph deploy job with name "cephDeploy" or argJobName
 jobs.each do |job|
    if job["name"] == argJobName # if job exists already, get nodes
       jobCephCluster = job
       monitor = jobCephCluster["assigned_nodes"][0]
    end # if job["name"] == argJobName
 end # jobs.each do |job|
-
-# Abort script if no deployed Ceph cluster
-abort("No deployed Ceph cluster found. First deploy Ceph cluster, then run script.") if jobCephCluster.nil?
-
-# Remind where is the deployed Ceph monitor
-puts "Deployed Ceph cluster details:"
-puts "   monitor on: #{monitor}"
 
 # Initialise some global variables
 jobCephClient = nil # Ceph client job
@@ -152,7 +145,7 @@ clients = [] # Array of client nodes
 unless argClientList.empty?
    clients = File.open(argClientList, 'r'){ |file| 
       file.readlines.collect{ |line| line.chomp }
-   }
+   } # File.open
 
    # Recover job details of client-list
    jobs = g5k.get_my_jobs(argSite, state = "running") 
@@ -170,34 +163,53 @@ else # when no client-list is specified. Do deployment or start from scratch.
       # If jobID is specified, get the specific job
       jobCephClient = g5k.get_job(argSite, argJobID)
    else
-      # Get all jobs submitted in a cluster
-      jobs = g5k.get_my_jobs(argSite, state = "running") 
+      # Get all my jobs submitted in a site
+      jobs = []
+      ["waiting","running"].each do |state|
+         jobs += g5k.get_my_jobs(argSite, state)
 
-      # get the job with name "cephClient"
-      jobs.each do |job|
-         if job["name"] == argJobClient # if client job exists already, get nodes
-            jobCephClient = job
-            clients = jobCephClient["assigned_nodes"]
+         # get the job with name "cephClient" or argJobName
+         jobs.each do |job|
+            if job["name"] == argJobClient # if job exists already, get nodes
+               jobCephClient = job
+            end # if job["name"] == argJobClient
 
-         end # if job["name"] == argJobName
-      end # jobs.each do |job|
+         end # jobs.each do |job|
+
+      end # ["waiting","running"].each do |state|
+
    end # if argJobID
-   # At this point job details were fetched
-   puts "Ceph client job recovered with nodes: #{clients}" unless jobCephClient.nil?
 
-   # Finally, if Ceph client job does not yet exist reserve nodes
-   if jobCephClient.nil?
+   # If job state is "waiting" then wait for resources to be assigned
+   unless jobCephClient.nil?
 
-      puts "No existing Ceph client job, creating one with parameters." + "\n" 
-      jobCephClient = g5k.reserve(:name => argJobClient, :nodes => argNumClient, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :type => :deploy)
-      clients = jobCephClient["assigned_nodes"]
-   end # if jobCephClient.nil?
+      if jobCephClient["state"] == "waiting"
+         begin
+            job = g5k.wait_for_job(jobCephClient, :wait_time => 60)
+         rescue Cute::G5K::EventTimeout
+            puts "Waited too long in site #{argSite}, releasing job #{argJobClient}"
+            g5k.release(job)
+         end
+      end # if jobCephClient["state"] == "waiting"
 
-   puts "Deploying #{argEnvClient} on client node(s): #{clients}" + "\n"
-   # Finally, deploy the client nodes with respective environments
+   else
+      # Finally, if job does not yet exist reserve nodes
+      jobCephClient = g5k.reserve(:name => argJobClient, :nodes => argNumClient, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :type => :deploy) 
+
+   end # unless jobCephClient.nil?
+
+   # Assign roles to each node
+   clients = jobCephClient["assigned_nodes"]
+
+   # Then, deploy the nodes with respective environments
    depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClient)
    g5k.wait_for_deploy(jobCephClient)
+
 end # unless argClientList.empty?
+
+# At this point Ceph client job was created / fetched
+puts "Deploying Ceph clients on nodes: #{clients}" 
+
 
 # Additionally create a directory for saving details of clients deployed
 jobID = jobCephClient["uid"]
@@ -213,6 +225,14 @@ end
 
 # Abort script if only Linux deployment flag was set
 abort("Linux #{argEnvClient} deployed on clients: #{clients}. \n Clients list file in: #{clientStateDir}/clients-list. \n Rerun script with option -f <nodes list file> to configure Ceph clients.") if argOnlyDeploy
+
+
+# Abort script if no deployed Ceph cluster
+abort("No deployed Ceph cluster found. First deploy Ceph cluster, then run script.") if jobCephCluster.nil?
+
+# Remind where is the deployed Ceph monitor
+puts "Deployed Ceph cluster details:"
+puts "   monitor on: #{monitor}"
 
 
 # Install & administer clients to Ceph deployed cluster.

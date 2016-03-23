@@ -112,54 +112,68 @@ puts "Option for multiple OSDs per node: #{argMultiOSD}\n" + "\n"
 
 #Initialise some global variables
 jobCephCluster = nil
-dfsNodes = []
+myCephJobs = [] # an array to recover all my jobs in states "waiting" or "running"
 
 unless [nil, 0].include?(argJobID)
    # If jobID is specified, get the specific job
    jobCephCluster = g5k.get_job(argSite, argJobID)
 else
-   # Get all jobs submitted in a cluster
-   jobs = g5k.get_my_jobs(argSite, state = "running") 
+   # Get all my jobs submitted in a site
+   jobs = []
+   ["waiting","running"].each do |state|
+      jobs += g5k.get_my_jobs(argSite, state)
 
-   # get the job with name "cephDeploy"
-   jobs.each do |job|
-      if job["name"] == argJobName # if job exists already, get nodes
-         jobCephCluster = job
-         dfsNodes = jobCephCluster["assigned_nodes"]
+      # get the job with name "cephDeploy" or argJobName
+      jobs.each do |job|
+         if job["name"] == argJobName # if job exists already, get nodes
+            jobCephCluster = job
+         end # if job["name"] == argJobName
 
-      end # if job["name"] == argJobName
-   end # jobs.each do |job|
+      end # jobs.each do |job|
+
+   end # ["waiting","running"].each do |state|
+
 end # if argJobID
 
-# Finally, if job does not yet exist reserve nodes
-if jobCephCluster.nil?
+# If job state is "waiting" then wait for resources to be assigned
+unless jobCephCluster.nil?
+   if jobCephCluster["state"] == "waiting"
+
+      begin
+         job = g5k.wait_for_job(jobCephCluster, :wait_time => 60)
+      rescue Cute::G5K::EventTimeout
+         puts "Waited too long in site #{argSite}, releasing job #{argJobName}"
+         g5k.release(job)
+      end # begin
+   end # if jobCephCluster["state"] == "waiting"
+
+else # Finally, if job does not yet exist reserve nodes
+
    jobCephCluster = g5k.reserve(:name => argJobName, :nodes => argNumNodes, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :type => :deploy)
 
-   dfsNodes = jobCephCluster["assigned_nodes"]
-
-end # if jobCephCluster.nil?
-
-# Finally, deploy the nodes with respective environments
-depCeph = g5k.deploy(jobCephCluster, :nodes => dfsNodes, :env => argEnv)
-g5k.wait_for_deploy(jobCephCluster)
+end # unless jobCephCluster.nil?
 
 
-
-# At this point job was created or fetched
-puts "Ceph deployment job details recovered." + "\n"
-
-# Change to be read/write from YAML file
+# Assign roles to each node
 nodes = jobCephCluster["assigned_nodes"]
 monitor = nodes[0] # Currently single monitor. Later make multiple monitors.
 osdNodes = nodes - [monitor]
 radosGW = monitor # as of now the machine is the same for monitor & rados GW
 monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
 
+# Then, deploy the nodes with respective environments
+depCeph = g5k.deploy(jobCephCluster, :nodes => nodes, :env => argEnv)
+g5k.wait_for_deploy(jobCephCluster)
+
+
+# At this point job was created or fetched
+puts "Ceph deployment job details recovered." + "\n"
+
 # At this point job was created / fetched
 puts "Deploying Ceph cluster #{argCephCluster} as follows:"
 puts "Cluster on nodes: #{nodes}" 
-puts "Monitor(s) node on: #{monAllNodes}"
-puts "OSDs on: #{osdNodes}" + "\n"
+puts "Monitor node on: #{monAllNodes}"
+puts "OSDs on: #{osdNodes}"
 
 # Additionally create a directory for saving details of deployment
 jobID = jobCephCluster["uid"]

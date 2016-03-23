@@ -17,7 +17,7 @@ site: rennes                  # Grid 5000 site for deploying Ceph cluster
 cluster: parasilo             # Grid 5000 cluster in specified site
 job-name: cephDeploy          # Grid'5000 job name for deployed Ceph cluster
 env: "wheezy-x64-big"         # G5K environment to be deployed
-num-nodes: 6                  # Nodes in Ceph cluster
+num-nodes: 4                  # Nodes in Ceph cluster
 walltime: "3:00:00"           # Walltime for Ceph cluster deployed
 
 release: firefly              # Ceph Release name
