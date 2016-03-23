@@ -192,8 +192,8 @@ else # when no client-list is specified. Do deployment or start from scratch.
          end
       end # if jobCephClient["state"] == "waiting"
 
-   else # Finally, if job does not yet exist reserve nodes
-
+   else
+      # Finally, if job does not yet exist reserve nodes
       jobCephClient = g5k.reserve(:name => argJobClient, :nodes => argNumClient, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :type => :deploy) 
 
    end # unless jobCephClient.nil?
