@@ -235,12 +235,54 @@ puts "Deployed Ceph cluster details:"
 puts "   monitor on: #{monitor}"
 
 
+#1 Preflight Checklist
+puts "Doing pre-flight checklist..."
+# Get ssh_config file from master/monitor
+Net::SFTP.start(monitor, 'root') do |sftp|
+  sftp.download!("/root/.ssh/config", "#{tempDir}/config/config")
+end
+
+# Append to config file locally, list of nodes for clients
+configFile = File.open("#{tempDir}/config/config", "a") do |file|
+   clients.each do |client|
+      file.puts("Host #{client}")
+      file.puts("   Hostname #{client}")
+      file.puts("   User root")
+      file.puts("   StrictHostKeyChecking no")
+   end
+end
+
+# Get ssh_config file from master/monitor
+Net::SFTP.start(monitor, 'root') do |sftp|
+  sftp.download!("/etc/ssh/ssh_config", "#{tempDir}/config/ssh_config")
+end
+
+# Copy first updated config for Ceph clients on monitor/master node
+ssh_key =  'id_rsa'
+Cute::TakTuk.start([monitor], :user => "root") do |tak|
+     tak.put("#{tempDir}/config/config", "/root/.ssh/config") # copy the config file to master/monitor
+     tak.loop()
+end
+
+# Push ssh_config file & ssh public key to all nodes
+Cute::TakTuk.start(clients, :user => "root") do |tak|
+     tak.put("#{tempDir}/config/ssh_config", "/etc/ssh/ssh_config")
+     tak.put("/home/#{user}/.ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub")
+     tak.exec!("cat /root/.ssh/#{ssh_key}.pub >> /root/.ssh/authorized_keys")
+     tak.loop()
+end
+
+# Preflight checklist completed.
+puts "Pre-flight checklist completed." + "\n"
+
+
 # Install & administer clients to Ceph deployed cluster.
 puts "Adding following clients to deployed Ceph cluster:"
 clients.each do |client|
      clientShort = client.split(".").first
      Cute::TakTuk.start([monitor], :user => "root") do |tak|
-          tak.exec!("ceph-deploy install --release #{argRelease} #{clientShort}")
+          result1 = tak.exec!("ceph-deploy install --release #{argRelease} #{clientShort}")
+puts result1
           result = tak.exec!("ceph-deploy --overwrite-conf admin #{clientShort}")
 puts result
           puts "Added client: #{client}" if result[monitor][:status] == 0
