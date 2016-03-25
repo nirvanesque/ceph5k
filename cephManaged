@@ -178,14 +178,7 @@ else # when no client-list is specified. Do deployment or start from scratch.
    # Assign roles to each node
    clients = jobCephClient["assigned_nodes"]
 
-   # Then, deploy the nodes with respective environments
-   depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClient)
-   g5k.wait_for_deploy(jobCephClient)
-
 end # unless argClientList.empty?
-
-# At this point Ceph client job was created / fetched
-puts "Deploying Ceph clients on nodes: #{clients}" 
 
 
 # Additionally create a directory for saving details of clients deployed
@@ -210,13 +203,13 @@ client = jobCephClient["assigned_nodes"][0]
 
 # if not yet deployed, then deploy it
 if jobCephClient["deploy"].nil?
-   puts "Deploying #{argEnvClient} on client node: #{client}" + "\n"
+   puts "Deploying #{argEnvClient} on client node: #{client}"
    depCephClient = g5k.deploy(jobCephClient, :nodes => [client], :env => argEnvClient) 
    g5k.wait_for_deploy(jobCephClient)
 end # if jobCephClient["deploy"].nil?
 
 # Remind where is the Ceph client
-puts "Managed Ceph client on: #{client}" + "\n"
+puts "Managed Ceph client on: #{client}"
 
 
 # Prepare ceph.conf file for managed Ceph cluster
@@ -304,9 +297,9 @@ abort("Script exited - no pool for user in Managed Ceph clusters") if abortFlag
 
 # Created Pool & RBD for Ceph cluster.
 unless userPool.empty?
-     puts "Created Ceph pool on managed cluster as follows :" + "\n"
+     puts "Created Ceph pool on managed cluster as follows :"
      puts "On managed cluster:\n"
-     puts "Pool name: #{userPool} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize} " + "\n"
+     puts "Pool name: #{userPool} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize} "
 end # unless userPool.empty?
 
 
@@ -318,7 +311,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      result = tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
      tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argPoolName}/#{argRBDName}")
      if result[client][:status] == 0
-        puts "Mapped RBD #{argRBDName} on deployed Ceph." + "\n"
+        puts "Mapped RBD #{argRBDName} on deployed Ceph."
      end
 
 
@@ -332,7 +325,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
         myRBDName = userRBD
      end # if userRBD.empty?
      if result[client][:status] == 0
-        puts "Mapped RBD #{myRBDName} on managed Ceph." + "\n"
+        puts "Mapped RBD #{myRBDName} on managed Ceph."
      end
 
      tak.loop()
@@ -358,7 +351,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      end # if userRBD.empty?
 
      if result[client][:status] == 0
-        puts "Mounted RBD as File System on managed Ceph." + "\n"
+        puts "Mounted RBD as File System on managed Ceph."
      end
 
      tak.loop()

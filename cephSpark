@@ -140,7 +140,7 @@ abort("No deployed Ceph cluster found. First run cephDeploy & cephClient scripts
 
 # Remind where is the deployed Ceph monitor
 puts "Deployed Ceph cluster details:"
-puts "   monitor on: #{monitor}" + "\n"
+puts "   monitor on: #{monitor}"
 
 
 # Next get job for Ceph clients
@@ -164,12 +164,12 @@ else
    end # jobs.each do |job|
 end # if argJobID
 # At this point job details were fetched
-puts "Ceph client job details recovered." + "\n" if !jobCephClient.nil?
+puts "Ceph client job details recovered." if !jobCephClient.nil?
 
 abort("No Ceph client(s) found. First run cephClient script, then run this script.") if jobCephClient.nil?
 
 # At this point Big Data nodes were created or fetched
-puts "Big Data job details recovered." + "\n"
+puts "Big Data job details recovered."
 
 
 # Change to be read/write from YAML file
@@ -181,7 +181,7 @@ slaves = nodes - [monitor]
 puts "Deploying Big Data cluster as follows:"
 puts " All nodes: #{nodes}" 
 puts "Master node on: #{master}"
-puts "Slave node(s) on: #{slaves}" + "\n"
+puts "Slave node(s) on: #{slaves}"
 
 
 # ssh key-sharing for password-less access from master node.
@@ -225,7 +225,7 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # ssh key-sharing completed.
-puts "ssh key-sharing completed." + "\n"
+puts "ssh key-sharing completed."
 
 
 # Spark directory setup 
@@ -241,7 +241,7 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Spark directory setup completed
-puts "Spark directory setup completed." + "\n"
+puts "Spark directory setup completed."
 
 
 # Read template file spark-env.sh.erb
@@ -277,7 +277,7 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Spark config files copied
-puts "Spark config files copied." + "\n"
+puts "Spark config files copied."
 
 # Additionally create a directory for saving details of spark deployed
 jobID = jobCephClient["uid"]
@@ -299,8 +299,8 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
 end
 
 # Spark started
-puts "Spark cluster started with Master node: #{master}" + "\n"
-puts "Login to master node to submit jobs!" + "\n"
+puts "Spark cluster started with Master node: #{master}"
+puts "Login to master node to submit jobs!"
 
 
 
