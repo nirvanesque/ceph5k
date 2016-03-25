@@ -281,8 +281,7 @@ puts "Adding following clients to deployed Ceph cluster:"
 clients.each do |client|
      clientShort = client.split(".").first
      Cute::TakTuk.start([monitor], :user => "root") do |tak|
-          result1 = tak.exec!("ceph-deploy install --release #{argRelease} #{clientShort}")
-puts result1
+          tak.exec!("ceph-deploy install --release #{argRelease} #{clientShort}")
           result = tak.exec!("ceph-deploy --overwrite-conf admin #{clientShort}")
 puts result
           puts "Added client: #{client}" if result[monitor][:status] == 0
