@@ -159,6 +159,7 @@ unless argClientList.empty?
             argG5KCluster = firstNode.split(".").first.split("-").first
 puts argSite
 puts argG5KCluster
+         end # unless jobCephClient["deploy"].nil?
          puts "Ceph client job recovered with nodes: #{clients} on #{clients}"
        end # if job["assigned_nodes"] == clients
    end # jobs.each do |job|
