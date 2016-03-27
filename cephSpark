@@ -166,6 +166,7 @@ end # if argJobID
 # At this point job details were fetched
 puts "Ceph client job details recovered." if !jobCephClient.nil?
 
+# If no Ceph clients found, abort Spark deployment
 abort("No Ceph client(s) found. First run cephClient script, then run this script.") if jobCephClient.nil?
 
 # At this point Big Data nodes were created or fetched
