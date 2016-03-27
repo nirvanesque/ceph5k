@@ -155,7 +155,7 @@ unless argClientList.empty?
          jobCephClient = job
          unless jobCephClient["deploy"].nil?
             argSite = jobCephClient["deploy"]["site_uid"]
-            firstNode = jobCephClient["assigned_nodes"][0]
+            firstNode = jobCephClient["assigned_nodes"][0].to_s
             argG5KCluster = firstNode.split(".").first.split("-").first
 puts argSite
 puts argG5KCluster
