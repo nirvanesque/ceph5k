@@ -154,7 +154,7 @@ unless argClientList.empty?
       if job["assigned_nodes"] == clients # get job where nodes are same as client-list
          jobCephClient = job
          unless jobCephClient["deploy"].nil?
-            argSite = jobCephClient["deploy"]["site_uid"]
+            argSite = jobCephClient["deploy"]["site_uid"].to_s
             firstNode = jobCephClient["assigned_nodes"][0].to_s
             argG5KCluster = firstNode.split(".").first.split("-").first
 puts argSite
