@@ -153,14 +153,7 @@ unless argClientList.empty?
    jobs.each do |job|
       if job["assigned_nodes"] == clients # get job where nodes are same as client-list
          jobCephClient = job
-         unless jobCephClient["deploy"].nil?
-            argSite = jobCephClient["deploy"]["site_uid"].to_s
-            firstNode = jobCephClient["assigned_nodes"][0].to_s
-            argG5KCluster = firstNode.split(".").first.split("-").first
-puts argSite
-puts argG5KCluster
-         end # unless jobCephClient["deploy"].nil?
-         puts "Ceph client job recovered with nodes: #{clients} on #{clients}"
+         puts "Ceph client job recovered with nodes: #{clients}"
        end # if job["assigned_nodes"] == clients
    end # jobs.each do |job|
 
