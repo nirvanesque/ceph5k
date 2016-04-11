@@ -340,8 +340,8 @@ end
 # In slaves file (local) add lines for slaves
 configFile = File.open("#{hadoopConfDir}/slaves", "w") do |file|
    # append following lines
-   slaves.each do |slave, index| # loop over each slave
-      file.puts("slave#{index+1}")
+   slaves.each.with_index(1) do |slave, index| # loop over each slave
+      file.puts("slave#{index}")
    end # slaves.each do |slave, index|
 end
 
