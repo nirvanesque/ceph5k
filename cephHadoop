@@ -296,7 +296,8 @@ end
 # Copy /root/.bashrc to master + slave nodes and "source" it
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.put("#{hadoopConfDir}/.bashrc", "/root/.bashrc")
-     tak.exec("bash")
+     tak.exec!("bash")
+     tak.loop()
 end
 
 # Hadoop path configured.
@@ -320,7 +321,8 @@ configFile = File.open("#{hadoopConfDir}/hosts", "a") do |file|
 
    slaves.each do |slave, index| # loop over each slave
       slaveIP = Socket.getaddrinfo(slave, "http", nil, :STREAM)[0][2]
-      file.puts("#{slaveIP}   slave#{index+1}")
+      ctr = index + 1
+      file.puts("#{slaveIP}   slave#{ctr}")
    end # slaves.each do |slave, index|
 end
 
@@ -347,6 +349,7 @@ end
 Cute::TakTuk.start([master], :user => "root") do |tak|
      tak.put("#{hadoopConfDir}/masters", "#{hadoopDir}/etc/hadoop/masters")
      tak.put("#{hadoopConfDir}/slaves", "#{hadoopDir}/etc/hadoop/slaves")
+     tak.loop()
 end
 
 # Master & Slaves registered.
