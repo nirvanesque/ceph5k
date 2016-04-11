@@ -316,14 +316,14 @@ end
 configFile = File.open("#{hadoopConfDir}/hosts", "a") do |file|
    # append following lines
 
+   file.puts("\n")
    masterIP = Socket.getaddrinfo(master, "http", nil, :STREAM)[0][2]
    file.puts("#{masterIP}   master")
-
-   slaves.each do |slave, index| # loop over each slave
+   slaves.each.with_index(1) do |slave, index| # loop over each slave
       slaveIP = Socket.getaddrinfo(slave, "http", nil, :STREAM)[0][2]
-      ctr = index + 1
-      file.puts("#{slaveIP}   slave#{ctr}")
+      file.puts("#{slaveIP}   slave#{index}")
    end # slaves.each do |slave, index|
+
 end
 
 # Copy /etc/hosts to master + slave nodes
