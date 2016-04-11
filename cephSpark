@@ -63,7 +63,7 @@ end
 
 # banner for script
 opts = Trollop::options do
-  version "ceph5k 0.0.6 (c) 2015-16 Anirvan BASU, INRIA RBA"
+  version "ceph5k 0.0.7 (c) 2015-16 Anirvan BASU, INRIA RBA"
   banner <<-EOS
 cephSpark is a script for deploying Apache Spark on a deployed Ceph cluster+clients.
 
@@ -176,10 +176,10 @@ puts "Big Data job details recovered."
 # Change to be read/write from YAML file
 nodes = jobCephClient["assigned_nodes"]
 master = nodes[0] # The first node in the list becomes the master
-slaves = nodes - [monitor]
+slaves = nodes - [master]
 
 # At this point job was created / fetched
-puts "Deploying Big Data cluster as follows:"
+puts "Deploying Spark cluster as follows:"
 puts " All nodes: #{nodes}" 
 puts "Master node on: #{master}"
 puts "Slave node(s) on: #{slaves}"

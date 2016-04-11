@@ -36,9 +36,9 @@ tempDir = scriptDir + "/.generated"
 FileUtils.mkpath(tempDir)
 FileUtils.mkpath(tempDir + "/config")
 
-# Additionally create a directory for Flink config files
-flinkConfDir = tempDir + "/config/flink"
-FileUtils.mkpath(flinkConfDir)
+# Additionally create a directory for Hadoop config files
+hadoopConfDir = tempDir + "/config/hadoop"
+FileUtils.mkpath(hadoopConfDir)
 
 currentConfigFile = ""
 if (["--def-conf", "-d"].include?(ARGV[0])  && !ARGV[1].empty? )
@@ -65,10 +65,10 @@ end
 opts = Trollop::options do
   version "ceph5k 0.0.7 (c) 2015-16 Anirvan BASU, INRIA RBA"
   banner <<-EOS
-cephFlink is a script for deploying Apache Flink on a deployed Ceph cluster+clients.
+cephHadoop is a script for deploying Apache Hadoop on a deployed Ceph cluster+clients.
 
 Usage:
-       cephFlink [options]
+       cephHadoop [options]
 where [options] are:
 EOS
 
@@ -166,7 +166,7 @@ end # if argJobID
 # At this point job details were fetched
 puts "Ceph client job details recovered." if !jobCephClient.nil?
 
-# If no Ceph clients found, abort Flink deployment
+# If no Ceph clients found, abort Hadoop deployment
 abort("No Ceph client(s) found. First run cephClient script, then run this script.") if jobCephClient.nil?
 
 # At this point Big Data nodes were created or fetched
@@ -179,7 +179,7 @@ master = nodes[0] # The first node in the list becomes the master
 slaves = nodes - [master]
 
 # At this point job was created / fetched
-puts "Deploying Flink cluster as follows:"
+puts "Deploying Hadoop cluster as follows:"
 puts " All nodes: #{nodes}" 
 puts "Master node on: #{master}"
 puts "Slave node(s) on: #{slaves}"
@@ -198,7 +198,7 @@ configFile = File.open("#{tempDir}/config/config", "w") do |file|
    end
 end
 
-# Get ssh_config file from master/monitor
+# Get ssh_config file from master
 Net::SFTP.start(master, 'root') do |sftp|
   sftp.download!("/etc/ssh/ssh_config", "#{tempDir}/config/ssh_config")
 end
@@ -229,69 +229,191 @@ end
 puts "ssh key-sharing completed."
 
 
-# Flink directory setup 
-puts "Getting Flink tar and setting up directory ..."
+# Configuring Java path ...
+puts "Configuring Java path ..."
 
-# Push flink tar file to all nodes
-flinkDir = "flink"
+# Get /etc/profile file from master node
+Net::SFTP.start(master, 'root') do |sftp|
+  sftp.download!("/etc/profile", "#{hadoopConfDir}/profile")
+end
+
+# In profile file (local) add lines for Java path
+configFile = File.open("#{hadoopConfDir}/profile", "a") do |file|
+   file.puts("JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64") # append following 3 lines
+   file.puts("PATH=$PATH:$JAVA_HOME/bin")
+   file.puts("export JAVA_HOME")
+end
+
+# Copy /etc/profile to master + slave nodes and "source" it
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.exec!("rm flink.tgz ; rm -rf #{flinkDir} ; mkdir #{flinkDir}")
-     tak.put("/home/abasu/public/flink.tgz", "/root/flink.tgz")
-     tak.exec!("tar xzf flink.tgz -C #{flinkDir} --strip-components=1")
-     tak.loop()
+     tak.put("#{hadoopConfDir}/profile", "/etc/profile")
+     tak.exec("source /etc/profile")
 end
 
-# Flink directory setup completed
-puts "Flink directory setup completed."
+# Java path configured.
+puts "Java path configured."
 
 
-# Read template file flink-conf.yaml.erb
-template = ERB.new File.new("./ceph5k/flink/flink-conf.yaml.erb").read, nil, "%"
-# Write result to config file flink-conf.yaml
-flinkFileText = template.result(binding)
-File.open("#{flinkConfDir}/flink-conf.yaml", "w") do |file|
-   file.write(flinkFileText)
-end
+# Hadoop directory setup 
+puts "Getting Hadoop tar and setting up directory ..."
 
-# Prepare config file "slaves" locally
-slavesFile = File.open("#{flinkConfDir}/slaves", "w") do |file|
-   slaves.each do |slave|
-      file.puts("#{slave}")
-   end
-end
-
-# Then put 2 config files to all nodes
+# Push hadoop tar file to all nodes & unpack
+hadoopDir = "/opt/hadoop"
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.exec!("rm /root/#{flinkDir}/conf/flink-conf.yaml; rm /root/#{flinkDir}/conf/slaves")
-     tak.put("#{flinkConfDir}/flink-conf.yaml", "/root/#{flinkDir}/conf/flink-conf.yaml")
-     tak.put("#{flinkConfDir}/slaves", "/root/#{flinkDir}/conf/slaves")
-     tak.loop()
+     tak.exec!("rm hadoop.tar.gz ; rm -rf #{hadoopDir} ; mkdir #{hadoopDir}")
+     tak.put("/home/abasu/public/hadoop.tar.gz", "/root/hadoop.tar.gz")
+     tak.exec("tar xzf hadoop.tar.gz -C #{hadoopDir} --strip-components=1")
 end
 
-# Flink config files copied
-puts "Flink config files copied."
+# Hadoop directory setup completed
+puts "Hadoop directory setup completed."
 
-# Additionally create a directory for saving details of Flink deployed
+
+# Configuring Hadoop path ...
+puts "Configuring Hadoop path ..."
+
+# Get /root/.bashrc file from master node
+Net::SFTP.start(master, 'root') do |sftp|
+  sftp.download!("/root/.bashrc", "#{hadoopConfDir}/.bashrc")
+end
+
+# In .bashrc file (local) add lines for Hadoop path
+configFile = File.open("#{hadoopConfDir}/.bashrc", "a") do |file|
+   # append following lines
+   file.puts("# Hadoop parameters start here") 
+   file.puts("export HADOOP_HOME=#{hadoopDir}")
+   file.puts("export HADOOP_MAPRED_HOME=$HADOOP_HOME")
+   file.puts("export HADOOP_COMMON_HOME=$HADOOP_HOME")
+   file.puts("export HADOOP_HDFS_HOME=$HADOOP_HOME")
+   file.puts("export YARN_HOME=$HADOOP_HOME")
+   file.puts("export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop")
+   file.puts("export YARN_CONF_DIR=$HADOOP_HOME/etc/hadoop")
+   file.puts("# Hadoop parameters end here")
+end
+
+# Copy /root/.bashrc to master + slave nodes and "source" it
+Cute::TakTuk.start(nodes, :user => "root") do |tak|
+     tak.put("#{hadoopConfDir}/.bashrc", "/root/.bashrc")
+     tak.exec("bash")
+end
+
+# Hadoop path configured.
+puts "Hadoop path configured."
+
+
+# Listing master & slaves ...
+puts "Listing master & slaves ..."
+
+# Get /etc/hosts file from master node
+Net::SFTP.start(master, 'root') do |sftp|
+  sftp.download!("/etc/hosts", "#{hadoopConfDir}/hosts")
+end
+
+# In hosts file (local) add lines for master & slaves
+configFile = File.open("#{hadoopConfDir}/hosts", "a") do |file|
+   # append following lines
+
+   masterIP = Socket.getaddrinfo(master, "http", nil, :STREAM)[0][2]
+   file.puts("#{masterIP}   master")
+
+   slaves.each do |slave, index| # loop over each slave
+      slaveIP = Socket.getaddrinfo(slave, "http", nil, :STREAM)[0][2]
+      file.puts("#{slaveIP}   slave#{index+1}")
+   end # slaves.each do |slave, index|
+end
+
+# Copy /etc/hosts to master + slave nodes
+Cute::TakTuk.start(nodes, :user => "root") do |tak|
+     tak.put("#{hadoopConfDir}/hosts", "/etc/hosts")
+end
+
+# In masters file add line for master
+configFile = File.open("#{hadoopConfDir}/masters", "w") do |file|
+   # append following line
+   file.puts("master")
+end
+
+# In slaves file (local) add lines for slaves
+configFile = File.open("#{hadoopConfDir}/slaves", "w") do |file|
+   # append following lines
+   slaves.each do |slave, index| # loop over each slave
+      file.puts("slave#{index+1}")
+   end # slaves.each do |slave, index|
+end
+
+# Copy masters & slaves file to master
+Cute::TakTuk.start([master], :user => "root") do |tak|
+     tak.put("#{hadoopConfDir}/masters", "#{hadoopDir}/etc/hadoop/masters")
+     tak.put("#{hadoopConfDir}/slaves", "#{hadoopDir}/etc/hadoop/slaves")
+end
+
+# Master & Slaves registered.
+puts "Master & Slaves registered."
+
+
+# Prepare file core-site.xml
+hadoopTmpDir = "/mnt/" + argMntDepl # information to replace in .erb file
+template = ERB.new File.new("./ceph5k/hadoop/core-site.xml.erb").read, nil, "%"
+# Write result to config file core-site.xml
+hadoopFileText = template.result(binding)
+File.open("#{hadoopConfDir}/core-site.xml", "w") do |file|
+   file.write(hadoopFileText)
+end
+
+# Prepare file hdfs-site.xml
+numSlaves = slaves.count # information to replace in .erb file
+dfsNamenodeNameDir = hadoopTmpDir + "/dfs/name"
+dfsDatanodeDataDir = hadoopTmpDir + "/dfs/data"
+template = ERB.new File.new("./ceph5k/hadoop/hdfs-site.xml.erb").read, nil, "%"
+# Write result to config file hdfs-site.xml
+hadoopFileText = template.result(binding)
+File.open("#{hadoopConfDir}/hdfs-site.xml", "w") do |file|
+   file.write(hadoopFileText)
+end
+
+# Prepare file yarn-site.xml
+template = ERB.new File.new("./ceph5k/hadoop/yarn-site.xml.erb").read, nil, "%"
+# Write result to config file yarn-site.xml
+hadoopFileText = template.result(binding)
+File.open("#{hadoopConfDir}/yarn-site.xml", "w") do |file|
+   file.write(hadoopFileText)
+end
+
+
+# Then put 3 config files to all nodes
+Cute::TakTuk.start(nodes, :user => "root") do |tak|
+     tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml; rm #{hadoopDir}/etc/hadoop/hdfs-site.xml; rm #{hadoopDir}/etc/hadoop/yarn-site.xml")
+     tak.put("#{hadoopConfDir}/core-site.xml", "#{hadoopDir}/etc/hadoop/core-site.xml")
+     tak.put("#{hadoopConfDir}/hdfs-site.xml", "#{hadoopDir}/etc/hadoop/hdfs-site.xml")
+     tak.put("#{hadoopConfDir}/yarn-site.xml", "#{hadoopDir}/etc/hadoop/yarn-site.xml")
+end
+
+# Hadoop config files copied
+puts "Hadoop config files copied."
+
+# Additionally create a directory for saving details of Hadoop deployed
 jobID = jobCephClient["uid"]
 clientStateDir = tempDir + "/#{argSite}/#{jobID}"
 FileUtils.mkpath(clientStateDir)
 
-# Copy Flink configuration files to Flink state directory
-FileUtils.mkpath(clientStateDir + "/flink")
-FileUtils.cp("#{flinkConfDir}/flink-conf.yaml", "#{clientStateDir}/flink/flink-conf.yaml")
-FileUtils.cp("#{flinkConfDir}/slaves", "#{clientStateDir}/flink/slaves")
+# Copy Hadoop configuration files to Hadoop state directory
+FileUtils.mkpath(clientStateDir + "/hadoop")
+FileUtils.cp("#{hadoopConfDir}/core-site.xml", "#{clientStateDir}/hadoop/core-site.xml")
+FileUtils.cp("#{hadoopConfDir}/hdfs-site.xml", "#{clientStateDir}/hadoop/hdfs-site.xml")
+FileUtils.cp("#{hadoopConfDir}/yarn-site.xml", "#{clientStateDir}/hadoop/yarn-site.xml")
+FileUtils.cp("#{hadoopConfDir}/masters", "#{clientStateDir}/hadoop/masters")
+FileUtils.cp("#{hadoopConfDir}/slaves", "#{clientStateDir}/hadoop/slaves")
 
 
 
-# Starting Flink 
-puts "Starting Flink on master node ..."
+# Starting Hadoop 
+puts "Starting Hadoop on master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
-     tak.exec!("/root/#{flinkDir}/bin/start-cluster.sh")
-     tak.loop()
+     tak.exec!("#{hadoopDir}/sbin/start-all.sh")
 end
 
-# Flink started
-puts "Flink cluster started with Master node: #{master}"
+# Hadoop started
+puts "Hadoop cluster started with Master node: #{master}"
 puts "Login to master node to submit jobs!"
 
 
