@@ -146,7 +146,6 @@ unless argClientList.empty?
    clients = File.open(argClientList, 'r'){ |file| 
       file.readlines.collect{ |line| line.chomp }
    } # File.open
-puts "#{clients}"
 
    # Recover job details of client-list
    jobs = g5k.get_my_jobs(argSite, state = "running") 
@@ -268,7 +267,8 @@ puts "pushed config file from monitor"
 
 # Push ssh_config file & ssh public key to all nodes
 Cute::TakTuk.start(clients, :user => "root") do |tak|
-     tak.put("#{tempDir}/config/ssh_config", "/etc/ssh/ssh_config")
+     result = tak.put("#{tempDir}/config/ssh_config", "/etc/ssh/ssh_config")
+puts result
      tak.put("/home/#{user}/.ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub")
      tak.exec!("cat /root/.ssh/#{ssh_key}.pub >> /root/.ssh/authorized_keys")
      tak.loop()
