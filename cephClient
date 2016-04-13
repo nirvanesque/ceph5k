@@ -146,6 +146,7 @@ unless argClientList.empty?
    clients = File.open(argClientList, 'r'){ |file| 
       file.readlines.collect{ |line| line.chomp }
    } # File.open
+puts clients
 
    # Recover job details of client-list
    jobs = g5k.get_my_jobs(argSite, state = "running") 
