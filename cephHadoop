@@ -232,6 +232,7 @@ puts "ssh key-sharing completed."
 # Configuring Java path ...
 puts "Configuring Java path ..."
 
+javaHome = "/usr/lib/jvm/java-7-openjdk-amd64" # read from defaults.yml later
 # Get /etc/profile file from master node
 Net::SFTP.start(master, 'root') do |sftp|
   sftp.download!("/etc/profile", "#{hadoopConfDir}/profile")
@@ -239,7 +240,7 @@ end
 
 # In profile file (local) add lines for Java path
 configFile = File.open("#{hadoopConfDir}/profile", "a") do |file|
-   file.puts("JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64") # append following 3 lines
+   file.puts("JAVA_HOME=#{javaHome}") # append following 3 lines
    file.puts("PATH=$PATH:$JAVA_HOME/bin")
    file.puts("export JAVA_HOME")
 end
@@ -384,13 +385,36 @@ File.open("#{hadoopConfDir}/yarn-site.xml", "w") do |file|
    file.write(hadoopFileText)
 end
 
+# Prepare file mapred-site.xml
+mrClusterLocalDir = hadoopTmpDir + "/mapred/local"
+mrJobtrackSystemDir = hadoopTmpDir + "/mapred/system"
+mrJobtrackStagingRootDir = hadoopTmpDir + "/mapred/staging"
+mrClusterTempDir = hadoopTmpDir + "/mapred/temp"
+template = ERB.new File.new("./ceph5k/hadoop/mapred-site.xml.erb").read, nil, "%"
+# Write result to config file core-site.xml
+hadoopFileText = template.result(binding)
+File.open("#{hadoopConfDir}/hadoop-env.sh", "w") do |file|
+   file.write(hadoopFileText)
+end
+
+# Prepare file hadoop-env.sh
+template = ERB.new File.new("./ceph5k/hadoop/hadoop-env.sh.erb").read, nil, "%"
+# Write result to config file core-site.xml
+hadoopFileText = template.result(binding)
+File.open("#{hadoopConfDir}/hadoop-env.sh", "w") do |file|
+   file.write(hadoopFileText)
+end
+
 
 # Then put 3 config files to all nodes
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml; rm #{hadoopDir}/etc/hadoop/hdfs-site.xml; rm #{hadoopDir}/etc/hadoop/yarn-site.xml")
+     tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml; rm #{hadoopDir}/etc/hadoop/hdfs-site.xml; rm #{hadoopDir}/etc/hadoop/yarn-site.xml; rm #{hadoopDir}/etc/hadoop/mapred-site.xml; rm #{hadoopDir}/etc/hadoop/hadoop-env.sh")
+     tak.put("#{hadoopConfDir}/hadoop-env.sh", "#{hadoopDir}/etc/hadoop/hadoop-env.sh")
      tak.put("#{hadoopConfDir}/core-site.xml", "#{hadoopDir}/etc/hadoop/core-site.xml")
      tak.put("#{hadoopConfDir}/hdfs-site.xml", "#{hadoopDir}/etc/hadoop/hdfs-site.xml")
      tak.put("#{hadoopConfDir}/yarn-site.xml", "#{hadoopDir}/etc/hadoop/yarn-site.xml")
+     tak.put("#{hadoopConfDir}/yarn-site.xml", "#{hadoopDir}/etc/hadoop/mapred-site.xml")
+     tak.put("#{hadoopConfDir}/yarn-site.xml", "#{hadoopDir}/etc/hadoop/hadoop-env.sh")
 end
 
 # Hadoop config files copied
