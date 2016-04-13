@@ -297,7 +297,8 @@ end
 # Copy /root/.bashrc to master + slave nodes and "source" it
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.put("#{hadoopConfDir}/.bashrc", "/root/.bashrc")
-     tak.exec!("bash")
+     result = tak.exec!("bash")
+puts result
      tak.loop()
 end
 
@@ -329,7 +330,8 @@ end
 
 # Copy /etc/hosts to master + slave nodes
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.put("#{hadoopConfDir}/hosts", "/etc/hosts")
+     result = tak.put("#{hadoopConfDir}/hosts", "/etc/hosts")
+puts result
 end
 
 # In masters file add line for master
@@ -415,7 +417,8 @@ FileUtils.cp("#{hadoopConfDir}/slaves", "#{clientStateDir}/hadoop/slaves")
 # Starting Hadoop 
 puts "Starting Hadoop on master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
-     tak.exec!("#{hadoopDir}/sbin/start-all.sh")
+     result = tak.exec!("#{hadoopDir}/sbin/start-all.sh")
+puts result
 end
 
 # Hadoop started
