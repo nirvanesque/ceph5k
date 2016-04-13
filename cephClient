@@ -241,7 +241,7 @@ puts "Doing pre-flight checklist..."
 Net::SFTP.start(monitor, 'root') do |sftp|
   sftp.download!("/root/.ssh/config", "#{tempDir}/config/config")
 end
-puts "got config file from monitor"
+
 # Append to config file locally, list of nodes for clients
 configFile = File.open("#{tempDir}/config/config", "a") do |file|
    clients.each do |client|
@@ -256,6 +256,7 @@ end
 Net::SFTP.start(monitor, 'root') do |sftp|
   sftp.download!("/etc/ssh/ssh_config", "#{tempDir}/config/ssh_config")
 end
+puts "got ssh_config file from monitor"
 
 # Copy first updated config for Ceph clients on monitor/master node
 ssh_key =  'id_rsa'
