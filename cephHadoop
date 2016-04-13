@@ -430,6 +430,8 @@ FileUtils.mkpath(clientStateDir + "/hadoop")
 FileUtils.cp("#{hadoopConfDir}/core-site.xml", "#{clientStateDir}/hadoop/core-site.xml")
 FileUtils.cp("#{hadoopConfDir}/hdfs-site.xml", "#{clientStateDir}/hadoop/hdfs-site.xml")
 FileUtils.cp("#{hadoopConfDir}/yarn-site.xml", "#{clientStateDir}/hadoop/yarn-site.xml")
+FileUtils.cp("#{hadoopConfDir}/yarn-site.xml", "#{clientStateDir}/hadoop/mapred-site.xml")
+FileUtils.cp("#{hadoopConfDir}/yarn-site.xml", "#{clientStateDir}/hadoop/hadoop-env.sh")
 FileUtils.cp("#{hadoopConfDir}/masters", "#{clientStateDir}/hadoop/masters")
 FileUtils.cp("#{hadoopConfDir}/slaves", "#{clientStateDir}/hadoop/slaves")
 
@@ -447,9 +449,4 @@ end
 # Hadoop started
 puts "Hadoop cluster started with Master node: #{master}"
 puts "Login to master node to submit jobs!"
-
-
-
-
-
 
