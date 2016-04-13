@@ -247,7 +247,7 @@ end
 # Copy /etc/profile to master + slave nodes and "source" it
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.put("#{hadoopConfDir}/profile", "/etc/profile")
-     result = tak.exec!("source /etc/profile")
+     result = tak.exec!(". /etc/profile")
 puts result
      tak.loop()
 end

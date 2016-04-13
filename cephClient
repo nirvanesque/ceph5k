@@ -263,13 +263,11 @@ Cute::TakTuk.start([monitor], :user => "root") do |tak|
      tak.put("#{tempDir}/config/config", "/root/.ssh/config") # copy the config file to master/monitor
      tak.loop()
 end
-puts "pushed config file from monitor"
 
 # Push ssh_config file & ssh public key to all nodes
 Cute::TakTuk.start(clients, :user => "root") do |tak|
      tak.put("#{tempDir}/config/ssh_config", "/etc/ssh/ssh_config")
-     result = tak.put("/home/#{user}/.ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub")
-puts result
+     tak.put("/home/#{user}/.ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub")
      tak.exec!("cat /root/.ssh/#{ssh_key}.pub >> /root/.ssh/authorized_keys")
      tak.loop()
 end
