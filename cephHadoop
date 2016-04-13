@@ -247,9 +247,7 @@ end
 # Copy /etc/profile to master + slave nodes and "source" it
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.put("#{hadoopConfDir}/profile", "/etc/profile")
-     result = tak.exec!(". /etc/profile")
-puts result
-     tak.loop()
+     tak.exec!(". /etc/profile")
 end
 
 # Java path configured.
@@ -297,8 +295,7 @@ end
 # Copy /root/.bashrc to master + slave nodes and "source" it
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.put("#{hadoopConfDir}/.bashrc", "/root/.bashrc")
-     result = tak.exec!("bash")
-puts result
+     tak.exec!("bash")
      tak.loop()
 end
 
@@ -417,7 +414,9 @@ FileUtils.cp("#{hadoopConfDir}/slaves", "#{clientStateDir}/hadoop/slaves")
 # Starting Hadoop 
 puts "Starting Hadoop on master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
-     result = tak.exec!("#{hadoopDir}/sbin/start-all.sh")
+     result = tak.exec!("#{hadoopDir}/sbin/start-dfs.sh")
+puts result
+     result = tak.exec!("#{hadoopDir}/sbin/start-yarn.sh")
 puts result
 end
 
