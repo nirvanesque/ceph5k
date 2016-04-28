@@ -399,7 +399,7 @@ end
 
 # Prepare file hadoop-env.sh
 template = ERB.new File.new("./ceph5k/hadoop/hadoop-env.sh.erb").read, nil, "%"
-# Write result to config file core-site.xml
+# Write result to config file hadoop-env.sh
 hadoopFileText = template.result(binding)
 File.open("#{hadoopConfDir}/hadoop-env.sh", "w") do |file|
    file.write(hadoopFileText)
@@ -413,8 +413,7 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.put("#{hadoopConfDir}/core-site.xml", "#{hadoopDir}/etc/hadoop/core-site.xml")
      tak.put("#{hadoopConfDir}/hdfs-site.xml", "#{hadoopDir}/etc/hadoop/hdfs-site.xml")
      tak.put("#{hadoopConfDir}/yarn-site.xml", "#{hadoopDir}/etc/hadoop/yarn-site.xml")
-     tak.put("#{hadoopConfDir}/yarn-site.xml", "#{hadoopDir}/etc/hadoop/mapred-site.xml")
-     tak.put("#{hadoopConfDir}/yarn-site.xml", "#{hadoopDir}/etc/hadoop/hadoop-env.sh")
+     tak.put("#{hadoopConfDir}/mapred-site.xml", "#{hadoopDir}/etc/hadoop/mapred-site.xml")
 end
 
 # Hadoop config files copied
