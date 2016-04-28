@@ -391,9 +391,9 @@ mrJobtrackSystemDir = hadoopTmpDir + "/mapred/system"
 mrJobtrackStagingRootDir = hadoopTmpDir + "/mapred/staging"
 mrClusterTempDir = hadoopTmpDir + "/mapred/temp"
 template = ERB.new File.new("./ceph5k/hadoop/mapred-site.xml.erb").read, nil, "%"
-# Write result to config file core-site.xml
+# Write result to config file mapred-site.xml
 hadoopFileText = template.result(binding)
-File.open("#{hadoopConfDir}/hadoop-env.sh", "w") do |file|
+File.open("#{hadoopConfDir}/mapred-site.xml.sh", "w") do |file|
    file.write(hadoopFileText)
 end
 
