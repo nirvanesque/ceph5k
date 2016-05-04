@@ -31,7 +31,8 @@ The installation consists of the following steps:
 ### Deploying a Ceph cluster - cephDeploy
 The deployment of a Ceph cluster is done from any frontend on Grid'5000. At the CLI on a frontend (any sub-folder also):
        
-        gem install --user-install ruby-cute trollop
+        gem install --user-install trollop
+        gem install --user-install ruby-cute -v 0.3
         rm -rf ceph5k
         git clone https://github.com/nirvanesque/ceph5k.git
         ./ceph5k/cephDeploy     # Creates and deploys the Ceph cluster
