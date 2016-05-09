@@ -409,6 +409,7 @@ end
 # Then put 3 config files to all nodes
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml; rm #{hadoopDir}/etc/hadoop/hdfs-site.xml; rm #{hadoopDir}/etc/hadoop/yarn-site.xml; rm #{hadoopDir}/etc/hadoop/mapred-site.xml; rm #{hadoopDir}/etc/hadoop/hadoop-env.sh")
+     tak.exec!("rm -rf #{hadoopTmpDir}")
      tak.put("#{hadoopConfDir}/hadoop-env.sh", "#{hadoopDir}/etc/hadoop/hadoop-env.sh")
      tak.put("#{hadoopConfDir}/core-site.xml", "#{hadoopDir}/etc/hadoop/core-site.xml")
      tak.put("#{hadoopConfDir}/hdfs-site.xml", "#{hadoopDir}/etc/hadoop/hdfs-site.xml")
