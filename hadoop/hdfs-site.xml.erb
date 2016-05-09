@@ -22,6 +22,14 @@
     <value><%= numSlaves %></value>
   </property> 
   <property>
+    <name>dfs.namenode.name.dir</name>
+    <value><%= dfsNamenodeNameDir %></value>
+  </property> 
+  <property>
+    <name>dfs.datanode.data.dir</name>
+    <value>file:/<%= dfsDatanodeDataDir %></value>
+  </property> 
+  <property>
     <name>dfs.permissions</name>
     <value>false</value>
   </property>
