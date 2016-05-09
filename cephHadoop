@@ -255,11 +255,30 @@ end
 puts "Java path configured."
 
 
+# Some important hadoop directories
+hadoopDir = "/opt/hadoop"
+hadoopTmpDir = "/mnt/" + argMntDepl + "/hadoop" # information to replace in .erb file
+
+# Stopping Hadoop 
+puts "Stopping any Hadoop daemons from master node ..."
+Cute::TakTuk.start([master], :user => "root") do |tak|
+     tak.exec!("#{hadoopDir}/sbin/stop-all.sh") # stop previously running Hadoop daemons
+end
+
+# Cleaning up Hadoop config files & temp directories
+puts "Cleaning up Hadoop config files & temp directories ..."
+Cute::TakTuk.start(nodes, :user => "root") do |tak|
+     tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml; rm #{hadoopDir}/etc/hadoop/hdfs-site.xml; rm #{hadoopDir}/etc/hadoop/yarn-site.xml; rm #{hadoopDir}/etc/hadoop/mapred-site.xml; rm #{hadoopDir}/etc/hadoop/hadoop-env.sh")
+     tak.exec!("rm -rf #{hadoopTmpDir}")
+end
+
+# Hadoop config files copied
+puts "Previous Hadoop installations cleaned up."
+
 # Hadoop directory setup 
 puts "Getting Hadoop tar and setting up directory ..."
 
 # Push hadoop tar file to all nodes & unpack
-hadoopDir = "/opt/hadoop"
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm hadoop.tar.gz ; rm -rf #{hadoopDir} ; mkdir #{hadoopDir}")
      tak.put("/home/abasu/public/hadoop.tar.gz", "/root/hadoop.tar.gz")
@@ -358,7 +377,6 @@ puts "Master & Slaves registered."
 
 
 # Prepare file core-site.xml
-hadoopTmpDir = "/mnt/" + argMntDepl + "/hadoop" # information to replace in .erb file
 template = ERB.new File.new("./ceph5k/hadoop/core-site.xml.erb").read, nil, "%"
 # Write result to config file core-site.xml
 hadoopFileText = template.result(binding)
@@ -440,10 +458,7 @@ FileUtils.cp("#{hadoopConfDir}/slaves", "#{clientStateDir}/hadoop/slaves")
 # Starting Hadoop 
 puts "Starting Hadoop daemons from master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
-     tak.exec!("#{hadoopDir}/sbin/stop-all.sh") # stop previously running Hadoop daemons
      tak.exec!("#{hadoopDir}/sbin/start-all.sh") # start all Hadoop daemons
-#     tak.exec!("#{hadoopDir}/sbin/start-dfs.sh") # start HDFS daemon
-#     tak.exec!("#{hadoopDir}/sbin/start-yarn.sh") # start YARN
 end
 
 # Hadoop started
