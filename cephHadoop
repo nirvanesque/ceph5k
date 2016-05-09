@@ -440,10 +440,9 @@ FileUtils.cp("#{hadoopConfDir}/slaves", "#{clientStateDir}/hadoop/slaves")
 # Starting Hadoop 
 puts "Starting Hadoop on master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
-     result = tak.exec!("#{hadoopDir}/sbin/start-dfs.sh")
-puts result
-     result = tak.exec!("#{hadoopDir}/sbin/start-yarn.sh")
-puts result
+     tak.exec!("#{hadoopDir}/sbin/stop-all.sh") # stop previously running Hadoop daemons
+     tak.exec!("#{hadoopDir}/sbin/start-dfs.sh") # start HDFS daemon
+     tak.exec!("#{hadoopDir}/sbin/start-yarn.sh") # start YARN
 end
 
 # Hadoop started
