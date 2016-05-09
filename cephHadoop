@@ -342,7 +342,7 @@ configFile = File.open("#{hadoopConfDir}/hosts", "a") do |file|
    file.puts("#{masterIP}   master")
    slaves.each.with_index(1) do |slave, index| # loop over each slave
       slaveIP = Socket.getaddrinfo(slave, "http", nil, :STREAM)[0][2]
-      file.puts("#{slaveIP}   slave#{index}")
+      file.puts("#{slaveIP} #{slave} slave#{index}")
    end # slaves.each do |slave, index|
 
 end
