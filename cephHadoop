@@ -358,7 +358,7 @@ puts "Master & Slaves registered."
 
 
 # Prepare file core-site.xml
-hadoopTmpDir = "/mnt/" + argMntDepl # information to replace in .erb file
+hadoopTmpDir = "/mnt/" + argMntDepl + "/hadoop" # information to replace in .erb file
 template = ERB.new File.new("./ceph5k/hadoop/core-site.xml.erb").read, nil, "%"
 # Write result to config file core-site.xml
 hadoopFileText = template.result(binding)
