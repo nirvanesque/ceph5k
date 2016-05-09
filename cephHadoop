@@ -290,6 +290,7 @@ configFile = File.open("#{hadoopConfDir}/.bashrc", "a") do |file|
    file.puts("export YARN_HOME=$HADOOP_HOME")
    file.puts("export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop")
    file.puts("export YARN_CONF_DIR=$HADOOP_HOME/etc/hadoop")
+   file.puts("PATH=$PATH:$HADOOP_HOME/bin")
    file.puts("# Hadoop parameters end here")
 end
 
