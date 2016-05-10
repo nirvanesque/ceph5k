@@ -33,4 +33,27 @@
     <name>dfs.permissions</name>
     <value>false</value>
   </property>
+  <property>
+    <name>dfs.namenode.http-address</name>
+    <value><%= master %>:50070</value>
+    <description>NameNode (master) hostname for http access.</description>
+  </property>
+  <property>
+    <name>dfs.namenode.checkpoint.dir</name>
+    <value><%= dfsSecNamenodeNameDir %></value>
+  </property>
+  <property>
+    <name>dfs.namenode.checkpoint.edits.dir</name>
+    <value><%= dfsSecNamenodeNameDir %></value>
+  </property>
+  <property>
+    <name>dfs.namenode.rpc-address</name>
+    <value><%= master %>:8020</value>
+    <description>The RPC address that handles all clients requests.</description>
+  </property>
+  <property>
+    <name>dfs.namenode.https-address</name>
+    <value><%= master %>:50470</value>
+    <description>The namenode secure http server address and port.</description>
+</property>
 </configuration>

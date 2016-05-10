@@ -37,4 +37,48 @@
     <name>yarn.resourcemanager.address</name>
     <value><%= master %>:8040</value>
   </property>
+  <property>
+    <name>yarn.resourcemanager.scheduler.class</name>
+    <value>org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler</value>
+  </property>
+  <property>
+    <name>yarn.resourcemanager.resource-tracker.address</name>
+    <value><%= master %>:8025</value>
+  </property>
+  <property>
+    <name>yarn.resourcemanager.scheduler.address</name>
+    <value><%= master %>:8030</value>
+  </property>
+  <property>
+    <name>yarn.resourcemanager.address</name>
+    <value><%= master %>:8050</value>
+  </property>
+  <property>
+    <name>yarn.resourcemanager.admin.address</name>
+    <value><%= master %>:8141</value>
+  </property>
+  <property>
+    <name>yarn.nodemanager.local-dirs</name>
+    <value><%= yarnNodeMgrLocalDirs %></value>
+  </property>
+  <property>
+    <name>yarn.nodemanager.log-dirs</name>
+    <value><%= yarnNodeMgrLogDirs %></value>
+  </property>
+  <property>
+    <name>yarn.nodemanager.recovery</name>
+    <value><%= yarnNodeMgrRecovDirs %></value>
+  </property>
+  <property>
+    <name>yarn.log.server.url</name>
+    <value>http://<%= master %>:19888/jobhistory/logs/</value>
+  </property>
+  <property>
+     <name>yarn.resourcemanager.webapp.address</name>
+     <value><%= master %>:8088</value>
+  </property>
+  <property>
+    <name>yarn.timeline-service.webapp.address</name>
+    <value><%= master %>:8188</value>
+  </property>
 </configuration>

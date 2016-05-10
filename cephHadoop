@@ -269,8 +269,8 @@ end
 puts "Cleaning up Hadoop config files & temp directories ..."
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml; rm #{hadoopDir}/etc/hadoop/hdfs-site.xml; rm #{hadoopDir}/etc/hadoop/yarn-site.xml; rm #{hadoopDir}/etc/hadoop/mapred-site.xml; rm #{hadoopDir}/etc/hadoop/hadoop-env.sh")
-     tak.exec!("rm -rf #{hadoopTmpDir}")
-     tak.exec!("mkdir #{hadoopTmpDir} ; chmod 777 #{hadoopTmpDir}")
+     tak.exec!("rm -Rf #{hadoopTmpDir}")
+     tak.exec!("mkdir #{hadoopTmpDir}; mkdir #{hadoopTmpDir}/hdfs; mkdir #{hadoopTmpDir}/yarn; mkdir #{hadoopTmpDir}/mapred; chmod -R 777 #{hadoopTmpDir}")
 end
 
 # Hadoop config files copied
@@ -301,7 +301,7 @@ end
 
 # In .bashrc file (local) add lines for Hadoop path
 configFile = File.open("#{hadoopConfDir}/.bashrc", "a") do |file|
-   # append following lines
+
    file.puts("# Hadoop parameters start here") 
    file.puts("export HADOOP_HOME=#{hadoopDir}")
    file.puts("export HADOOP_MAPRED_HOME=$HADOOP_HOME")
@@ -309,9 +309,26 @@ configFile = File.open("#{hadoopConfDir}/.bashrc", "a") do |file|
    file.puts("export HADOOP_HDFS_HOME=$HADOOP_HOME")
    file.puts("export YARN_HOME=$HADOOP_HOME")
    file.puts("export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop")
-   file.puts("export YARN_CONF_DIR=$HADOOP_HOME/etc/hadoop")
-   file.puts("PATH=$PATH:$HADOOP_HOME/bin")
+   file.puts("PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin")
    file.puts("# Hadoop parameters end here")
+
+   file.puts("# HDFS parameters start here") 
+   file.puts("export DFS_NAME_DIR=#{hadoopTmpDir}/hdfs/nn")
+   file.puts("export FS_CHECKPOINT_DIR=#{hadoopTmpDir}/hdfs/snn")
+   file.puts("export DFS_DATA_DIR=#{hadoopTmpDir}/hdfs/dn")
+   file.puts("export HDFS_LOG_DIR=#{hadoopTmpDir}/hdfs/logs")
+   file.puts("# HDFS parameters end here")
+
+   file.puts("# YARN parameters start here") 
+   file.puts("export YARN_CONF_DIR=$HADOOP_HOME/etc/hadoop")
+   file.puts("export YARN_LOCAL_DIR=#{hadoopTmpDir}/yarn")
+   file.puts("export YARN_LOG_DIR=#{hadoopTmpDir}/yarn/logs")
+   file.puts("# YARN parameters end here")
+
+   file.puts("# MapRed parameters start here") 
+   file.puts("export MAPRED_LOG_DIR=#{hadoopTmpDir}/mapred/logs")
+   file.puts("# MapRed parameters end here")
+
 end
 
 # Copy /root/.bashrc to master + slave nodes and "source" it
@@ -387,8 +404,9 @@ end
 
 # Prepare file hdfs-site.xml
 numSlaves = slaves.count # information to replace in .erb file
-dfsNamenodeNameDir = hadoopTmpDir + "/dfs/name"
-dfsDatanodeDataDir = hadoopTmpDir + "/dfs/data"
+dfsNamenodeNameDir = hadoopTmpDir + "/dfs/nn"
+dfsSecNamenodeNameDir = hadoopTmpDir + "/dfs/snn"
+dfsDatanodeDataDir = hadoopTmpDir + "/dfs/dn"
 template = ERB.new File.new("./ceph5k/hadoop/hdfs-site.xml.erb").read, nil, "%"
 # Write result to config file hdfs-site.xml
 hadoopFileText = template.result(binding)
@@ -397,6 +415,9 @@ File.open("#{hadoopConfDir}/hdfs-site.xml", "w") do |file|
 end
 
 # Prepare file yarn-site.xml
+yarnNodeMgrLocalDirs = hadoopTmpDir + "/yarn/local"
+yarnNodeMgrLogDirs = hadoopTmpDir + "/yarn/log"
+yarnNodeMgrRecovDirs = hadoopTmpDir + "/yarn/recovery"
 template = ERB.new File.new("./ceph5k/hadoop/yarn-site.xml.erb").read, nil, "%"
 # Write result to config file yarn-site.xml
 hadoopFileText = template.result(binding)
@@ -456,10 +477,18 @@ FileUtils.cp("#{hadoopConfDir}/slaves", "#{clientStateDir}/hadoop/slaves")
 
 
 
-# Starting Hadoop 
+# Starting namenodes 
 puts "Starting Hadoop daemons from master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
+     tak.exec!("#{hadoopDir}/sbin/hadoop-daemon.sh --config $HADOOP_CONF_DIR start namenode") # start namenode
+     tak.exec!("#{hadoopDir}/sbin/hadoop-daemon.sh --config $HADOOP_CONF_DIR start secondarynamenode") # start secondary namenode
      tak.exec!("#{hadoopDir}/sbin/start-all.sh") # start all Hadoop daemons
+end
+
+# Starting datanodes 
+puts "Starting Hadoop daemons from master node ..."
+Cute::TakTuk.start(nodes, :user => "root") do |tak|
+     tak.exec!("#{hadoopDir}/sbin/hadoop-daemon.sh --config $HADOOP_CONF_DIR start datanode") # start namenode
 end
 
 # Hadoop started
