@@ -478,29 +478,30 @@ FileUtils.cp("#{hadoopConfDir}/slaves", "#{clientStateDir}/hadoop/slaves")
 
 
 # Starting namenodes 
-puts "Preparing & starting HDFS daemons from master node ..."
+puts "Preparing & starting HDFS & YARN daemons on master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
-     result = tak.exec!("#{hadoopDir}/bin/hdfs namenode -format") # format namenode
-puts result
-     result = tak.exec!("#{hadoopDir}/sbin/hadoop-daemon.sh --config $HADOOP_CONF_DIR start namenode") # start namenode
-puts result
-     result = tak.exec!("#{hadoopDir}/sbin/hadoop-daemon.sh --config $HADOOP_CONF_DIR start secondarynamenode") # start secondary namenode
-puts result
+     tak.exec!("#{hadoopDir}/bin/hdfs namenode -format") # format namenode
+     tak.exec!("#{hadoopDir}/sbin/hadoop-daemon.sh --config $HADOOP_CONF_DIR start namenode") # start namenode
+     tak.exec!("#{hadoopDir}/sbin/hadoop-daemon.sh --config $HADOOP_CONF_DIR start secondarynamenode") # start secondary namenode
+
+     tak.exec!("#{hadoopDir}/sbin/yarn-daemon.sh --config $HADOOP_CONF_DIR start resourcemanager") # start resourcemanager
 #     tak.exec!("#{hadoopDir}/sbin/start-all.sh") # start all Hadoop daemons
 end
 
 # HDFS daemons started
-puts "HDFS daemons started."
+puts "HDFS & YARN daemons started."
 
 
 # Starting datanodes 
-puts "Starting Hadoop daemons from all data nodes ..."
+puts "Starting HDFS & YARN daemons on all data nodes ..."
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.exec!("#{hadoopDir}/sbin/hadoop-daemon.sh --config $HADOOP_CONF_DIR start datanode") # start namenode
+     tak.exec("#{hadoopDir}/sbin/hadoop-daemon.sh --config $HADOOP_CONF_DIR start datanode") # start datanode
+     tak.exec!("#{hadoopDir}/sbin/yarn-daemon.sh --config $HADOOP_CONF_DIR start nodemanager") # start nodemanager
 end
 
 # Hadoop daemons on data nodes started
-puts "Hadoop daemons on data nodes started."
+puts "HDFS & YARN daemons on data nodes started."
+
 
 
 # Hadoop started
