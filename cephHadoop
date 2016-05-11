@@ -485,6 +485,9 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
      tak.exec!("#{hadoopDir}/sbin/hadoop-daemon.sh --config $HADOOP_CONF_DIR start secondarynamenode") # start secondary namenode
 
      tak.exec!("#{hadoopDir}/sbin/yarn-daemon.sh --config $HADOOP_CONF_DIR start resourcemanager") # start resourcemanager
+
+     tak.exec!("#{hadoopDir}/sbin/mr-jobhistory-daemon.sh --config $HADOOP_CONF_DIR start historyserver") # start MapReduce jobhistory server
+
 #     tak.exec!("#{hadoopDir}/sbin/start-all.sh") # start all Hadoop daemons
 end
 

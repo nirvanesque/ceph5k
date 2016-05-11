@@ -26,8 +26,12 @@
     <value>org.apache.hadoop.mapred.ShuffleHandler</value>
   </property>
   <property>
+    <name>yarn.resourcemanager.hostname</name>
+    <value><%= master %></value>
+  </property>
+  <property>
     <name>yarn.resourcemanager.resource-tracker.address</name>
-    <value><%= master %>:8025</value>
+    <value><%= master %>:8031</value>
   </property>
   <property>
     <name>yarn.resourcemanager.scheduler.address</name>
@@ -35,27 +39,15 @@
   </property>
   <property>
     <name>yarn.resourcemanager.address</name>
-    <value><%= master %>:8040</value>
+    <value><%= master %>:8032</value>
   </property>
   <property>
     <name>yarn.resourcemanager.scheduler.class</name>
     <value>org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler</value>
   </property>
   <property>
-    <name>yarn.resourcemanager.resource-tracker.address</name>
-    <value><%= master %>:8025</value>
-  </property>
-  <property>
-    <name>yarn.resourcemanager.scheduler.address</name>
-    <value><%= master %>:8030</value>
-  </property>
-  <property>
-    <name>yarn.resourcemanager.address</name>
-    <value><%= master %>:8050</value>
-  </property>
-  <property>
     <name>yarn.resourcemanager.admin.address</name>
-    <value><%= master %>:8141</value>
+    <value><%= master %>:8033</value>
   </property>
   <property>
     <name>yarn.nodemanager.local-dirs</name>
@@ -68,10 +60,6 @@
   <property>
     <name>yarn.nodemanager.recovery</name>
     <value><%= yarnNodeMgrRecovDirs %></value>
-  </property>
-  <property>
-    <name>yarn.log.server.url</name>
-    <value>http://<%= master %>:19888/jobhistory/logs/</value>
   </property>
   <property>
      <name>yarn.resourcemanager.webapp.address</name>
