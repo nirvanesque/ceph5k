@@ -295,7 +295,7 @@ puts "Creating Ceph pools on deployed cluster ..."
 Cute::TakTuk.start(clients, :user => "root") do |tak|
      tak.exec!("modprobe rbd")
      tak.exec!("rados mkpool #{argClientPoolName}")
-     tak.exec!("rbd create #{argClientRBDName} --pool #{argClientPoolName} --size #{argClientRBDSize}")
+     tak.exec!("rbd create --image-format 2 #{argClientRBDName} --pool #{argClientPoolName} --size #{argClientRBDSize}")
      tak.loop()
 end
 
