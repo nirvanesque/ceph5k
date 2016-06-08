@@ -1,0 +1,491 @@
+#!/usr/bin/env ruby
+# Copyright (c) 2015-17 Anirvan BASU, INRIA Rennes - Bretagne Atlantique
+#
+# Licensed under the CeCCIL-B license (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.cecill.info/licences/Licence_CeCILL-B_V1-en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License. 
+
+require 'cute'
+require 'logger'
+require 'cute/taktuk'
+require 'net/sftp'
+require 'erb'
+require 'socket'
+require 'trollop'
+require 'json'
+require "net/http"
+require "uri"
+require "fileutils"
+
+
+g5k = Cute::G5K::API.new()
+user = g5k.g5k_user
+
+# Get the script dir
+scriptDir = File.expand_path(File.dirname(__FILE__))
+# Make the temporary files directory (if not created already)
+tempDir = scriptDir + "/.generated"
+FileUtils.mkpath(tempDir)
+FileUtils.mkpath(tempDir + "/config")
+
+# Additionally create a directory for Hadoop config files
+hadoopConfDir = tempDir + "/config/hadoop"
+FileUtils.mkpath(hadoopConfDir)
+
+currentConfigFile = ""
+if (["--def-conf", "-d"].include?(ARGV[0])  && !ARGV[1].empty? )
+   currentConfigFile = ARGV[1] # assign config file location to variable configFile
+   ARGV.delete_at(0)    # clean up ARGV array
+   ARGV.delete_at(0)
+else 
+   currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
+   unless File.exist?(currentConfigFile)
+     configFile = scriptDir + "/config/defaults.yml.example" # example config file
+     FileUtils.cp(configFile, currentConfigFile)
+   end # unless File.exist?
+end    # if (["--def-conf", "-d"])
+
+# Populate the hash with default parameters from YAML file.
+defaults = begin
+  YAML.load(File.open(currentConfigFile))
+rescue ArgumentError => e
+  puts "Could not parse YAML: #{e.message}"
+end
+
+
+# banner for script
+opts = Trollop::options do
+  version "ceph5k 0.0.7 (c) 2015-16 Anirvan BASU, INRIA RBA"
+  banner <<-EOS
+cephHadoop is a script for deploying Apache Hadoop on a deployed Ceph cluster+clients.
+
+Usage:
+       cephHadoop [options]
+where [options] are:
+EOS
+
+  opt :ignore, "Ignore incorrect values"
+  opt :jobid, "Oarsub ID of the client job", :default => 0
+  opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["site"]
+  opt :cluster, "Grid 5000 cluster in specified site", :type => String, :default => defaults["cluster"]
+  opt :'job-name', "Grid'5000 job name for deployed Ceph cluster", :type => String, :default => defaults["job-name"]
+  opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => defaults["walltime"]
+
+  opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
+  opt :'pool-name', "Pool name on Ceph cluster (userid_ added)", :type => String, :default => defaults["pool-name"]
+  opt :'pool-size', "Pool size on Ceph cluster", :default => defaults["poolSize"]
+  opt :'rbd-name', "RBD name for Ceph pool (userid_ added)", :type => String, :default => defaults["rbd-name"]
+  opt :'rbd-size', "RBD size on Ceph pool", :default => defaults["rbd-size"]
+  opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
+  opt :'mnt-depl', "Mount point for RBD on deployed cluster", :type => String, :default => defaults["mnt-depl"]
+
+  opt :'job-client', "Grid'5000 job name for Ceph clients", :type => String, :default => defaults["job-client"]
+  opt :'env-client', "G5K environment for client", :type => String, :default => defaults["env-client"]
+  opt :'num-client', "Nodes in Ceph Client cluster", :default => defaults["num-client"]
+  opt :'client-pool-name', "Pool name on each Ceph client (userid_ is added)", :type => String, :default => defaults["client-pool-name"]
+  opt :'client-pool-size', "Pool size for each Ceph client (~ pool-size / num-clients)", :default => defaults["client-pool-size"]
+  opt :'client-rbd-name', "RBD name on each Ceph client (userid_ added)", :type => String, :default => defaults["client-pool-name"]
+  opt :'client-rbd-size', "RBD size for each Ceph client (~ pool-size / num-clients)", :default => defaults["client-pool-size"]
+
+end
+
+# Move CLI arguments into variables. Later change to class attributes.
+argJobID = opts[:jobid] # Oarsub ID of the client job. 
+argSite = opts[:site] # site name. 
+argJobName = opts[:'job-name'] # Grid'5000 job for deployed Ceph cluster. 
+argG5KCluster = opts[:cluster] # G5K cluster name if specified. 
+argWallTime = opts[:walltime] # walltime for the client reservation.
+
+argRelease = opts[:release] # Ceph release name. 
+argPoolName = "#{user}_" + opts[:'pool-name'] # Name of pool to create on clusters.
+argPoolSize = opts[:'pool-size'] # Size of pool to create on clusters.
+argRBDName = "#{user}_" + opts[:'rbd-name'] # Name of pool to create on clusters.
+argRBDSize = opts[:'rbd-size'] # Size of pool to create on clusters.
+argFileSystem = opts[:'file-system'] # File System to be formatted on created RBDs.
+argMntDepl = opts[:'mnt-depl'] # Mount point for RBD in deployed cluster.
+
+argEnvClient = opts[:'env-client'] # Grid'5000 environment to deploy Ceph clients. 
+argJobClient = opts[:'job-client'] # Grid'5000 job name for Ceph clients. 
+argNumClient = opts[:'num-clients'] # Nodes in Ceph Client cluster.
+argClientPoolName = "#{user}_" + opts[:'client-pool-name'] # Pool name on each Ceph client.
+argClientPoolSize = opts[:'client-pool-size'] # Pool size on each Ceph client.
+argClientRBDName = "#{user}_" + opts[:'client-rbd-name'] # RBD name for each Ceph client.
+argClientRBDSize = opts[:'client-rbd-size'] # RBD size for each Ceph client.
+
+
+# get the job with name "cephCluster"
+jobCephCluster = nil # Job for deployed Ceph cluster
+monitor = "" # Monitor for deployed Ceph cluster
+# Get all jobs submitted in a cluster
+jobs = g5k.get_my_jobs(argSite, state = "running") 
+
+# get the job with name "cephDeploy"
+jobs.each do |job|
+   if job["name"] == argJobName # if job exists already, get nodes
+      jobCephCluster = job
+      monitor = jobCephCluster["assigned_nodes"][0]
+   end # if job["name"] == argJobName
+end # jobs.each do |job|
+
+# Abort script if no deployed Ceph cluster
+abort("No deployed Ceph cluster found. First run cephDeploy & cephClient scripts, then run this script.") if jobCephCluster.nil?
+
+# Remind where is the deployed Ceph monitor
+puts "Deployed Ceph cluster details:"
+puts "   monitor on: #{monitor}"
+
+
+# Next get job for Ceph clients
+jobCephClient = nil # Ceph client job
+clients = [] # Array of client nodes
+
+unless [nil, 0].include?(argJobID)
+   # If jobID is specified, get the specific job
+   jobCephClient = g5k.get_job(argSite, argJobID)
+else
+   # Get all jobs submitted in a cluster
+   jobs = g5k.get_my_jobs(argSite, state = "running") 
+
+   # get the job with name "cephClient"
+   jobs.each do |job|
+      if job["name"] == argJobClient # if client job exists already, get nodes
+         jobCephClient = job
+         clients = jobCephClient["assigned_nodes"]
+
+      end # if job["name"] == argJobName
+   end # jobs.each do |job|
+end # if argJobID
+# At this point job details were fetched
+puts "Ceph client job details recovered." if !jobCephClient.nil?
+
+# If no Ceph clients found, abort Hadoop deployment
+abort("No Ceph client(s) found. First run cephClient script, then run this script.") if jobCephClient.nil?
+
+# At this point Big Data nodes were created or fetched
+puts "Big Data job details recovered."
+
+
+# Change to be read/write from YAML file
+nodes = jobCephClient["assigned_nodes"]
+master = nodes[0] # The first node in the list becomes the master
+slaves = nodes - [master]
+
+# At this point job was created / fetched
+puts "Deploying Hadoop cluster as follows:"
+puts " All nodes: #{nodes}" 
+puts "Master node on: #{master}"
+puts "Slave node(s) on: #{slaves}"
+
+
+# ssh key-sharing for password-less access from master node.
+puts "ssh key-sharing for password-less access from master node ..."
+
+# Prepare .ssh/config file locally
+configFile = File.open("#{tempDir}/config/config", "w") do |file|
+   nodes.each do |node|
+      file.puts("Host #{node}")
+      file.puts("   Hostname #{node}")
+      file.puts("   User root")
+      file.puts("   StrictHostKeyChecking no")
+   end
+end
+
+# Get ssh_config file from master
+Net::SFTP.start(master, 'root') do |sftp|
+  sftp.download!("/etc/ssh/ssh_config", "#{tempDir}/config/ssh_config")
+end
+
+# In ssh_config file (local) add a line to avoid StrictHostKeyChecking
+configFile = File.open("#{tempDir}/config/ssh_config", "a") do |file|
+   file.puts("    StrictHostKeyChecking no") # append only once
+end
+
+# Copy ssh keys & config for Ceph on master node
+ssh_key =  'id_rsa'
+Cute::TakTuk.start([master], :user => "root") do |tak|
+     tak.put("/home/#{user}/.ssh/#{ssh_key}", "/root/.ssh/#{ssh_key}") # copy the config file to master/monitor
+     tak.put("/home/#{user}/.ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub") # copy the config file to master/monitor
+     tak.put("#{tempDir}/config/config", "/root/.ssh/config") # copy the config file to master/monitor
+     tak.loop()
+end
+
+# Push ssh_config file & ssh public key to all nodes
+Cute::TakTuk.start(nodes, :user => "root") do |tak|
+     tak.put("#{tempDir}/config/ssh_config", "/etc/ssh/ssh_config")
+     tak.put("/home/#{user}/.ssh/#{ssh_key}.pub", "/root/.ssh/#{ssh_key}.pub")
+     tak.exec!("cat /root/.ssh/#{ssh_key}.pub >> /root/.ssh/authorized_keys")
+     tak.loop()
+end
+
+# ssh key-sharing completed.
+puts "ssh key-sharing completed."
+
+
+# Configuring Java path ...
+puts "Configuring Java path ..."
+
+javaHome = "/usr/lib/jvm/java-7-openjdk-amd64" # read from defaults.yml later
+# Get /etc/profile file from master node
+Net::SFTP.start(master, 'root') do |sftp|
+  sftp.download!("/etc/profile", "#{hadoopConfDir}/profile")
+end
+
+# In profile file (local) add lines for Java path
+configFile = File.open("#{hadoopConfDir}/profile", "a") do |file|
+   file.puts("JAVA_HOME=#{javaHome}") # append following 3 lines
+   file.puts("PATH=$PATH:$JAVA_HOME/bin")
+   file.puts("export JAVA_HOME")
+end
+
+# Copy /etc/profile to master + slave nodes and "source" it
+Cute::TakTuk.start(nodes, :user => "root") do |tak|
+     tak.put("#{hadoopConfDir}/profile", "/etc/profile")
+     tak.exec!(". /etc/profile")
+end
+
+# Java path configured.
+puts "Java path configured."
+
+
+# Some important hadoop directories
+hadoopDir = "/opt/hadoop"
+hadoopTmpDir = "/mnt/" + argMntDepl + "/hadoop" # information to replace in .erb file
+
+# Stopping Hadoop 
+puts "Stopping any Hadoop daemons from master node ..."
+Cute::TakTuk.start([master], :user => "root") do |tak|
+     tak.exec!("#{hadoopDir}/sbin/stop-all.sh") # stop previously running Hadoop daemons
+end
+
+# Cleaning up Hadoop config files & temp directories
+puts "Cleaning up Hadoop config files & temp directories ..."
+Cute::TakTuk.start(nodes, :user => "root") do |tak|
+     tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml; rm #{hadoopDir}/etc/hadoop/hdfs-site.xml; rm #{hadoopDir}/etc/hadoop/yarn-site.xml; rm #{hadoopDir}/etc/hadoop/mapred-site.xml; rm #{hadoopDir}/etc/hadoop/hadoop-env.sh")
+     tak.exec!("rm -Rf #{hadoopTmpDir}")
+     tak.exec!("mkdir #{hadoopTmpDir}; mkdir #{hadoopTmpDir}/hdfs; mkdir #{hadoopTmpDir}/yarn; mkdir #{hadoopTmpDir}/mapred; chmod -R 777 #{hadoopTmpDir}")
+end
+
+# Hadoop config files copied
+puts "Previous Hadoop installations cleaned up."
+
+# Hadoop directory setup 
+puts "Getting Hadoop tar and setting up directory ..."
+
+# Push hadoop tar file to all nodes & unpack
+Cute::TakTuk.start(nodes, :user => "root") do |tak|
+     tak.exec!("rm hadoop.tar.gz ; rm -rf #{hadoopDir} ; mkdir #{hadoopDir}")
+     tak.put("/home/abasu/public/hadoop.tar.gz", "/root/hadoop.tar.gz")
+     tak.exec!("tar xzf hadoop.tar.gz -C #{hadoopDir} --strip-components=1")
+     tak.loop()
+end
+
+# Hadoop directory setup completed
+puts "Hadoop directory setup completed."
+
+
+# Configuring Hadoop path ...
+puts "Configuring Hadoop path ..."
+
+# Get /root/.bashrc file from master node
+Net::SFTP.start(master, 'root') do |sftp|
+  sftp.download!("/root/.bashrc", "#{hadoopConfDir}/.bashrc")
+end
+
+# In .bashrc file (local) add lines for Hadoop path
+configFile = File.open("#{hadoopConfDir}/.bashrc", "a") do |file|
+
+   file.puts("# Hadoop parameters start here") 
+   file.puts("export HADOOP_HOME=#{hadoopDir}")
+   file.puts("export HADOOP_MAPRED_HOME=$HADOOP_HOME")
+   file.puts("export HADOOP_COMMON_HOME=$HADOOP_HOME")
+   file.puts("export HADOOP_HDFS_HOME=$HADOOP_HOME")
+   file.puts("export YARN_HOME=$HADOOP_HOME")
+   file.puts("export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop")
+   file.puts("PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin")
+   file.puts("# Hadoop parameters end here")
+
+   file.puts("# HDFS parameters start here") 
+   file.puts("export DFS_NAME_DIR=#{hadoopTmpDir}/hdfs/nn")
+   file.puts("export FS_CHECKPOINT_DIR=#{hadoopTmpDir}/hdfs/snn")
+   file.puts("export DFS_DATA_DIR=#{hadoopTmpDir}/hdfs/dn")
+   file.puts("export HDFS_LOG_DIR=#{hadoopTmpDir}/hdfs/logs")
+   file.puts("# HDFS parameters end here")
+
+   file.puts("# YARN parameters start here") 
+   file.puts("export YARN_CONF_DIR=$HADOOP_HOME/etc/hadoop")
+   file.puts("export YARN_LOCAL_DIR=#{hadoopTmpDir}/yarn")
+   file.puts("export YARN_LOG_DIR=#{hadoopTmpDir}/yarn/logs")
+   file.puts("# YARN parameters end here")
+
+   file.puts("# MapRed parameters start here") 
+   file.puts("export MAPRED_LOG_DIR=#{hadoopTmpDir}/mapred/logs")
+   file.puts("# MapRed parameters end here")
+
+end
+
+# Copy /root/.bashrc to master + slave nodes and "source" it
+Cute::TakTuk.start(nodes, :user => "root") do |tak|
+     tak.put("#{hadoopConfDir}/.bashrc", "/root/.bashrc")
+     tak.exec!("bash")
+     tak.loop()
+end
+
+# Hadoop path configured.
+puts "Hadoop path configured."
+
+
+# Listing master & slaves ...
+puts "Listing master & slaves ..."
+
+# Get /etc/hosts file from master node
+Net::SFTP.start(master, 'root') do |sftp|
+  sftp.download!("/etc/hosts", "#{hadoopConfDir}/hosts")
+end
+
+# In hosts file (local) add lines for master & slaves
+configFile = File.open("#{hadoopConfDir}/hosts", "a") do |file|
+   # append following lines
+
+   file.puts("\n")
+   masterIP = Socket.getaddrinfo(master, "http", nil, :STREAM)[0][2]
+   file.puts("#{masterIP} #{master} master")
+   slaves.each.with_index(1) do |slave, index| # loop over each slave
+      slaveIP = Socket.getaddrinfo(slave, "http", nil, :STREAM)[0][2]
+      file.puts("#{slaveIP} #{slave} slave#{index}")
+   end # slaves.each do |slave, index|
+
+end
+
+# Copy /etc/hosts to master + slave nodes
+Cute::TakTuk.start(nodes, :user => "root") do |tak|
+     tak.put("#{hadoopConfDir}/hosts", "/etc/hosts")
+end
+
+# In masters file add line for master
+configFile = File.open("#{hadoopConfDir}/masters", "w") do |file|
+   # append following line
+   file.puts("master")
+end
+
+# In slaves file (local) add lines for slaves
+configFile = File.open("#{hadoopConfDir}/slaves", "w") do |file|
+   # append following lines
+   slaves.each.with_index(1) do |slave, index| # loop over each slave
+      file.puts("slave#{index}")
+   end # slaves.each do |slave, index|
+end
+
+# Copy masters & slaves file to master
+Cute::TakTuk.start([master], :user => "root") do |tak|
+     tak.put("#{hadoopConfDir}/masters", "#{hadoopDir}/etc/hadoop/masters")
+     tak.put("#{hadoopConfDir}/slaves", "#{hadoopDir}/etc/hadoop/slaves")
+     tak.loop()
+end
+
+# Master & Slaves registered.
+puts "Master & Slaves registered."
+
+
+# Prepare file core-site.xml
+template = ERB.new File.new("./ceph5k/hadoop/core-site.xml.erb").read, nil, "%"
+# Write result to config file core-site.xml
+hadoopFileText = template.result(binding)
+File.open("#{hadoopConfDir}/core-site.xml", "w") do |file|
+   file.write(hadoopFileText)
+end
+
+# Prepare file hdfs-site.xml
+numSlaves = slaves.count # information to replace in .erb file
+dfsNamenodeNameDir = hadoopTmpDir + "/dfs/nn"
+dfsSecNamenodeNameDir = hadoopTmpDir + "/dfs/snn"
+dfsDatanodeDataDir = hadoopTmpDir + "/dfs/dn"
+template = ERB.new File.new("./ceph5k/hadoop/hdfs-site.xml.erb").read, nil, "%"
+# Write result to config file hdfs-site.xml
+hadoopFileText = template.result(binding)
+File.open("#{hadoopConfDir}/hdfs-site.xml", "w") do |file|
+   file.write(hadoopFileText)
+end
+
+# Prepare file yarn-site.xml
+yarnNodeMgrLocalDirs = hadoopTmpDir + "/yarn/local"
+yarnNodeMgrLogDirs = hadoopTmpDir + "/yarn/log"
+yarnNodeMgrRecovDirs = hadoopTmpDir + "/yarn/recovery"
+template = ERB.new File.new("./ceph5k/hadoop/yarn-site.xml.erb").read, nil, "%"
+# Write result to config file yarn-site.xml
+hadoopFileText = template.result(binding)
+File.open("#{hadoopConfDir}/yarn-site.xml", "w") do |file|
+   file.write(hadoopFileText)
+end
+
+# Prepare file mapred-site.xml
+mrClusterLocalDir = hadoopTmpDir + "/mapred/local"
+mrJobtrackSystemDir = hadoopTmpDir + "/mapred/system"
+mrJobtrackStagingRootDir = hadoopTmpDir + "/mapred/staging"
+mrClusterTempDir = hadoopTmpDir + "/mapred/temp"
+template = ERB.new File.new("./ceph5k/hadoop/mapred-site.xml.erb").read, nil, "%"
+# Write result to config file mapred-site.xml
+hadoopFileText = template.result(binding)
+File.open("#{hadoopConfDir}/mapred-site.xml", "w") do |file|
+   file.write(hadoopFileText)
+end
+
+# Prepare file hadoop-env.sh
+template = ERB.new File.new("./ceph5k/hadoop/hadoop-env.sh.erb").read, nil, "%"
+# Write result to config file hadoop-env.sh
+hadoopFileText = template.result(binding)
+File.open("#{hadoopConfDir}/hadoop-env.sh", "w") do |file|
+   file.write(hadoopFileText)
+end
+
+
+# Then put 3 config files to all nodes
+Cute::TakTuk.start(nodes, :user => "root") do |tak|
+     tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml; rm #{hadoopDir}/etc/hadoop/hdfs-site.xml; rm #{hadoopDir}/etc/hadoop/yarn-site.xml; rm #{hadoopDir}/etc/hadoop/mapred-site.xml; rm #{hadoopDir}/etc/hadoop/hadoop-env.sh")
+     tak.exec!("rm -rf #{hadoopTmpDir}")
+     tak.put("#{hadoopConfDir}/hadoop-env.sh", "#{hadoopDir}/etc/hadoop/hadoop-env.sh")
+     tak.put("#{hadoopConfDir}/core-site.xml", "#{hadoopDir}/etc/hadoop/core-site.xml")
+     tak.put("#{hadoopConfDir}/hdfs-site.xml", "#{hadoopDir}/etc/hadoop/hdfs-site.xml")
+     tak.put("#{hadoopConfDir}/yarn-site.xml", "#{hadoopDir}/etc/hadoop/yarn-site.xml")
+     tak.put("#{hadoopConfDir}/mapred-site.xml", "#{hadoopDir}/etc/hadoop/mapred-site.xml")
+end
+
+# Hadoop config files copied
+puts "Hadoop config files copied."
+
+# Additionally create a directory for saving details of Hadoop deployed
+jobID = jobCephClient["uid"]
+clientStateDir = tempDir + "/#{argSite}/#{jobID}"
+FileUtils.mkpath(clientStateDir)
+
+# Copy Hadoop configuration files to Hadoop state directory
+FileUtils.mkpath(clientStateDir + "/hadoop")
+FileUtils.cp("#{hadoopConfDir}/core-site.xml", "#{clientStateDir}/hadoop/core-site.xml")
+FileUtils.cp("#{hadoopConfDir}/hdfs-site.xml", "#{clientStateDir}/hadoop/hdfs-site.xml")
+FileUtils.cp("#{hadoopConfDir}/yarn-site.xml", "#{clientStateDir}/hadoop/yarn-site.xml")
+FileUtils.cp("#{hadoopConfDir}/yarn-site.xml", "#{clientStateDir}/hadoop/mapred-site.xml")
+FileUtils.cp("#{hadoopConfDir}/yarn-site.xml", "#{clientStateDir}/hadoop/hadoop-env.sh")
+FileUtils.cp("#{hadoopConfDir}/masters", "#{clientStateDir}/hadoop/masters")
+FileUtils.cp("#{hadoopConfDir}/slaves", "#{clientStateDir}/hadoop/slaves")
+
+
+
+# Starting Hadoop daemons 
+puts "Preparing & starting Hadoop daemons from master node ..."
+Cute::TakTuk.start([master], :user => "root") do |tak|
+     tak.exec!("#{hadoopDir}/bin/hdfs namenode -format") # format namenode
+     tak.exec!("#{hadoopDir}/sbin/start-all.sh") # start all Hadoop daemons
+     tak.exec!("#{hadoopDir}/sbin/mr-jobhistory-daemon.sh --config $HADOOP_CONF_DIR start historyserver") # start MapReduce jobhistory server
+end
+
+# Hadoop started
+puts "Hadoop cluster started with Master node: #{master}"
+puts "Login to master node to submit jobs!"
+

@@ -1,11 +1,11 @@
 #!/usr/bin/env ruby
-# Copyright (c) 2015-16 Anirvan BASU, INRIA Rennes - Bretagne Atlantique
+# Copyright (c) 2015-17 Anirvan BASU, INRIA Rennes - Bretagne Atlantique
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
+# Licensed under the CeCCIL-B license (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#   http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.cecill.info/licences/Licence_CeCILL-B_V1-en.html
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -90,7 +90,7 @@ EOS
   opt :'only-deploy', "Only deploy linux but don't configure Ceph client", :default => defaults["only-deploy"]
   opt :'client-pool-name', "Pool name on each Ceph client (userid_ is added)", :type => String, :default => defaults["client-pool-name"]
   opt :'client-pool-size', "Pool size for each Ceph client (~ pool-size / num-clients)", :default => defaults["client-pool-size"]
-  opt :'client-rbd-name', "RBD name on each Ceph client (userid_ added)", :type => String, :default => defaults["client-pool-name"]
+  opt :'client-rbd-name', "RBD name on each Ceph client (userid_ added)", :type => String, :default => defaults["client-rbd-name"]
   opt :'client-rbd-size', "RBD size for each Ceph client (~ pool-size / num-clients)", :default => defaults["client-pool-size"]
 
 end
@@ -295,7 +295,7 @@ puts "Creating Ceph pools on deployed cluster ..."
 Cute::TakTuk.start(clients, :user => "root") do |tak|
      tak.exec!("modprobe rbd")
      tak.exec!("rados mkpool #{argClientPoolName}")
-     tak.exec!("rbd create #{argClientRBDName} --pool #{argClientPoolName} --size #{argClientRBDSize}")
+     tak.exec!("rbd create --image-format 2 #{argClientRBDName} --pool #{argClientPoolName} --size #{argClientRBDSize}")
      tak.loop()
 end
 

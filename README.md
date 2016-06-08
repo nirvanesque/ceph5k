@@ -31,7 +31,8 @@ The installation consists of the following steps:
 ### Deploying a Ceph cluster - cephDeploy
 The deployment of a Ceph cluster is done from any frontend on Grid'5000. At the CLI on a frontend (any sub-folder also):
        
-        gem install --user-install ruby-cute trollop
+        gem install --user-install trollop
+        gem install --user-install ruby-cute -v 0.3
         rm -rf ceph5k
         git clone https://github.com/nirvanesque/ceph5k.git
         ./ceph5k/cephDeploy     # Creates and deploys the Ceph cluster
@@ -103,10 +104,10 @@ Following are options related to reserving resources on Grid'5000:
         -j, --jobid=int                  Oarsub ID of the Grid'5000 job
         -o, --job-name=string            Name of Grid'5000 job if resources already reserved (default: cephDeploy)
         -s, --site=string                Grid'5000 site for cluster (default: rennes)
-        -c, --cluster=string             Grid'5000 cluster in site (default: paravance)
+        -c, --cluster=string             Grid'5000 cluster in site (default: parasilo)
         -n, --num-nodes=integer          Total nodes in Ceph cluster (default: 5)
         -w, --walltime=hour:min:sec      Wall time for deployment (default: 03:00:00)
-        -e, --env=string                 Grid'5000 environment to be deployed (default: wheezy-x64-big)
+        -e, --env=string                 Grid'5000 environment to be deployed (default: wheezy-x64-nfs)
 
 - Ceph-specific options :
 
@@ -138,7 +139,7 @@ Following are options related to reserving resources on Grid'5000:
         -j, --jobid=int                  Oarsub ID of the Grid'5000 client job
         -o, --job-name=string            Name of Grid'5000 job if resources already reserved (default: cephClient)
         -s, --site=string                Grid'5000 site for clients (default: rennes)
-        -c, --cluster=string             Grid'5000 cluster in site (default: paravance)
+        -c, --cluster=string             Grid'5000 cluster in site (default: parasilo)
         -u, --num-client=integer         Number of Ceph client(s) (default: 4)
         -w, --walltime=hour:min:sec      Wall time for deployment (default: 03:00:00)
         -v, --env-client=string          G5K environment for client (default: jessie-x64-big)
@@ -260,6 +261,13 @@ And then simply copy & paste the lines of any of the tool scripts (cephDeploy, c
 ### Big Data automation - Apache Flink
 In the Ceph5k toolsuite, supplementary scripts are provided to use the deployed and managed Ceph clusters and client nodes in Big Data experiments. Currently, the Apache Flink and the Apache Spark frameworks can be installed and configured on the Ceph client nodes, in Master-Slaves cluster configuration. This assumes that the deployed Ceph cluster is up and running (cephDeploy executed) AND the Ceph clients are installed to access the deployed Ceph cluster (cephClient executed). 
 
+#### Apache Hadoop
+Then the script cephHadoop can be executed at any frontend by typing at CLI:
+
+        ./ceph5k/cephHadoop               # Install and run the Hadoop framework (HDFS, YARN & MapReduce)
+
+The above script installs the full Hadoop 2.x framework with the first client as Master node and the remaining clients as Slaves/Workers. This means that you will have your entire Hadoop daemons running, complete with HDFS, YARN resources manager and MapReduce daemon. Subsequently, you can launch your Big Data jobs (e.g. WordCount, PageRank, ... ) from the Master node. Please see the Wiki page for further details: https://www.grid5000.fr/mediawiki/index.php/Moving_Data_between_Hadoop_installations_on_Ceph
+
 #### Apache Flink
 Then the script cephFlink can be executed at any frontend by typing at CLI:
 
@@ -274,3 +282,10 @@ Then the script cephSpark can be executed at any frontend by typing at CLI:
 
 The above script installs the Apache Spark framework with the first client as Master node and the remaining clients as Slaves/Workers. Subsequently, you can launch your Big Data jobs (e.g. WordCount, PageRank, ... ) from the Master node. Please see the Wiki page for further details: https://www.grid5000.fr/mediawiki/index.php/Moving_Data_around_Grid'5000
 
+# Licence Information
+Copyright (c) 2015-17 Anirvan BASU, INRIA Rennes - Bretagne Atlantique
+
+Licensed under the CeCCIL-B license (the "License"); you may not use this file except in compliance with the License.
+You may obtain a copy of the License at:   http://www.cecill.info/licences/Licence_CeCILL-B_V1-en.html
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
