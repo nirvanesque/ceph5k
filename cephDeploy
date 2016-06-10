@@ -200,14 +200,16 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 
-# Add Ceph & Extras to each Ceph node ('firefly' is the most complete, later use CLI argument)
-ceph_extras =  'http://ceph.com/packages/ceph-extras/debian wheezy main'
-ceph_update =  'http://ceph.com/debian-#{argRelease}/ wheezy main'
+# Add Ceph & Extras to each Ceph node ('firefly' is the most complete)
+#ceph_extras =  'http://ceph.com/packages/ceph-extras/debian wheezy main'
+ceph_extras =  'deb https://apt.grid5000.fr/ceph5k/#{argEnv.slice(0,6)}/#{argRelease} ceph-common'
+#ceph_update =  'http://ceph.com/debian-#{argRelease}/ wheezy main'
+ceph_update =  'deb https://apt.grid5000.fr/ceph5k/#{argEnv.slice(0,6)}/#{argRelease} ceph'
 
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
      tak.exec!("echo deb #{ceph_update}  | sudo tee /etc/apt/sources.list.d/ceph.list")
-     tak.exec!("export http_proxy=http://proxy:3128; export https_proxy=https://proxy:3128; sudo apt-get update -y && sudo apt-get install -y ceph-deploy")
+     tak.exec!("sudo apt-get update -y && sudo apt-get install -y ceph-deploy")
      tak.loop()
 end
 
