@@ -202,9 +202,9 @@ end
 
 # Add Ceph & Extras to each Ceph node ('firefly' is the most complete)
 #ceph_extras =  'http://ceph.com/packages/ceph-extras/debian wheezy main'
-ceph_extras =  'deb https://apt.grid5000.fr/ceph5k/#{argEnv.slice(0,6)}/#{argRelease} ceph-common'
+ceph_extras =  'https://apt.grid5000.fr/ceph5k/#{argEnv.slice(0,6)}/#{argRelease} ceph-common'
 #ceph_update =  'http://ceph.com/debian-#{argRelease}/ wheezy main'
-ceph_update =  'deb https://apt.grid5000.fr/ceph5k/#{argEnv.slice(0,6)}/#{argRelease} ceph'
+ceph_update =  'https://apt.grid5000.fr/ceph5k/#{argEnv.slice(0,6)}/#{argRelease} ceph'
 
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
