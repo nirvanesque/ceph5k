@@ -207,9 +207,11 @@ ceph_extras =  'https://apt.grid5000.fr/ceph5k/#{argEnv.slice(0,6)}/#{argRelease
 ceph_update =  'https://apt.grid5000.fr/ceph5k/#{argEnv.slice(0,6)}/#{argRelease} ceph'
 
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
+     result = tak.exec!("apt-get autoremove -y ceph && apt-get autoremove -y ceph-deploy")
+puts result
      tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
      tak.exec!("echo deb #{ceph_update}  | sudo tee /etc/apt/sources.list.d/ceph.list")
-     result = tak.exec!("sudo apt-get update -y && sudo apt-get install -y ceph && sudo apt-get install -y ceph-deploy")
+     result = tak.exec!("apt-get update -y && apt-get install -y ceph && apt-get install -y ceph-deploy")
 puts result
      tak.loop()
 end
