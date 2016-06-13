@@ -212,7 +212,7 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 #     tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
      result = tak.exec!("echo deb #{ceph_update}  | tee /etc/apt/sources.list.d/ceph.list")
 puts result
-     result = tak.exec!("apt-get update -y && apt-get install -y ceph && apt-get install -y ceph-deploy")
+     result = tak.exec!("apt-get update -y && apt-get install -y ceph")
 puts result
      tak.loop()
 end
