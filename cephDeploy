@@ -202,15 +202,16 @@ end
 
 # Add Ceph & Extras to each Ceph node ('firefly' is the most complete)
 #ceph_extras =  'http://ceph.com/packages/ceph-extras/debian wheezy main'
-ceph_extras =  'https://apt.grid5000.fr/ceph5k/#{argEnv.slice(0,6)}/#{argRelease} ceph-common'
+ceph_extras =  'http://apt.grid5000.fr/ceph5k/#{argEnv.slice(0,6)}/#{argRelease} ceph-common'
 #ceph_update =  'http://ceph.com/debian-#{argRelease}/ wheezy main'
-ceph_update =  'https://apt.grid5000.fr/ceph5k/#{argEnv.slice(0,6)}/#{argRelease} ceph'
+ceph_update =  'http://apt.grid5000.fr/ceph5k/#{argEnv.slice(0,6)}/#{argRelease} /'
+puts ceph_update
 
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     result = tak.exec!("apt-get autoremove -y ceph && apt-get autoremove -y ceph-deploy")
+#     result = tak.exec!("apt-get autoremove -y ceph && apt-get autoremove -y ceph-deploy")
+#     tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
+     result = tak.exec!("echo deb #{ceph_update}  | tee /etc/apt/sources.list.d/ceph.list")
 puts result
-     tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
-     tak.exec!("echo deb #{ceph_update}  | sudo tee /etc/apt/sources.list.d/ceph.list")
      result = tak.exec!("apt-get update -y && apt-get install -y ceph && apt-get install -y ceph-deploy")
 puts result
      tak.loop()
