@@ -204,13 +204,14 @@ end
 #ceph_extras =  'http://ceph.com/packages/ceph-extras/debian wheezy main'
 ceph_extras =  'http://apt.grid5000.fr/ceph5k/#{argEnv.slice(0,6)}/#{argRelease} ceph-common'
 #ceph_update =  'http://ceph.com/debian-#{argRelease}/ wheezy main'
-ceph_update =  'http://apt.grid5000.fr/ceph5k/#{argEnv.slice(0,6)}/#{argRelease} /'
+argDebian = argEnv.slice(0,6)
+ceph_update =  'http://apt.grid5000.fr/ceph5k/#{argDebian}/#{argRelease} /'
 puts ceph_update
 
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
 #     result = tak.exec!("apt-get autoremove -y ceph && apt-get autoremove -y ceph-deploy")
 #     tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
-     result = tak.exec!("echo deb #{ceph_update}  | tee /etc/apt/sources.list.d/ceph.list")
+     result = tak.exec!("echo deb http://apt.grid5000.fr/ceph5k/#{argDebian}/#{argRelease} / | tee /etc/apt/sources.list.d/ceph.list")
 puts result
      result = tak.exec!("apt-get update -y && apt-get install -y ceph")
 puts result
