@@ -59,7 +59,7 @@ end
 
 # banner for script
 opts = Trollop::options do
-  version "ceph5k 0.0.6 (c) 2015-16 Anirvan BASU, INRIA RBA"
+  version "ceph5k 0.0.7 (c) 2015-16 Anirvan BASU, INRIA RBA"
   banner <<-EOS
 cephDeploy is a script for deploying a Ceph cluster on reserved nodes.
 
@@ -209,7 +209,7 @@ ceph_update =  'https://apt.grid5000.fr/ceph5k/#{argEnv.slice(0,6)}/#{argRelease
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
      tak.exec!("echo deb #{ceph_update}  | sudo tee /etc/apt/sources.list.d/ceph.list")
-     tak.exec!("sudo apt-get update -y && sudo apt-get install -y ceph-deploy")
+     result = tak.exec!("sudo apt-get update -y && sudo apt-get install -y ceph && sudo apt-get install -y ceph-deploy")
      tak.loop()
 end
 
