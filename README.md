@@ -10,7 +10,7 @@ Detailed application and Use Cases of the Ceph5k toolsuite is discussed in the f
 
 
 ## Preliminaries (for installing Ruby-CUTE)
-To simplify the use of Ruby-Cute modules for node reservation and deployment, it is better to create a file with the following information. This is one-time effort. 
+To simplify the use of Ruby-Cute modules for node reservation and deployment, it is better to create a file with the following information. This is a one-time effort. Please replace 'user' with your Grid'5000 userid.
 
 At the CLI on a frontend:
 
@@ -39,7 +39,7 @@ The deployment of a Ceph cluster is done from any frontend on Grid'5000. At the 
 
 Note: To have an easy start, all default parameters that are necessary for a deployment are configured and stored in the installation subdirectory at :
 
-        ./config/defaults.yml
+        ./ceph5k/config/defaults.yml
 
 It is possible to pass a different config file at the CLI using the following option:
         ./ceph5k/cephDeploy --def-conf your-conf.yml
