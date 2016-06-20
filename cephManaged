@@ -363,7 +363,6 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
         tak.exec!("mkdir /mnt/#{argMntProd}")
         results = tak.exec!("mount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
      end # if userRBD.empty?
-puts results
      results.each do |client, result|
         puts "Mounted RBD on managed Ceph to client #{client}." if result[:status] == 0
      end # results.each do |client, result|
