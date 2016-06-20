@@ -252,7 +252,7 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
      tak.exec!("modprobe rbd")
      # Create RBD on managed cluster
      result = tak.exec!("rados -c /root/prod/ceph.conf --id #{user} lspools")
-puts result.keys
+puts result.keys[0]
      poolsList = result[client][:output].split("\n")
 
      poolCount = 0
