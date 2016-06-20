@@ -91,6 +91,7 @@ EOS
   opt :'env-client', "G5K environment for client", :type => String, :default => defaults["env-client"]
   opt :'multi-client', "Multiple clients to access Ceph Managed cluster", :default => defaults["multi-client"]
   opt :'num-client', "Nodes in Ceph Client cluster", :default => defaults["num-client"]
+  opt :'no-deployed', "Not using any deployed Ceph cluster", :default => defaults["no-deployed"]
 
 end
 
@@ -114,6 +115,7 @@ argEnvClient = opts[:'env-client'] # Grid'5000 environment to deploy Ceph client
 argJobClient = opts[:'job-client'] # Grid'5000 job name for Ceph clients. 
 argMultiClient = opts[:'multi-client'] # Multiple clients to access Ceph Managed cluster.
 argNumClient = opts[:'num-client'] # Nodes in Ceph Client cluster.
+argNoDeployed = opts[:'no-deployed'] # Not using any deployed Ceph cluster.
 
 
 # Next get job for Ceph clients
@@ -316,24 +318,26 @@ end # unless userPool.empty?
 # Map RBD and create File Systems.
 puts "Mapping RBD in managed Ceph clusters ..."
 Cute::TakTuk.start(clients, :user => "root") do |tak|
-     # Map RBD & create FS on deployed cluster
-     result = tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
+     if argNoDeployed
+        # Map RBD & create FS on deployed Ceph cluster
+        result = tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
 puts result
-     tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argPoolName}/#{argRBDName}")
-     if result[client][:status] == 0
-        puts "Mapped RBD #{argRBDName} on deployed Ceph."
-     end
-
+        tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argPoolName}/#{argRBDName}")
+        if result[client][:status] == 0
+           puts "Mapped RBD #{argRBDName} on deployed Ceph."
+        end # if result[client][:status]
+     end # if argNoDeployed
 
      myRBDName = ""
      # Map RBD & create FS on managed cluster
-     tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} map #{argRBDName} -k /etc/ceph/ceph.client.#{user}.keyring")
+     result = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} map #{argRBDName} -k /etc/ceph/ceph.client.#{user}.keyring")
      if userRBD.empty? # Do it only the first time when the RBD is created.
         tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{userPool}/#{argRBDName}")
         myRBDName = argRBDName
      else              # This case is when RBD is already created earlier.
         myRBDName = userRBD
      end # if userRBD.empty?
+puts result
      if result[client][:status] == 0
         puts "Mapped RBD #{myRBDName} on managed Ceph."
      end
@@ -344,7 +348,7 @@ end
 
 # Mount RBDs as File Systems.
 puts "Mounting RBD as File Systems in managed Ceph clusters ..."
-Cute::TakTuk.start([client], :user => "root") do |tak|
+Cute::TakTuk.start(clients, :user => "root") do |tak|
 
      result = nil
      # mount RBD from managed cluster
@@ -359,7 +363,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
         tak.exec!("mkdir /mnt/#{argMntProd}")
         result = tak.exec!("mount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
      end # if userRBD.empty?
-
+puts result
      if result[client][:status] == 0
         puts "Mounted RBD as File System on managed Ceph."
      end
