@@ -247,12 +247,13 @@ userPoolMatch = ""
 userRBD = ""
 prodCluster = false
 abortFlag = false
-# Create Ceph pools & RBD
-Cute::TakTuk.start(clients, :user => "root") do |tak|
+# Check Ceph pools & RBD on Managed cluster, using first client.
+client = clients[0]
+Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("modprobe rbd")
      # Create RBD on managed cluster
      result = tak.exec!("rados -c /root/prod/ceph.conf --id #{user} lspools")
-puts result.keys[0]
+
      poolsList = result[client][:output].split("\n")
 
      poolCount = 0
@@ -277,26 +278,31 @@ puts result.keys[0]
 
      unless userPool.empty?
         # If multiple pools from user, then confused, so exit.
-        
         abort("Script exited - multiple Ceph pools for #{user}") if poolCount > 1 && userPoolMatch.empty?
 
-        if userRBD.empty? # There was no rbd created for the user. So create it.
-           result = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
-        end # if userRBD.empty?
      else   # There is no pool created on managed Ceph
-      # Following command cannot be done at CLI on Ceph client
-      # tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} mkpool #{argPoolName} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
         puts "Create at least one RBD pool from the Ceph managed frontend\n\n"
         puts "Use this link to create pool: https://api.grid5000.fr/sid/storage/ceph/ui/"
         puts "Then rerun this script.\n"
         abortFlag = true
         break
-     end # if userRBD.empty?
+     end # userPool.empty?
      tak.loop()
 end
 
 # Abort script if no pool in managed Ceph
 abort("Script exited - no pool for user in Managed Ceph clusters") if abortFlag
+
+# Create Ceph pools & RBD
+Cute::TakTuk.start(clients, :user => "root") do |tak|
+     if userRBD.empty? # There was no rbd created for the user. So create it.
+        result = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
+puts result
+     end # if userRBD.empty?
+     tak.loop()
+end
+
+
 
 # Created Pool & RBD for Ceph cluster.
 unless userPool.empty?
@@ -309,9 +315,10 @@ end # unless userPool.empty?
 
 # Map RBD and create File Systems.
 puts "Mapping RBD in managed Ceph clusters ..."
-Cute::TakTuk.start([client], :user => "root") do |tak|
+Cute::TakTuk.start(clients, :user => "root") do |tak|
      # Map RBD & create FS on deployed cluster
      result = tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
+puts result
      tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argPoolName}/#{argRBDName}")
      if result[client][:status] == 0
         puts "Mapped RBD #{argRBDName} on deployed Ceph."
