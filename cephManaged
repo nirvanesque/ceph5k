@@ -340,7 +340,7 @@ puts results.values[:status]
      tak.loop()
      results.each do |client, result|
         puts "Mapped RBD #{myRBDName} on managed Ceph to client #{client}." if result[:status] == 0
-        
+     end
 end
 
 
