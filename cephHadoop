@@ -140,13 +140,16 @@ jobs.each do |job|
    end # if job["name"] == argJobName
 end # jobs.each do |job|
 
-# Abort script if no deployed Ceph cluster
-abort("No deployed Ceph cluster found. First run cephDeploy & cephClient scripts, then run this script.") if jobCephCluster.nil?
+# Abort script if no deployed Ceph cluster && Hadoop runs on Ceph deployed.
+abort("No deployed Ceph cluster found. First run cephDeploy & cephClient scripts, then run this script.") if jobCephCluster.nil? && argHadoopCluster == "deployed"
+# Note: this check does not take into account IF:
+# If Hadoop cluster will be installed on Ceph managed && script cephManaged was NOT run
+# Later this needs to be ensured.
+
 
 # Remind where is the deployed Ceph monitor
 puts "Deployed Ceph cluster details:"
 puts "   monitor on: #{monitor}"
-
 
 # Next get job for Ceph clients
 jobCephClient = nil # Ceph client job
@@ -175,7 +178,7 @@ puts "Ceph client job details recovered." if !jobCephClient.nil?
 abort("No Ceph client(s) found. First run cephClient script, then run this script.") if jobCephClient.nil?
 
 # At this point Big Data nodes were created or fetched
-puts "Big Data job details recovered."
+puts "Hadoop cluster details recovered."
 
 
 # Change to be read/write from YAML file
@@ -262,7 +265,7 @@ puts "Java path configured."
 
 # Some important hadoop directories
 hadoopDir = "/opt/hadoop"
-if argHadoopCluster == "managed"
+if argHadoopCluster == "deployed"
    hadoopTmpDir = "/mnt/" + argMntDepl + "/hadoop" # information to replace in .erb file
 else
    hadoopTmpDir = "/mnt/" + argMntProd + "/hadoop" # information to replace in .erb file
