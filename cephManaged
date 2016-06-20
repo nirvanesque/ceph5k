@@ -337,7 +337,8 @@ puts result
      else              # This case is when RBD is already created earlier.
         myRBDName = userRBD
      end # if userRBD.empty?
-     client = result.keys
+puts result.keys
+puts "next"
      if result[client][:status] == 0
         puts "Mapped RBD #{myRBDName} on managed Ceph."
      end
