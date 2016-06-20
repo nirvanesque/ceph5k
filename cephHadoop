@@ -96,9 +96,7 @@ EOS
   opt :'client-rbd-name', "RBD name on each Ceph client (userid_ added)", :type => String, :default => defaults["client-pool-name"]
   opt :'client-rbd-size', "RBD size for each Ceph client (~ pool-size / num-clients)", :default => defaults["client-pool-size"]
 
-  opt :'hadoop-cluster', "Hadoop on Ceph cluster: 'deployed' OR 'managed'", :default => defaults["hadoop-cluster"]
-
-
+  opt :'hadoop-cluster', "Hadoop on Ceph cluster: deployed OR managed", :default => defaults["hadoop-cluster"]
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
