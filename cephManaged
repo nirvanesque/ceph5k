@@ -320,11 +320,13 @@ puts "Mapping RBD in managed Ceph clusters ..."
 Cute::TakTuk.start(clients, :user => "root") do |tak|
      if argNoDeployed
         # Map RBD & create FS on deployed Ceph cluster
-        result = tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
+        results = tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
         tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argPoolName}/#{argRBDName}")
-        if result[client][:status] == 0
-           puts "Mapped RBD #{argRBDName} on deployed Ceph."
-        end # if result[client][:status]
+
+        results.each do |client, result|
+           puts "Mapped RBD #{myRBDName} on deployed Ceph to client #{client}." if result[:status] == 0
+        end # results.each do |client, result|
+
      end # if argNoDeployed
 
      myRBDName = ""
@@ -336,11 +338,11 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
      else              # This case is when RBD is already created earlier.
         myRBDName = userRBD
      end # if userRBD.empty?
-puts results.values
+
      tak.loop()
      results.each do |client, result|
         puts "Mapped RBD #{myRBDName} on managed Ceph to client #{client}." if result[:status] == 0
-     end
+     end # results.each do |client, result|
 end
 
 
@@ -354,17 +356,17 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
         tak.exec!("umount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
         tak.exec!("rmdir /mnt/#{argMntProd}")
         tak.exec!("mkdir /mnt/#{argMntProd}")
-        result = tak.exec!("mount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
+        results = tak.exec!("mount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
      else              # This case is when RBD is already created earlier.
         tak.exec!("umount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
         tak.exec!("rmdir /mnt/#{argMntProd}")
         tak.exec!("mkdir /mnt/#{argMntProd}")
-        result = tak.exec!("mount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
+        results = tak.exec!("mount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
      end # if userRBD.empty?
-puts result.keys
-     if result[client][:status] == 0
-        puts "Mounted RBD as File System on managed Ceph."
-     end
+
+     results.each do |client, result|
+        puts "Mounted RBD on managed Ceph to client #{client}." if result[:status] == 0
+     end # results.each do |client, result|
 
      tak.loop()
 end
