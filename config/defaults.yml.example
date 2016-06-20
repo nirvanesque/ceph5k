@@ -42,3 +42,5 @@ client-rbd-name: image        # RBD name on each Ceph client (added "userid_")
 client-rbd-size: 14400        # RBD size for each Ceph client (~ rbd-size/num-clients)
 no-deployed: false            # Not using any deployed Ceph cluster
 
+hadoop-cluster: deployed      # Hadoop on Ceph cluster: 'deployed' OR 'managed'
+
