@@ -89,6 +89,7 @@ EOS
 
   opt :'job-client', "Grid'5000 job name for Ceph clients", :type => String, :default => defaults["job-client"]
   opt :'env-client', "G5K environment for client", :type => String, :default => defaults["env-client"]
+  opt :'multi-client', "Multiple clients to access Ceph Managed cluster", :default => defaults["multi-client"]
   opt :'num-client', "Nodes in Ceph Client cluster", :default => defaults["num-client"]
 
 end
@@ -111,6 +112,7 @@ argClientList = opts[:'file'] # File with clients list.
 argOnlyDeploy = opts[:'only-deploy'] # Only deploy linux but don't configure Ceph client.
 argEnvClient = opts[:'env-client'] # Grid'5000 environment to deploy Ceph clients. 
 argJobClient = opts[:'job-client'] # Grid'5000 job name for Ceph clients. 
+argMultiClient = opts[:'multi-client'] # Multiple clients to access Ceph Managed cluster.
 argNumClient = opts[:'num-client'] # Nodes in Ceph Client cluster.
 
 
@@ -197,19 +199,19 @@ end
 abort("Linux #{argEnvClient} deployed on clients: #{clients}. \n Clients list file in: #{clientStateDir}/clients-list. \n Rerun script with option -f <nodes list file> to configure Ceph clients.") if argOnlyDeploy
 
 
-# Get the client for the managed Ceph cluster
-# This is the 'first' node of the job
-client = jobCephClient["assigned_nodes"][0]
+# Get the client(s) for the managed Ceph cluster
+# For a single client, this is the 'first' node of the job
+clients = argMultiClient ? jobCephClient["assigned_nodes"] : [jobCephClient["assigned_nodes"][0]]
 
 # if not yet deployed, then deploy it
 if jobCephClient["deploy"].nil?
-   puts "Deploying #{argEnvClient} on client node: #{client}"
-   depCephClient = g5k.deploy(jobCephClient, :nodes => [client], :env => argEnvClient) 
+   puts "Deploying #{argEnvClient} on client node(s): #{clients}"
+   depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClient) 
    g5k.wait_for_deploy(jobCephClient)
 end # if jobCephClient["deploy"].nil?
 
 # Remind where is the Ceph client
-puts "Managed Ceph client on: #{client}"
+puts "Managed Ceph client(s) on: #{clients}"
 
 
 # Prepare ceph.conf file for managed Ceph cluster
@@ -225,7 +227,7 @@ FileUtils.cp("#{prodDir}/ceph.conf", "#{clientStateDir}/prod/ceph.conf")
 FileUtils.cp("/tmp/ceph.client.#{user}.keyring", "#{clientStateDir}/prod/ceph.client.#{user}.keyring")
 
 # Then put ceph.conf file to the client
-Cute::TakTuk.start([client], :user => "root") do |tak|
+Cute::TakTuk.start(clients, :user => "root") do |tak|
      tak.exec!("rm -rf prod/")
      tak.exec!("mkdir prod/ && touch prod/ceph.conf")
      tak.put("#{prodDir}/ceph.conf", "/root/prod/ceph.conf")
@@ -234,7 +236,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
 end
 
 # Created & pushed config file for Managed Ceph cluster.
-puts "Created & pushed config file for managed Ceph cluster to client."
+puts "Created & pushed config file for managed Ceph cluster to client(s)."
 
 
 # Creating Ceph pools on managed cluster.
@@ -246,10 +248,11 @@ userRBD = ""
 prodCluster = false
 abortFlag = false
 # Create Ceph pools & RBD
-Cute::TakTuk.start([client], :user => "root") do |tak|
+Cute::TakTuk.start(clients, :user => "root") do |tak|
      tak.exec!("modprobe rbd")
      # Create RBD on managed cluster
      result = tak.exec!("rados -c /root/prod/ceph.conf --id #{user} lspools")
+puts result
      poolsList = result[client][:output].split("\n")
 
      poolCount = 0
