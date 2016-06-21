@@ -499,11 +499,11 @@ puts "Preparing & starting Hadoop daemons from master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
 # Next command not for Hadoop restart
      if argHadoopRestart
-        tak.exec!("#{hadoopDir}/bin/hdfs start namenode --config $HADOOP_CONF_DIR") # start namenode
+        result = tak.exec!("#{hadoopDir}/bin/hdfs start namenode --config $HADOOP_CONF_DIR") # start namenode
      else
-        tak.exec!("#{hadoopDir}/bin/hdfs namenode -format") # format namenode
+        result = tak.exec!("#{hadoopDir}/bin/hdfs namenode -format") # format namenode
      end # if argHadoopRestart
-
+puts result
      tak.exec!("#{hadoopDir}/sbin/start-all.sh") # start all Hadoop daemons
      tak.exec!("#{hadoopDir}/sbin/mr-jobhistory-daemon.sh --config $HADOOP_CONF_DIR start historyserver") # start MapReduce jobhistory server
 end
