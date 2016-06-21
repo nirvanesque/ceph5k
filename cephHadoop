@@ -273,7 +273,8 @@ else
    hadoopTmpDir = "/mnt/" + argMntProd + "/hadoop" # information to replace in .erb file
 end # if argHadoopCluster == "managed"
 
-# Stopping Hadoop 
+
+# Stopping Hadoop
 puts "Stopping any Hadoop daemons from master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
      tak.exec!("#{hadoopDir}/sbin/stop-all.sh") # stop previously running Hadoop daemons
@@ -286,12 +287,11 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 # Next 2 commands not for Hadoop restart
      unless argHadoopRestart
         tak.exec!("rm -Rf #{hadoopTmpDir}")
-        tak.exec!("mkdir #{hadoopTmpDir}; mkdir #{hadoopTmpDir}/hdfs; mkdir #{hadoopTmpDir}/yarn; mkdir #{hadoopTmpDir}/mapred; chmod -R 777 #{hadoopTmpDir}")
+        tak.exec!("mkdir #{hadoopTmpDir}; mkdir #{hadoopTmpDir}/hdfs; mkdir #{hadoopTmpDir}/yarn; mkdir #{hadoopTmpDir}/mapred")
+        puts "Previous Hadoop installations cleaned up."
      end # unless argHadoopRestart
+     tak.exec!("chmod -R 777 #{hadoopTmpDir}")
 end
-
-# Hadoop config files copied
-puts "Previous Hadoop installations cleaned up."
 
 # Hadoop directory setup 
 puts "Getting Hadoop tar and setting up directory ..."
@@ -508,5 +508,7 @@ end
 
 # Hadoop started
 puts "Hadoop cluster started with Master node: #{master}"
+# Next only if Hadoop restart
+puts "All previous data retained." if argHadoopRestart
 puts "Login to master node to submit jobs!"
 
