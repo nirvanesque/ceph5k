@@ -255,7 +255,6 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("modprobe rbd")
      # Create RBD on managed cluster
      result = tak.exec!("rados -c /root/prod/ceph.conf --id #{user} lspools")
-puts result
      poolsList = result[client][:output].split("\n")
 
      poolCount = 0
@@ -278,7 +277,7 @@ puts result
         end # if pool.include? "#{user}"
 
      end # poolsList.each do
-puts "user RBD: #{userRBD}"
+
      unless userPool.empty?
         # If multiple pools from user, then confused, so exit.
         abort("Script exited - multiple Ceph pools for #{user}") if poolCount > 1 && userPoolMatch.empty?
