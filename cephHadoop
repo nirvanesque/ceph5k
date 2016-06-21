@@ -285,11 +285,11 @@ puts "Cleaning up Hadoop config files & temp directories ..."
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml; rm #{hadoopDir}/etc/hadoop/hdfs-site.xml; rm #{hadoopDir}/etc/hadoop/yarn-site.xml; rm #{hadoopDir}/etc/hadoop/mapred-site.xml; rm #{hadoopDir}/etc/hadoop/hadoop-env.sh")
 # Next 2 commands not for Hadoop restart
-#     unless argHadoopRestart
+     unless argHadoopRestart
         tak.exec!("rm -Rf #{hadoopTmpDir}")
         tak.exec!("mkdir #{hadoopTmpDir}; mkdir #{hadoopTmpDir}/hdfs; mkdir #{hadoopTmpDir}/yarn; mkdir #{hadoopTmpDir}/mapred")
         puts "Previous Hadoop installations cleaned up."
-#     end # unless argHadoopRestart
+     end # unless argHadoopRestart
      tak.exec!("chmod -R 777 #{hadoopTmpDir}")
 end
 
@@ -466,7 +466,6 @@ end
 # Then put 3 config files to all nodes
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml; rm #{hadoopDir}/etc/hadoop/hdfs-site.xml; rm #{hadoopDir}/etc/hadoop/yarn-site.xml; rm #{hadoopDir}/etc/hadoop/mapred-site.xml; rm #{hadoopDir}/etc/hadoop/hadoop-env.sh")
-     tak.exec!("rm -rf #{hadoopTmpDir}")
      tak.put("#{hadoopConfDir}/hadoop-env.sh", "#{hadoopDir}/etc/hadoop/hadoop-env.sh")
      tak.put("#{hadoopConfDir}/core-site.xml", "#{hadoopDir}/etc/hadoop/core-site.xml")
      tak.put("#{hadoopConfDir}/hdfs-site.xml", "#{hadoopDir}/etc/hadoop/hdfs-site.xml")
@@ -499,7 +498,7 @@ puts "Preparing & starting Hadoop daemons from master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
 # Next command not for Hadoop restart
      if argHadoopRestart
-#        result = tak.exec!("#{hadoopDir}/bin/hdfs namenode --config $HADOOP_CONF_DIR") # start namenode
+        result = tak.exec!("#{hadoopDir}/bin/hdfs namenode --config $HADOOP_CONF_DIR") # start namenode
      else
         result = tak.exec!("#{hadoopDir}/bin/hdfs namenode -format") # format namenode
      end # if argHadoopRestart
