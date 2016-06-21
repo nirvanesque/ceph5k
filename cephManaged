@@ -278,7 +278,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
         end # if pool.include? "#{user}"
 
      end # poolsList.each do
-
+puts "user RBD: #{userRBD}"
      unless userPool.empty?
         # If multiple pools from user, then confused, so exit.
         abort("Script exited - multiple Ceph pools for #{user}") if poolCount > 1 && userPoolMatch.empty?
