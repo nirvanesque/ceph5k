@@ -97,6 +97,7 @@ EOS
   opt :'client-rbd-size', "RBD size for each Ceph client (~ pool-size / num-clients)", :default => defaults["client-pool-size"]
 
   opt :'hadoop-cluster', "Hadoop on Ceph cluster: deployed OR managed", :default => defaults["hadoop-cluster"]
+  opt :'hadoop-restart', "Restart existing Hadoop cluster and keep HDFS data", :default => defaults["hadoop-restart"]
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
@@ -124,6 +125,7 @@ argClientRBDName = "#{user}_" + opts[:'client-rbd-name'] # RBD name for each Cep
 argClientRBDSize = opts[:'client-rbd-size'] # RBD size for each Ceph client.
 
 argHadoopCluster = opts[:'hadoop-cluster'] # Hadoop on Ceph cluster: 'deployed' OR 'managed'.
+argHadoopRestart = opts[:'hadoop-restart'] # Restart existing Hadoop cluster and keep HDFS data.
 
 
 # get the job with name "cephCluster"
@@ -281,8 +283,11 @@ end
 puts "Cleaning up Hadoop config files & temp directories ..."
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml; rm #{hadoopDir}/etc/hadoop/hdfs-site.xml; rm #{hadoopDir}/etc/hadoop/yarn-site.xml; rm #{hadoopDir}/etc/hadoop/mapred-site.xml; rm #{hadoopDir}/etc/hadoop/hadoop-env.sh")
-     tak.exec!("rm -Rf #{hadoopTmpDir}")
-     tak.exec!("mkdir #{hadoopTmpDir}; mkdir #{hadoopTmpDir}/hdfs; mkdir #{hadoopTmpDir}/yarn; mkdir #{hadoopTmpDir}/mapred; chmod -R 777 #{hadoopTmpDir}")
+# Next 2 commands not for Hadoop restart
+     unless argHadoopRestart
+        tak.exec!("rm -Rf #{hadoopTmpDir}")
+        tak.exec!("mkdir #{hadoopTmpDir}; mkdir #{hadoopTmpDir}/hdfs; mkdir #{hadoopTmpDir}/yarn; mkdir #{hadoopTmpDir}/mapred; chmod -R 777 #{hadoopTmpDir}")
+     end # unless argHadoopRestart
 end
 
 # Hadoop config files copied
@@ -492,7 +497,11 @@ FileUtils.cp("#{hadoopConfDir}/slaves", "#{clientStateDir}/hadoop/slaves")
 # Starting Hadoop daemons 
 puts "Preparing & starting Hadoop daemons from master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
-     tak.exec!("#{hadoopDir}/bin/hdfs namenode -format") # format namenode
+# Next command not for Hadoop restart
+     unless argHadoopRestart
+        tak.exec!("#{hadoopDir}/bin/hdfs namenode -format") # format namenode
+     end # unless argHadoopRestart
+
      tak.exec!("#{hadoopDir}/sbin/start-all.sh") # start all Hadoop daemons
      tak.exec!("#{hadoopDir}/sbin/mr-jobhistory-daemon.sh --config $HADOOP_CONF_DIR start historyserver") # start MapReduce jobhistory server
 end

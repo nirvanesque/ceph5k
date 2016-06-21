@@ -43,4 +43,5 @@ client-rbd-size: 14400        # RBD size for each Ceph client (~ rbd-size/num-cl
 no-deployed: false            # Not using any deployed Ceph cluster
 
 hadoop-cluster: deployed      # Hadoop on Ceph cluster: 'deployed' OR 'managed'
+hadoop-restart: false         # Restart existing Hadoop cluster and keep HDFS data
 
