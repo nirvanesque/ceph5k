@@ -40,7 +40,7 @@ client-pool-name: pool        # Pool name on each Ceph client (added "userid_")
 client-pool-size: 14400       # Pool size for each Ceph client (~ pool-size/num-clients)
 client-rbd-name: image        # RBD name on each Ceph client (added "userid_")
 client-rbd-size: 14400        # RBD size for each Ceph client (~ rbd-size/num-clients)
-no-deployed: false            # Not using any deployed Ceph cluster
+no-deployed: false            # Not using deployed Ceph cluster (false = using deployed)
 
 hadoop-cluster: deployed      # Hadoop on Ceph cluster: 'deployed' OR 'managed'
 hadoop-restart: false         # Restart existing Hadoop cluster and keep HDFS data

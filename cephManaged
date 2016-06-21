@@ -271,6 +271,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
            unless resultPool[client][:output].nil? # means no rbd in userPool
               if resultPool[client][:output].include? "#{argRBDName}" 
                  userRBD = argRBDName # There is an rbd with name argRBDName already
+                 puts "You have an RBD already with name #{argRBDName} in the Ceph managed cluster."
               end # if resultPool[client][:output].include?
            end # unless resultPool[client][:output].nil?
 
@@ -283,9 +284,9 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
         abort("Script exited - multiple Ceph pools for #{user}") if poolCount > 1 && userPoolMatch.empty?
 
      else   # There is no pool created on managed Ceph
-        puts "Create at least one RBD pool from the Ceph managed frontend\n\n"
+        puts "Create at least one RBD pool from the Ceph managed frontend"
         puts "Use this link to create pool: https://api.grid5000.fr/sid/storage/ceph/ui/"
-        puts "Then rerun this script.\n"
+        puts "Then rerun this script."
         abortFlag = true
         break
      end # userPool.empty?
@@ -318,7 +319,7 @@ end # unless userPool.empty?
 # Map RBD and create File Systems.
 puts "Mapping RBD in managed Ceph clusters ..."
 Cute::TakTuk.start(clients, :user => "root") do |tak|
-     if argNoDeployed
+     unless argNoDeployed
         # Map RBD & create FS on deployed Ceph cluster
         results = tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
         tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argPoolName}/#{argRBDName}")
