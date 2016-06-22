@@ -266,7 +266,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
            userPoolMatch = pool if pool.include? "#{argPoolName}" # Perfect match of pool name
            # Check if RBD is already created, may contain data
            resultPool = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} ls")
-puts resultPool
+
            unless resultPool[client][:output].nil? # means no rbd in userPool
               if resultPool[client][:output].include? "#{argRBDName}" 
                  userRBD = argRBDName # There is an rbd with name argRBDName already
@@ -308,13 +308,11 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
      tak.loop()
 end
 
-
-
 # Configured Pool and created RBD for Ceph cluster.
 unless userPool.empty?
      puts "Configured/Created Pool and RBD as follows :"
      puts "On managed cluster:\n"
-     puts "Pool name: #{userPool} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize} "
+     puts "Pool name: #{userPool} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize} MB"
 end # unless userPool.empty?
 
 
@@ -325,7 +323,7 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
      unless argNoDeployed
         # Map RBD & create FS on deployed Ceph cluster
         results = tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
-        tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argPoolName}/#{argRBDName}")
+        tak.exec!("mkfs.#{argFileSystem} /dev/rbd/#{argPoolName}/#{argRBDName}")
 
         results.each do |client, result|
            puts "Mapped RBD #{myRBDName} on deployed Ceph to client #{client}." if result[:status] == 0
