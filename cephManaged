@@ -359,12 +359,12 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
         tak.exec!("umount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
         tak.exec!("rmdir /mnt/#{argMntProd}")
         tak.exec!("mkdir /mnt/#{argMntProd}")
-        results = tak.exec!("mount -t #{argFileSystem} /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
+        results = tak.exec!("mount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
      else              # This case is when RBD is already created earlier.
         tak.exec!("umount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
         tak.exec!("rmdir /mnt/#{argMntProd}")
         tak.exec!("mkdir /mnt/#{argMntProd}")
-        results = tak.exec!("mount -t #{argFileSystem} /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
+        results = tak.exec!("mount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
      end # if userRBD.empty?
      results.each do |client, result|
         puts "Mounted RBD on managed Ceph to client #{client}." if result[:status] == 0
