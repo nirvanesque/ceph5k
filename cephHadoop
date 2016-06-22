@@ -310,7 +310,7 @@ end # if argHadoop == "restart"
 
 
 # Hadoop directory setup 
-puts "Getting tar file and installing Hadoop ..."
+puts "Getting binary tar file and installing Hadoop ..."
 
 # Push hadoop tar file to all nodes & unpack
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
