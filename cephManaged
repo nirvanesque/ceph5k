@@ -298,8 +298,11 @@ abort("Script exited - no pool for user in Managed Ceph clusters") if abortFlag
 # Create Ceph pools & RBD
 Cute::TakTuk.start(clients, :user => "root") do |tak|
      if userRBD.empty? # There was no rbd created for the user. So create it.
-        result = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
-        puts "RBD #{argRBDName} created on Ceph managed cluster."
+        results = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
+
+        results.each do |client, result|
+           puts "RBD #{argRBDName} created on Ceph managed cluster for client #{client}." if result[:status] == 0
+        end # results.each do |client, result|
 
      end # if userRBD.empty?
      tak.loop()
