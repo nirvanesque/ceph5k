@@ -27,7 +27,7 @@ pool-name: pool               # Name of Ceph pool to create (added "userid_")
 pool-size: 14400              # Size of pool to create on deployed Ceph cluster
 rbd-name: image               # Name of rbd to create inside Ceph pool
 rbd-size: 14400               # Size of rbd to create inside Ceph pool
-file-system: ext4             # File System format on OSD disks and in created RBD
+file-system: xfs              # File System format on OSD disks and in created RBD
 mnt-depl: "ceph-depl"         # Mount point for RBD on deployed cluster
 mnt-prod: "ceph-prod"         # Mount point for RBD on production cluster
 
