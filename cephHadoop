@@ -289,20 +289,23 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
 end
 
 # Abort script if option stop was chosen.
-abort("Hadoop cluster stopped & snapshot taken. To recover data, please continue with option '--hadoop restart'") if argHadoop == "start"
+abort("Hadoop cluster stopped & snapshot taken. To recover data, please continue with option '--hadoop restart'") if argHadoop == "stop"
 
 # Cleaning up Hadoop config files & temp directories
 puts "Cleaning up Hadoop config files & temp directories ..."
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml; rm #{hadoopDir}/etc/hadoop/hdfs-site.xml; rm #{hadoopDir}/etc/hadoop/yarn-site.xml; rm #{hadoopDir}/etc/hadoop/mapred-site.xml; rm #{hadoopDir}/etc/hadoop/hadoop-env.sh")
-# Next 2 commands not for Hadoop restart
-     unless argHadoop == "restart"
-        tak.exec!("rm -Rf #{hadoopTmpDir}")
-        tak.exec!("mkdir #{hadoopTmpDir}; mkdir #{hadoopTmpDir}/hdfs; mkdir #{hadoopTmpDir}/yarn; mkdir #{hadoopTmpDir}/mapred")
-        puts "Previous Hadoop installations cleaned up."
-     end # unless argHadoop == "restart"
-     tak.exec!("chmod -R 777 #{hadoopTmpDir}")
-end
+     tak.exec!("rm -Rf #{hadoopTmpDir}")
+     tak.exec!("mkdir #{hadoopTmpDir}; mkdir #{hadoopTmpDir}/hdfs; mkdir #{hadoopTmpDir}/yarn; mkdir #{hadoopTmpDir}/mapred && chmod -R 777 #{hadoopTmpDir}")
+
+
+if argHadoop == "restart" # Restore Namenode directories
+   Cute::TakTuk.start([master], :user => "root") do |tak|
+        tak.exec!("tar xzf /mnt/#{argMntProd}/nameNode.tar.gz -C #{hadoopTmpDir} --strip-components=1")
+   end
+   puts "Hadoop Namenode directories reinstalled."
+end # if argHadoop == "restart"
+
 
 # Hadoop directory setup 
 puts "Getting Hadoop tar and setting up directory ..."
