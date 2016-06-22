@@ -96,12 +96,12 @@ EOS
   opt :'client-rbd-name', "RBD name on each Ceph client (userid_ added)", :type => String, :default => defaults["client-pool-name"]
   opt :'client-rbd-size', "RBD size for each Ceph client (~ pool-size / num-clients)", :default => defaults["client-pool-size"]
 
+  opt :'hadoop', "start, stop, restart Hadoop cluster", :default => defaults["hadoop"]
   opt :'hadoop-cluster', "Hadoop on Ceph cluster: deployed OR managed", :default => defaults["hadoop-cluster"]
-  opt :'hadoop-restart', "Restart existing Hadoop cluster and keep HDFS data", :default => defaults["hadoop-restart"]
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
-argJobID = opts[:jobid] # Oarsub ID of the client job. 
+argJobID = opts[:jobid] # Oarsub ID of the client job.
 argSite = opts[:site] # site name. 
 argJobName = opts[:'job-name'] # Grid'5000 job for deployed Ceph cluster. 
 argG5KCluster = opts[:cluster] # G5K cluster name if specified. 
@@ -125,7 +125,7 @@ argClientRBDName = "#{user}_" + opts[:'client-rbd-name'] # RBD name for each Cep
 argClientRBDSize = opts[:'client-rbd-size'] # RBD size for each Ceph client.
 
 argHadoopCluster = opts[:'hadoop-cluster'] # Hadoop on Ceph cluster: 'deployed' OR 'managed'.
-argHadoopRestart = opts[:'hadoop-restart'] # Restart existing Hadoop cluster and keep HDFS data.
+argHadoop = opts[:'hadoop'] # start, stop, restart Hadoop cluster.
 
 
 # get the job with name "cephCluster"
@@ -277,19 +277,30 @@ end # if argHadoopCluster == "managed"
 # Stopping Hadoop
 puts "Stopping any Hadoop daemons from master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
+     unless argHadoop == "start"
+        tak.exec!("#{hadoopDir}/bin/hdfs dfsadmin -safemode enter") # enter safemode
+        tak.exec!("#{hadoopDir}/bin/hdfs dfsadmin -saveNamespace") # save Namespace
+        tak.exec!("#{hadoopDir}/bin/hdfs dfsadmin -safemode leave") # leave safemode
+     end # if argHadoopRestart
+
      tak.exec!("#{hadoopDir}/sbin/stop-all.sh") # stop previously running Hadoop daemons
+     tak.exec!("rm -f /mnt/#{argMntProd}/nameNode.tar.gz") 
+     tak.exec!("tar czf nameNode.tar.gz -C /mnt/#{argMntProd} #{hadoopTmpDir}/hdfs/nn")
 end
+
+# Abort script if option stop was chosen.
+abort("Hadoop cluster stopped & snapshot taken. To recover data, please continue with option '--hadoop restart'") if argHadoop == "start"
 
 # Cleaning up Hadoop config files & temp directories
 puts "Cleaning up Hadoop config files & temp directories ..."
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml; rm #{hadoopDir}/etc/hadoop/hdfs-site.xml; rm #{hadoopDir}/etc/hadoop/yarn-site.xml; rm #{hadoopDir}/etc/hadoop/mapred-site.xml; rm #{hadoopDir}/etc/hadoop/hadoop-env.sh")
 # Next 2 commands not for Hadoop restart
-     unless argHadoopRestart
+     unless argHadoop == "restart"
         tak.exec!("rm -Rf #{hadoopTmpDir}")
         tak.exec!("mkdir #{hadoopTmpDir}; mkdir #{hadoopTmpDir}/hdfs; mkdir #{hadoopTmpDir}/yarn; mkdir #{hadoopTmpDir}/mapred")
         puts "Previous Hadoop installations cleaned up."
-     end # unless argHadoopRestart
+     end # unless argHadoop == "restart"
      tak.exec!("chmod -R 777 #{hadoopTmpDir}")
 end
 
@@ -497,11 +508,11 @@ FileUtils.cp("#{hadoopConfDir}/slaves", "#{clientStateDir}/hadoop/slaves")
 puts "Preparing & starting Hadoop daemons from master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
 # Next command not for Hadoop restart
-     if argHadoopRestart
+     if argHadoop == "restart"
         tak.exec!("#{hadoopDir}/bin/hdfs namenode --config $HADOOP_CONF_DIR") # start namenode
      else
         tak.exec!("#{hadoopDir}/bin/hdfs namenode -format") # format namenode
-     end # if argHadoopRestart
+     end # if argHadoop == "restart"
 
      tak.exec!("#{hadoopDir}/sbin/start-all.sh") # start all Hadoop daemons
      tak.exec!("#{hadoopDir}/sbin/mr-jobhistory-daemon.sh --config $HADOOP_CONF_DIR start historyserver") # start MapReduce jobhistory server
@@ -510,6 +521,6 @@ end
 # Hadoop started
 puts "Hadoop cluster started with Master node: #{master}"
 # Next only if Hadoop restart
-puts "All previous data retained." if argHadoopRestart
+puts "All previous data retained." if argHadoop == "restart"
 puts "Login to master node to submit jobs!"
 
