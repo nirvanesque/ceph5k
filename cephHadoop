@@ -278,7 +278,6 @@ end # if argHadoopCluster == "managed"
 puts "Stopping any Hadoop daemons from master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
      unless argHadoop == "start"
-puts argHadoop
         tak.exec!("#{hadoopDir}/bin/hdfs dfsadmin -safemode enter") # enter safemode
         tak.exec!("#{hadoopDir}/bin/hdfs dfsadmin -saveNamespace") # save Namespace
         tak.exec!("#{hadoopDir}/bin/hdfs dfsadmin -safemode leave") # leave safemode
@@ -286,7 +285,8 @@ puts argHadoop
 
      tak.exec!("#{hadoopDir}/sbin/stop-all.sh") # stop previously running Hadoop daemons
      tak.exec!("rm -f /mnt/#{argMntProd}/nameNode.tar.gz") 
-     tak.exec!("tar czf nameNode.tar.gz -C /mnt/#{argMntProd} #{hadoopTmpDir}/hdfs/nn")
+     result = tak.exec!("tar czf /mnt/#{argMntProd}/nameNode.tar.gz  #{hadoopTmpDir}/hdfs/nn")
+puts result
 end
 
 # Abort script if option stop was chosen.
@@ -515,10 +515,11 @@ puts "Preparing & starting Hadoop daemons from master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
 # Next command not for Hadoop restart
      if argHadoop == "restart"
-        tak.exec!("#{hadoopDir}/bin/hdfs namenode --config $HADOOP_CONF_DIR") # start namenode
+        result = tak.exec!("#{hadoopDir}/bin/hdfs namenode --config $HADOOP_CONF_DIR") # start namenode
      else
-        tak.exec!("#{hadoopDir}/bin/hdfs namenode -format") # format namenode
+        result = tak.exec!("#{hadoopDir}/bin/hdfs namenode -format") # format namenode
      end # if argHadoop == "restart"
+puts result
 
      tak.exec!("#{hadoopDir}/sbin/start-all.sh") # start all Hadoop daemons
      tak.exec!("#{hadoopDir}/sbin/mr-jobhistory-daemon.sh --config $HADOOP_CONF_DIR start historyserver") # start MapReduce jobhistory server
