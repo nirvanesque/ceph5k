@@ -335,7 +335,7 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
      # Map RBD & create FS on managed cluster
      results = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} map #{argRBDName} -k /etc/ceph/ceph.client.#{user}.keyring")
      if userRBD.empty? # Do it only the first time when the RBD is created.
-        result_mkfs = tak.exec!("mkfs.#{argFileSystem} /dev/rbd/#{userPool}/#{argRBDName}")
+        tak.exec!("mkfs.#{argFileSystem} /dev/rbd/#{userPool}/#{argRBDName}")
         myRBDName = argRBDName
      else              # This case is when RBD is already created earlier.
         myRBDName = userRBD
@@ -345,7 +345,6 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
      results.each do |client, result|
         puts "Mapped RBD #{myRBDName} on managed Ceph to client #{client}." if result[:status] == 0
      end # results.each do |client, result|
-puts result_mkfs
 end
 
 

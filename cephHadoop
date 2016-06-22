@@ -278,6 +278,7 @@ end # if argHadoopCluster == "managed"
 puts "Stopping any Hadoop daemons from master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
      unless argHadoop == "start"
+puts "restart or stop"
         tak.exec!("#{hadoopDir}/bin/hdfs dfsadmin -safemode enter") # enter safemode
         tak.exec!("#{hadoopDir}/bin/hdfs dfsadmin -saveNamespace") # save Namespace
         tak.exec!("#{hadoopDir}/bin/hdfs dfsadmin -safemode leave") # leave safemode
@@ -309,7 +310,7 @@ if argHadoop == "restart"
 end # if argHadoop == "restart"
 
 
-# Hadoop directory setup 
+# Hadoop directory setup
 puts "Getting binary tar file and installing Hadoop ..."
 
 # Push hadoop tar file to all nodes & unpack
