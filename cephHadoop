@@ -297,9 +297,11 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml; rm #{hadoopDir}/etc/hadoop/hdfs-site.xml; rm #{hadoopDir}/etc/hadoop/yarn-site.xml; rm #{hadoopDir}/etc/hadoop/mapred-site.xml; rm #{hadoopDir}/etc/hadoop/hadoop-env.sh")
      tak.exec!("rm -Rf #{hadoopTmpDir}")
      tak.exec!("mkdir #{hadoopTmpDir}; mkdir #{hadoopTmpDir}/hdfs; mkdir #{hadoopTmpDir}/yarn; mkdir #{hadoopTmpDir}/mapred && chmod -R 777 #{hadoopTmpDir}")
+     tak.loop()
+end
 
-
-if argHadoop == "restart" # Restore Namenode directories
+# If Hadoop restart then restore Namenode directories
+if argHadoop == "restart" 
    Cute::TakTuk.start([master], :user => "root") do |tak|
         tak.exec!("tar xzf /mnt/#{argMntProd}/nameNode.tar.gz -C #{hadoopTmpDir} --strip-components=1")
    end
@@ -308,7 +310,7 @@ end # if argHadoop == "restart"
 
 
 # Hadoop directory setup 
-puts "Getting Hadoop tar and setting up directory ..."
+puts "Getting tar file and installing Hadoop ..."
 
 # Push hadoop tar file to all nodes & unpack
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
