@@ -310,9 +310,9 @@ end
 
 
 
-# Created Pool & RBD for Ceph cluster.
+# Configured Pool and created RBD for Ceph cluster.
 unless userPool.empty?
-     puts "Created Ceph pool on managed cluster as follows :"
+     puts "Configured/Created Pool and RBD as follows :"
      puts "On managed cluster:\n"
      puts "Pool name: #{userPool} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize} "
 end # unless userPool.empty?
@@ -337,7 +337,7 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
      # Map RBD & create FS on managed cluster
      results = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} map #{argRBDName} -k /etc/ceph/ceph.client.#{user}.keyring")
      if userRBD.empty? # Do it only the first time when the RBD is created.
-        result_mkfs = tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{userPool}/#{argRBDName}")
+        result_mkfs = tak.exec!("mkfs.#{argFileSystem} /dev/rbd/#{userPool}/#{argRBDName}")
         myRBDName = argRBDName
      else              # This case is when RBD is already created earlier.
         myRBDName = userRBD
