@@ -285,7 +285,7 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
 
      tak.exec!("#{hadoopDir}/sbin/stop-all.sh") # stop previously running Hadoop daemons
      tak.exec!("rm -f /mnt/#{argMntProd}/nameNode.tar.gz") 
-     result = tak.exec!("tar czf /mnt/#{argMntProd}/nameNode.tar.gz  #{hadoopTmpDir}/hdfs/nn")
+     result = tak.exec!("tar czf nameNode.tar.gz -C /mnt/#{argMntProd}/ #{hadoopTmpDir}/hdfs/nn && mv nameNode.tar.gz /mnt/#{argMntProd}/")
 puts result
 end
 
@@ -519,7 +519,6 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
      else
         result = tak.exec!("#{hadoopDir}/bin/hdfs namenode -format") # format namenode
      end # if argHadoop == "restart"
-puts result
 
      tak.exec!("#{hadoopDir}/sbin/start-all.sh") # start all Hadoop daemons
      tak.exec!("#{hadoopDir}/sbin/mr-jobhistory-daemon.sh --config $HADOOP_CONF_DIR start historyserver") # start MapReduce jobhistory server
