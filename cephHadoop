@@ -284,9 +284,12 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
      end # if argHadoopRestart
 
      tak.exec!("#{hadoopDir}/sbin/stop-all.sh") # stop previously running Hadoop daemons
+
+     unless argHadoop == "start"
      tak.exec!("rm -f /mnt/#{argMntProd}/nameNode.tar.gz") 
      result = tak.exec!("tar czf nameNode.tar.gz -C /mnt/#{argMntProd}/ #{hadoopTmpDir}/hdfs/nn && mv nameNode.tar.gz /mnt/#{argMntProd}/")
 puts result
+     end # unless argHadoop == "start"
 end
 
 # Abort script if option stop was chosen.
