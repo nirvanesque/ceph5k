@@ -32,6 +32,7 @@ mnt-depl: "ceph-depl"         # Mount point for RBD on deployed cluster
 mnt-prod: "ceph-prod"         # Mount point for RBD on production cluster
 
 job-client: cephClient        # Grid'5000 job name for Ceph clients
+managed-cluster: rennes       # site for managed Ceph cluster: 'rennes' or 'nantes'
 multi-client: false           # Multiple clients to access Ceph Managed cluster
 num-client: 4                 # Nodes in Ceph Client cluster
 env-client: "jessie-x64-big"  # G5K environment for Ceph clients

@@ -89,6 +89,7 @@ EOS
 
   opt :'job-client', "Grid'5000 job name for Ceph clients", :type => String, :default => defaults["job-client"]
   opt :'env-client', "G5K environment for client", :type => String, :default => defaults["env-client"]
+  opt :'managed-cluster', "site for managed Ceph cluster: 'rennes' or 'nantes'", :type => String, :default => defaults["managed-cluster"]
   opt :'multi-client', "Multiple clients to access Ceph Managed cluster", :default => defaults["multi-client"]
   opt :'num-client', "Nodes in Ceph Client cluster", :default => defaults["num-client"]
   opt :'no-deployed', "Not using any deployed Ceph cluster", :default => defaults["no-deployed"]
@@ -113,6 +114,7 @@ argClientList = opts[:'file'] # File with clients list.
 argOnlyDeploy = opts[:'only-deploy'] # Only deploy linux but don't configure Ceph client.
 argEnvClient = opts[:'env-client'] # Grid'5000 environment to deploy Ceph clients. 
 argJobClient = opts[:'job-client'] # Grid'5000 job name for Ceph clients. 
+argManagedCluster = opts[:'managed-cluster'] # managed Ceph cluster: 'rennes' or 'nantes'. 
 argMultiClient = opts[:'multi-client'] # Multiple clients to access Ceph Managed cluster.
 argNumClient = opts[:'num-client'] # Nodes in Ceph Client cluster.
 argNoDeployed = opts[:'no-deployed'] # Not using any deployed Ceph cluster.
@@ -220,7 +222,11 @@ puts "Managed Ceph client(s) on: #{clients}"
 configFile = File.open(prodDir + "/ceph.conf", "w") do |file|
    file.puts("[global]")
    file.puts("  mon initial members = ceph0")
-   file.puts("  mon host = 172.16.111.30")
+   if argManagedCluster == "rennes"
+      file.puts("  mon host = 172.16.111.30")
+   else # nantes cluster
+      file.puts("  mon host = 172.16.207.10")
+   end # if managedCluster
 end
 
 # Copy ceph.conf file to client state directory
