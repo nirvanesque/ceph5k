@@ -73,8 +73,8 @@ Note: To create an RBD on the managed Ceph cluster, it is required first to crea
 
 At the CLI on a site frontend:
 
-        ./ceph5k/cephClient.sh
-        ./ceph5k/cephManaged       # Creates RBD & FS on deployed Ceph and mounts it
+        ./ceph5k/cephClient.sh rennes    # Gets managed Ceph keyrings for user from site rennes or nantes
+        ./ceph5k/cephManaged             # Creates RBD & FS on deployed Ceph and mounts it
 
 At the end of successful execution of the script, you will have a single Ceph client accessing the managed Ceph cluster, with pool and RBD mounted as file systems on your Ceph client, as follows:
 
