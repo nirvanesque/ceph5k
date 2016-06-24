@@ -199,9 +199,13 @@ Following are options related to Ceph cluster characteristics:
         -b, --rbd-name=string            RBD name for Ceph pool ("userid_" added) (default: image)
         -d, --rbd-size=int               RBD size on Ceph pool (default: 57600)
         -f, --file=string                File with clients nodes list, same option as in kadeploy3
-        -l, --file-system=string         File System to be formatted on created RBDs (default: ext4)
+        -l, --file-system=string         File System to be formatted on created RBDs (default: xfs)
         -m, --mnt-prod=string            Mount point on client for RBD of managed Ceph cluster (default: ceph-prod)
         -n, --num-client=int             Nodes in Ceph Client cluster (default: 4)
+        -u, --multi-client=bool          Multiple clients to access Ceph Managed cluster (default: false)
+        -a, --managed-cluster=string     Site for managed Ceph cluster: 'rennes' or 'nantes' (default: rennes)
+        -y, --no-deployed=bool           Not using any deployed Ceph cluster (default: false = using a deployed cluster)
+        -a, --managed-cluster=string     Site for managed Ceph cluster: 'rennes' or 'nantes' (default: rennes)
 
 - Other generic options:
 
@@ -258,8 +262,9 @@ The scripts in the Ceph5k tool suite are written in Ruby using the Ruby-Cute fra
 
 And then simply copy & paste the lines of any of the tool scripts (cephDeploy, cephClient, cephManaged) in the PRy shell.
 
-### Big Data automation - Apache Flink
-In the Ceph5k toolsuite, supplementary scripts are provided to use the deployed and managed Ceph clusters and client nodes in Big Data experiments. Currently, the Apache Flink and the Apache Spark frameworks can be installed and configured on the Ceph client nodes, in Master-Slaves cluster configuration. This assumes that the deployed Ceph cluster is up and running (cephDeploy executed) AND the Ceph clients are installed to access the deployed Ceph cluster (cephClient executed). 
+### Big Data automation - Apache Hadoop, Spark, Flink
+In the Ceph5k toolsuite, supplementary scripts are provided to use the deployed and managed Ceph clusters and client nodes in Big Data experiments. Currently, the Apache Hadoop, Spark and Flink frameworks can be installed and configured on the Ceph client nodes, in Master-Slaves cluster configuration. For Hadoop, the Ceph backend can be on a deployed Ceph cluster or managed Ceph cluster. For Spark and Flink, this assumes that the deployed Ceph cluster is up and running (cephDeploy executed) AND the Ceph clients are installed to access the deployed Ceph cluster (cephClient executed). 
+
 
 #### Apache Hadoop
 Then the script cephHadoop can be executed at any frontend by typing at CLI:
@@ -268,12 +273,13 @@ Then the script cephHadoop can be executed at any frontend by typing at CLI:
 
 The above script installs the full Hadoop 2.x framework with the first client as Master node and the remaining clients as Slaves/Workers. This means that you will have your entire Hadoop daemons running, complete with HDFS, YARN resources manager and MapReduce daemon. Subsequently, you can launch your Big Data jobs (e.g. WordCount, PageRank, ... ) from the Master node. Please see the Wiki page for further details: https://www.grid5000.fr/mediawiki/index.php/Moving_Data_between_Hadoop_installations_on_Ceph
 
-#### Apache Flink
-Then the script cephFlink can be executed at any frontend by typing at CLI:
+- Hadoop-specific options:
 
-        ./ceph5k/cephFlink               # Install and run the Flink framework
+Following are options related to Hadoop deployment:
 
-The above script installs the Apache Flink framework with the first client as Master node and the remaining clients as Slaves/Workers. Subsequently, you can launch your Big Data jobs (e.g. WordCount, PageRank, ... ) from the Master node. Please see the Wiki page for further details: https://www.grid5000.fr/mediawiki/index.php/Moving_Data_around_Grid'5000
+        -h, --hadoop=string              start, stop, restart Hadoop cluster (default: start)
+        --hadoop-cluster=string          Hadoop on Ceph cluster: deployed OR managed (default: deployed)
+
 
 #### Apache Spark
 Then the script cephSpark can be executed at any frontend by typing at CLI:
@@ -281,6 +287,14 @@ Then the script cephSpark can be executed at any frontend by typing at CLI:
         ./ceph5k/cephSpark               # Install and run the Spark framework
 
 The above script installs the Apache Spark framework with the first client as Master node and the remaining clients as Slaves/Workers. Subsequently, you can launch your Big Data jobs (e.g. WordCount, PageRank, ... ) from the Master node. Please see the Wiki page for further details: https://www.grid5000.fr/mediawiki/index.php/Moving_Data_around_Grid'5000
+
+
+#### Apache Flink
+Then the script cephFlink can be executed at any frontend by typing at CLI:
+
+        ./ceph5k/cephFlink               # Install and run the Flink framework
+
+The above script installs the Apache Flink framework with the first client as Master node and the remaining clients as Slaves/Workers. Subsequently, you can launch your Big Data jobs (e.g. WordCount, PageRank, ... ) from the Master node. Please see the Wiki page for further details: https://www.grid5000.fr/mediawiki/index.php/Moving_Data_around_Grid'5000
 
 # Licence Information
 Copyright (c) 2015-17 Anirvan BASU, INRIA Rennes - Bretagne Atlantique
