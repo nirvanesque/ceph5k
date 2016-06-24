@@ -24,19 +24,25 @@ release: firefly              # Ceph Release name
 cluster-name: ceph            # Ceph cluster name
 multi-osd: true               # Multiple OSDs on each node
 pool-name: pool               # Name of Ceph pool to create (added "userid_")
-pool-size: 5760000            # Size of pool to create on deployed Ceph cluster
+pool-size: 14400              # Size of pool to create on deployed Ceph cluster
 rbd-name: image               # Name of rbd to create inside Ceph pool
-rbd-size: 5760000             # Size of rbd to create inside Ceph pool
-file-system: ext4             # File System format on OSD disks and in created RBD
+rbd-size: 14400               # Size of rbd to create inside Ceph pool
+file-system: xfs              # File System format on OSD disks and in created RBD
 mnt-depl: "ceph-depl"         # Mount point for RBD on deployed cluster
 mnt-prod: "ceph-prod"         # Mount point for RBD on production cluster
 
 job-client: cephClient        # Grid'5000 job name for Ceph clients
+managed-cluster: rennes       # site for managed Ceph cluster: 'rennes' or 'nantes'
+multi-client: false           # Multiple clients to access Ceph Managed cluster
 num-client: 4                 # Nodes in Ceph Client cluster
 env-client: "jessie-x64-big"  # G5K environment for Ceph clients
-only-deploy: false            # Only deploy linux but don't configure Ceph client
-client-pool-name: cpool       # Pool name on each Ceph client (added "userid_")
+only-deploy: false            # Only deploy linux image but don't configure Ceph client
+client-pool-name: pool        # Pool name on each Ceph client (added "userid_")
 client-pool-size: 14400       # Pool size for each Ceph client (~ pool-size/num-clients)
-client-rbd-name: cimage       # RBD name on each Ceph client (added "userid_")
+client-rbd-name: image        # RBD name on each Ceph client (added "userid_")
 client-rbd-size: 14400        # RBD size for each Ceph client (~ rbd-size/num-clients)
+no-deployed: false            # Not using deployed Ceph cluster (false = using deployed)
+
+hadoop-cluster: deployed      # Hadoop on Ceph cluster: 'deployed' OR 'managed'
+hadoop: start                 # start, stop, restart Hadoop cluster
 

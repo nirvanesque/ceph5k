@@ -89,7 +89,10 @@ EOS
 
   opt :'job-client', "Grid'5000 job name for Ceph clients", :type => String, :default => defaults["job-client"]
   opt :'env-client', "G5K environment for client", :type => String, :default => defaults["env-client"]
+  opt :'managed-cluster', "site for managed Ceph cluster: 'rennes' or 'nantes'", :type => String, :default => defaults["managed-cluster"]
+  opt :'multi-client', "Multiple clients to access Ceph Managed cluster", :default => defaults["multi-client"]
   opt :'num-client', "Nodes in Ceph Client cluster", :default => defaults["num-client"]
+  opt :'no-deployed', "Not using any deployed Ceph cluster", :default => defaults["no-deployed"]
 
 end
 
@@ -111,7 +114,10 @@ argClientList = opts[:'file'] # File with clients list.
 argOnlyDeploy = opts[:'only-deploy'] # Only deploy linux but don't configure Ceph client.
 argEnvClient = opts[:'env-client'] # Grid'5000 environment to deploy Ceph clients. 
 argJobClient = opts[:'job-client'] # Grid'5000 job name for Ceph clients. 
+argManagedCluster = opts[:'managed-cluster'] # managed Ceph cluster: 'rennes' or 'nantes'. 
+argMultiClient = opts[:'multi-client'] # Multiple clients to access Ceph Managed cluster.
 argNumClient = opts[:'num-client'] # Nodes in Ceph Client cluster.
+argNoDeployed = opts[:'no-deployed'] # Not using any deployed Ceph cluster.
 
 
 # Next get job for Ceph clients
@@ -197,26 +203,30 @@ end
 abort("Linux #{argEnvClient} deployed on clients: #{clients}. \n Clients list file in: #{clientStateDir}/clients-list. \n Rerun script with option -f <nodes list file> to configure Ceph clients.") if argOnlyDeploy
 
 
-# Get the client for the managed Ceph cluster
-# This is the 'first' node of the job
-client = jobCephClient["assigned_nodes"][0]
+# Get the client(s) for the managed Ceph cluster
+# For a single client, this is the 'first' node of the job
+clients = argMultiClient ? jobCephClient["assigned_nodes"] : [jobCephClient["assigned_nodes"][0]]
 
 # if not yet deployed, then deploy it
 if jobCephClient["deploy"].nil?
-   puts "Deploying #{argEnvClient} on client node: #{client}"
-   depCephClient = g5k.deploy(jobCephClient, :nodes => [client], :env => argEnvClient) 
+   puts "Deploying #{argEnvClient} on client node(s): #{clients}"
+   depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClient) 
    g5k.wait_for_deploy(jobCephClient)
 end # if jobCephClient["deploy"].nil?
 
 # Remind where is the Ceph client
-puts "Managed Ceph client on: #{client}"
+puts "Managed Ceph client(s) on: #{clients}"
 
 
 # Prepare ceph.conf file for managed Ceph cluster
 configFile = File.open(prodDir + "/ceph.conf", "w") do |file|
    file.puts("[global]")
    file.puts("  mon initial members = ceph0")
-   file.puts("  mon host = 172.16.111.30")
+   if argManagedCluster == "rennes"
+      file.puts("  mon host = 172.16.111.30")
+   else # nantes cluster
+      file.puts("  mon host = 172.16.207.10")
+   end # if managedCluster
 end
 
 # Copy ceph.conf file to client state directory
@@ -225,7 +235,7 @@ FileUtils.cp("#{prodDir}/ceph.conf", "#{clientStateDir}/prod/ceph.conf")
 FileUtils.cp("/tmp/ceph.client.#{user}.keyring", "#{clientStateDir}/prod/ceph.client.#{user}.keyring")
 
 # Then put ceph.conf file to the client
-Cute::TakTuk.start([client], :user => "root") do |tak|
+Cute::TakTuk.start(clients, :user => "root") do |tak|
      tak.exec!("rm -rf prod/")
      tak.exec!("mkdir prod/ && touch prod/ceph.conf")
      tak.put("#{prodDir}/ceph.conf", "/root/prod/ceph.conf")
@@ -234,18 +244,19 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
 end
 
 # Created & pushed config file for Managed Ceph cluster.
-puts "Created & pushed config file for managed Ceph cluster to client."
+puts "Created & pushed config file for managed Ceph cluster to client(s)."
 
 
 # Creating Ceph pools on managed cluster.
-puts "Creating Ceph pool on managed cluster ..."
+puts "Configuring Ceph pool & RBD on managed cluster ..."
 poolsList = []
 userPool = ""
 userPoolMatch = ""
 userRBD = ""
 prodCluster = false
 abortFlag = false
-# Create Ceph pools & RBD
+# Check Ceph pools & RBD on Managed cluster, using first client.
+client = clients[0]
 Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("modprobe rbd")
      # Create RBD on managed cluster
@@ -265,6 +276,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
            unless resultPool[client][:output].nil? # means no rbd in userPool
               if resultPool[client][:output].include? "#{argRBDName}" 
                  userRBD = argRBDName # There is an rbd with name argRBDName already
+                 puts "RBD #{argRBDName} already exists in Ceph managed cluster. Using it."
               end # if resultPool[client][:output].include?
            end # unless resultPool[client][:output].nil?
 
@@ -274,67 +286,77 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
 
      unless userPool.empty?
         # If multiple pools from user, then confused, so exit.
-        
         abort("Script exited - multiple Ceph pools for #{user}") if poolCount > 1 && userPoolMatch.empty?
 
-        if userRBD.empty? # There was no rbd created for the user. So create it.
-           result = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
-        end # if userRBD.empty?
      else   # There is no pool created on managed Ceph
-      # Following command cannot be done at CLI on Ceph client
-      # tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} mkpool #{argPoolName} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
-        puts "Create at least one RBD pool from the Ceph managed frontend\n\n"
+        puts "Create at least one Ceph pool from the Ceph managed cluster frontend"
         puts "Use this link to create pool: https://api.grid5000.fr/sid/storage/ceph/ui/"
-        puts "Then rerun this script.\n"
+        puts "Then rerun this script."
         abortFlag = true
         break
-     end # if userRBD.empty?
+     end # userPool.empty?
      tak.loop()
 end
 
 # Abort script if no pool in managed Ceph
 abort("Script exited - no pool for user in Managed Ceph clusters") if abortFlag
 
-# Created Pool & RBD for Ceph cluster.
+# Create Ceph pools & RBD
+Cute::TakTuk.start(clients, :user => "root") do |tak|
+     if userRBD.empty? # There was no rbd created for the user. So create it.
+        results = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/ceph.client.#{user}.keyring")
+
+        results.each do |client, result|
+           puts "RBD #{argRBDName} created on Ceph managed cluster for client #{client}." if result[:status] == 0
+        end # results.each do |client, result|
+
+     end # if userRBD.empty?
+     tak.loop()
+end
+
+# Configured Pool and created RBD for Ceph cluster.
 unless userPool.empty?
-     puts "Created Ceph pool on managed cluster as follows :"
+     puts "Configured/Created Pool and RBD as follows :"
      puts "On managed cluster:\n"
-     puts "Pool name: #{userPool} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize} "
+     puts "Pool name: #{userPool} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize} MB"
 end # unless userPool.empty?
 
 
 
 # Map RBD and create File Systems.
 puts "Mapping RBD in managed Ceph clusters ..."
-Cute::TakTuk.start([client], :user => "root") do |tak|
-     # Map RBD & create FS on deployed cluster
-     result = tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
-     tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argPoolName}/#{argRBDName}")
-     if result[client][:status] == 0
-        puts "Mapped RBD #{argRBDName} on deployed Ceph."
-     end
+Cute::TakTuk.start(clients, :user => "root") do |tak|
+     unless argNoDeployed
+        # Map RBD & create FS on deployed Ceph cluster
+        results = tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
+        tak.exec!("mkfs.#{argFileSystem} /dev/rbd/#{argPoolName}/#{argRBDName}")
 
+        results.each do |client, result|
+           puts "Mapped RBD #{myRBDName} on deployed Ceph to client #{client}." if result[:status] == 0
+        end # results.each do |client, result|
+
+     end # if argNoDeployed
 
      myRBDName = ""
      # Map RBD & create FS on managed cluster
-     tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} map #{argRBDName} -k /etc/ceph/ceph.client.#{user}.keyring")
+     results = tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} --pool #{userPool} map #{argRBDName} -k /etc/ceph/ceph.client.#{user}.keyring")
      if userRBD.empty? # Do it only the first time when the RBD is created.
-        tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{userPool}/#{argRBDName}")
+        tak.exec!("mkfs.#{argFileSystem} /dev/rbd/#{userPool}/#{argRBDName}")
         myRBDName = argRBDName
      else              # This case is when RBD is already created earlier.
         myRBDName = userRBD
      end # if userRBD.empty?
-     if result[client][:status] == 0
-        puts "Mapped RBD #{myRBDName} on managed Ceph."
-     end
 
      tak.loop()
+     results.each do |client, result|
+        puts "Mapped RBD #{myRBDName} on managed Ceph to client #{client}." if result[:status] == 0
+     end # results.each do |client, result|
 end
 
 
 # Mount RBDs as File Systems.
-puts "Mounting RBD as File Systems in managed Ceph clusters ..."
-Cute::TakTuk.start([client], :user => "root") do |tak|
+puts "Mounting RBD as File Systems in managed Ceph cluster ..."
+Cute::TakTuk.start(clients, :user => "root") do |tak|
 
      result = nil
      # mount RBD from managed cluster
@@ -342,17 +364,16 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
         tak.exec!("umount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
         tak.exec!("rmdir /mnt/#{argMntProd}")
         tak.exec!("mkdir /mnt/#{argMntProd}")
-        result = tak.exec!("mount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
+        results = tak.exec!("mount /dev/rbd/#{userPool}/#{argRBDName} /mnt/#{argMntProd}")
      else              # This case is when RBD is already created earlier.
         tak.exec!("umount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
         tak.exec!("rmdir /mnt/#{argMntProd}")
         tak.exec!("mkdir /mnt/#{argMntProd}")
-        result = tak.exec!("mount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
+        results = tak.exec!("mount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{argMntProd}")
      end # if userRBD.empty?
-
-     if result[client][:status] == 0
-        puts "Mounted RBD as File System on managed Ceph."
-     end
+     results.each do |client, result|
+        puts "Mounted RBD on managed Ceph to client #{client}." if result[:status] == 0
+     end # results.each do |client, result|
 
      tak.loop()
 end
