@@ -59,7 +59,7 @@ end
 
 # banner for script
 opts = Trollop::options do
-  version "ceph5k 0.0.6 (c) 2015-16 Anirvan BASU, INRIA RBA"
+  version "ceph5k 0.0.8 (c) 2015-16 Anirvan BASU, INRIA RBA"
   banner <<-EOS
 cephDeploy is a script for deploying a Ceph cluster on reserved nodes.
 
@@ -192,22 +192,17 @@ end
 
 #1 Preflight Checklist
 puts "Doing pre-flight checklist..."
-# Add (release) Keys to each Ceph node
-Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.put("ceph5k/release.asc", "/root/release.asc")
-     tak.exec!("cat ./release.asc  | apt-key add -")
-     tak.loop()
-end
 
-
-# Add Ceph & Extras to each Ceph node ('firefly' is the most complete, later use CLI argument)
-ceph_extras =  'http://ceph.com/packages/ceph-extras/debian wheezy main'
-ceph_update =  'http://ceph.com/debian-#{argRelease}/ wheezy main'
+# Add Ceph & Extras to each Ceph node ('firefly' is the most complete)
+#ceph_extras =  'http://ceph.com/packages/ceph-extras/debian wheezy main'
+argDebian = argEnv.slice(0,6)
 
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
-     tak.exec!("echo deb #{ceph_update}  | sudo tee /etc/apt/sources.list.d/ceph.list")
-     tak.exec!("export http_proxy=http://proxy:3128; export https_proxy=https://proxy:3128; sudo apt-get update -y && sudo apt-get install -y ceph-deploy")
+#     result = tak.exec!("apt-get autoremove -y ceph && apt-get autoremove -y ceph-deploy")
+#     tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
+     tak.exec!("echo deb http://apt.grid5000.fr/ceph5k/#{argDebian}/#{argRelease} / | tee /etc/apt/sources.list.d/ceph.list")
+     tak.exec!("apt-get -y autoremove ceph && apt-get -y purge ceph")
+     tak.exec!("apt-get -y update && apt-get -y --force-yes install ceph")
      tak.loop()
 end
 
@@ -250,7 +245,7 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Preflight checklist completed.
-puts "Pre-flight checklist completed." + "\n"
+puts "Pre-flight checklist completed."
 
 
 # Purging any previous Ceph installations.
@@ -349,7 +344,7 @@ nodes.each do |node|
 end
 
 # Ceph installation on all nodes completed.
-puts "Ceph cluster installation completed." + "\n"
+puts "Ceph cluster installation completed."
 
 
 # Adding & preparing monitor.
@@ -377,7 +372,7 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Monitor added and prepared.
-puts "Monitor added to Ceph cluster." + "\n"
+puts "Monitor added to Ceph cluster."
 
 
 # Prepare & Activate OSDs.
@@ -422,7 +417,7 @@ if argMultiOSD # Option for activating multiple OSDs per node
                tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}")
                tak.loop()
            end
-           puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}5.\n"
+           puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}5."
 
         else  # case of /dev/sdb, /dev/sdc, required to zap disc before deploy 
            # Remove all partitions, create primary partition (1), install FS
@@ -447,7 +442,7 @@ if argMultiOSD # Option for activating multiple OSDs per node
                tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}")
                tak.loop()
            end # end of TakTuk loop for monitor
-           puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}1.\n"
+           puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}1."
 
         end # end of if-else device == "sda"
         osdIndex += 1
@@ -507,14 +502,14 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Config & keyrings distributed.
-puts "Ceph configuration & keyrings distributed throughout cluster." + "\n"
+puts "Ceph configuration & keyrings distributed throughout cluster."
 
 
 # Finally check if Ceph Cluster was correctly deployed - result should be "active+clean"
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
      result = tak.exec!("ceph status")
-     result = result[monitor][:output]
-     puts "Ceph cluster up and running. In state 'active+clean'" if result.include? "active+clean"
+     resultText = result[monitor][:output]
+     puts "Ceph cluster up and running. In state 'active+clean'" if resultText.include? "active+clean"
      tak.loop()
 end
 

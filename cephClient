@@ -59,7 +59,7 @@ end
 
 # banner for script
 opts = Trollop::options do
-  version "ceph5k 0.0.6 (c) 2015-16 Anirvan BASU, INRIA RBA"
+  version "ceph5k 0.0.7 (c) 2015-16 Anirvan BASU, INRIA RBA"
   banner <<-EOS
 cephClient is a script for creating RBD and FS on a deployed Ceph cluster.
 
