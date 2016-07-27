@@ -216,7 +216,7 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("echo deb http://apt.grid5000.fr/ceph5k/#{argDebian}/#{argRelease} / | tee /etc/apt/sources.list.d/ceph.list")
      result = tak.exec!("apt-get -y autoremove ceph && apt-get -y purge ceph")
 puts result
-     result = tak.exec!("apt-get update -y && apt-get install -y ceph")
+     result = tak.exec!("apt-get -y update && apt-get -y --force-yes install ceph")
 puts result
      tak.loop()
 end
@@ -523,8 +523,9 @@ puts "Ceph configuration & keyrings distributed throughout cluster." + "\n"
 # Finally check if Ceph Cluster was correctly deployed - result should be "active+clean"
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
      result = tak.exec!("ceph status")
-     result = result[monitor][:output]
-     puts "Ceph cluster up and running. In state 'active+clean'" if result.include? "active+clean"
+     resultText = result[monitor][:output]
+puts resultText
+     puts "Ceph cluster up and running. In state 'active+clean'" if resultText.include? "active+clean"
      tak.loop()
 end
 
