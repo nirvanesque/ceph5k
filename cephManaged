@@ -218,7 +218,7 @@ puts "Doing pre-flight checklist..."
 
 # Add Ceph & Extras to each Ceph node ('firefly' is the most complete)
 #ceph_extras =  'http://ceph.com/packages/ceph-extras/debian wheezy main'
-argDebian = argEnv.slice(0,6)
+argDebian = argEnvClient.slice(0,6)
 
 Cute::TakTuk.start(clients, :user => "root") do |tak|
 #     result = tak.exec!("apt-get autoremove -y ceph && apt-get autoremove -y ceph-deploy")
