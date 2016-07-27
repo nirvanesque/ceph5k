@@ -59,7 +59,7 @@ end
 
 # banner for script
 opts = Trollop::options do
-  version "ceph5k 0.0.7 (c) 2015-16 Anirvan BASU, INRIA RBA"
+  version "ceph5k 0.0.8 (c) 2015-16 Anirvan BASU, INRIA RBA"
   banner <<-EOS
 cephDeploy is a script for deploying a Ceph cluster on reserved nodes.
 
@@ -245,7 +245,7 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Preflight checklist completed.
-puts "Pre-flight checklist completed." + "\n"
+puts "Pre-flight checklist completed."
 
 
 # Purging any previous Ceph installations.
