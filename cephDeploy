@@ -194,7 +194,7 @@ end
 puts "Doing pre-flight checklist..."
 # Add (release) Keys to each Ceph node
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.exec!("rm /root/release.asc")
+     tak.exec!("rm /root/release.asc && touch /root/release.asc && chmod 666 /root/release.asc")
      result = tak.put("#{scriptDir}/release.asc", "/root/release.asc")
 puts result
      tak.exec!("cat ./release.asc  | apt-key add -")
