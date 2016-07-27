@@ -192,15 +192,15 @@ end
 
 #1 Preflight Checklist
 puts "Doing pre-flight checklist..."
+=begin
 # Add (release) Keys to each Ceph node
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm /root/release.asc && touch /root/release.asc && chmod 666 /root/release.asc")
-     result = tak.put("#{scriptDir}/release.asc", "/root/release.asc")
-puts result
+     tak.put("#{scriptDir}/release.asc", "/root/release.asc")
      tak.exec!("cat ./release.asc  | apt-key add -")
      tak.loop()
 end
-
+=end
 
 # Add Ceph & Extras to each Ceph node ('firefly' is the most complete)
 #ceph_extras =  'http://ceph.com/packages/ceph-extras/debian wheezy main'
