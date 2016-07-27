@@ -344,7 +344,7 @@ nodes.each do |node|
 end
 
 # Ceph installation on all nodes completed.
-puts "Ceph cluster installation completed." + "\n"
+puts "Ceph cluster installation completed."
 
 
 # Adding & preparing monitor.
@@ -372,7 +372,7 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Monitor added and prepared.
-puts "Monitor added to Ceph cluster." + "\n"
+puts "Monitor added to Ceph cluster."
 
 
 # Prepare & Activate OSDs.
@@ -417,7 +417,7 @@ if argMultiOSD # Option for activating multiple OSDs per node
                tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}")
                tak.loop()
            end
-           puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}5.\n"
+           puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}5."
 
         else  # case of /dev/sdb, /dev/sdc, required to zap disc before deploy 
            # Remove all partitions, create primary partition (1), install FS
@@ -442,7 +442,7 @@ if argMultiOSD # Option for activating multiple OSDs per node
                tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}")
                tak.loop()
            end # end of TakTuk loop for monitor
-           puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}1.\n"
+           puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}1."
 
         end # end of if-else device == "sda"
         osdIndex += 1
@@ -502,7 +502,7 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Config & keyrings distributed.
-puts "Ceph configuration & keyrings distributed throughout cluster." + "\n"
+puts "Ceph configuration & keyrings distributed throughout cluster."
 
 
 # Finally check if Ceph Cluster was correctly deployed - result should be "active+clean"
