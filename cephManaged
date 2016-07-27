@@ -63,7 +63,7 @@ end
 
 # banner for script
 opts = Trollop::options do
-  version "ceph5k 0.0.8 (c) 2015-16 Anirvan BASU, INRIA RBA"
+  version "ceph5k 0.0.6 (c) 2015-16 Anirvan BASU, INRIA RBA"
   banner <<-EOS
 cephManaged is a script for creating RBD and FS on the Managed Ceph clusters in Grid'5000
 
@@ -209,30 +209,7 @@ if jobCephClient["deploy"].nil?
 end # if jobCephClient["deploy"].nil?
 
 # Remind where is the Ceph client
-puts "Managed Ceph client(s) on: #{clients}"
-
-
-
-#1 Preflight Checklist
-puts "Doing pre-flight checklist..."
-
-# Add Ceph & Extras to each Ceph node ('firefly' is the most complete)
-#ceph_extras =  'http://ceph.com/packages/ceph-extras/debian wheezy main'
-argDebian = argEnvClient.slice(0,6)
-
-Cute::TakTuk.start(clients, :user => "root") do |tak|
-     result = tak.exec!("echo deb http://apt.grid5000.fr/ceph5k/#{argDebian}/#{argRelease} / | tee /etc/apt/sources.list.d/ceph.list")
-puts result
-     result = tak.exec!("apt-get -y autoremove ceph && apt-get -y purge ceph")
-puts result
-     result = tak.exec!("apt-get -y update && apt-get -y --force-yes install ceph")
-puts result
-     tak.loop()
-end
-
-# Preflight checklist completed.
-puts "Pre-flight checklist completed."
-
+puts "Managed Ceph client on: #{client}"
 
 
 # Prepare ceph.conf file for managed Ceph cluster
@@ -308,7 +285,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
       # tak.exec!("rbd -c /root/prod/ceph.conf --id #{user} mkpool #{argPoolName} --keyfile /etc/ceph/ceph.client.#{user}.keyring")
         puts "Create at least one RBD pool from the Ceph managed frontend\n\n"
         puts "Use this link to create pool: https://api.grid5000.fr/sid/storage/ceph/ui/"
-        puts "Then rerun this script."
+        puts "Then rerun this script.\n"
         abortFlag = true
         break
      end # if userRBD.empty?
@@ -321,7 +298,7 @@ abort("Script exited - no pool for user in Managed Ceph clusters") if abortFlag
 # Created Pool & RBD for Ceph cluster.
 unless userPool.empty?
      puts "Created Ceph pool on managed cluster as follows :"
-     puts "On managed cluster:"
+     puts "On managed cluster:\n"
      puts "Pool name: #{userPool} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize} "
 end # unless userPool.empty?
 
