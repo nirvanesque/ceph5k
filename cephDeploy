@@ -213,7 +213,8 @@ puts ceph_update
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
 #     result = tak.exec!("apt-get autoremove -y ceph && apt-get autoremove -y ceph-deploy")
 #     tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
-     result = tak.exec!("echo deb http://apt.grid5000.fr/ceph5k/#{argDebian}/#{argRelease} / | tee /etc/apt/sources.list.d/ceph.list")
+     tak.exec!("echo deb http://apt.grid5000.fr/ceph5k/#{argDebian}/#{argRelease} / | tee /etc/apt/sources.list.d/ceph.list")
+     result = tak.exec!("apt-get -y autoremove ceph && apt-get -y purge ceph")
 puts result
      result = tak.exec!("apt-get update -y && apt-get install -y ceph")
 puts result
