@@ -209,7 +209,7 @@ if jobCephClient["deploy"].nil?
 end # if jobCephClient["deploy"].nil?
 
 # Remind where is the Ceph client
-puts "Managed Ceph client on: #{client}"
+puts "Managed Ceph client(s) on: #{clients}"
 
 
 
