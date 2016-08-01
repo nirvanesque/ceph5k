@@ -228,9 +228,12 @@ argDebian = argEnvClient.slice(0,6)
 Cute::TakTuk.start(clients, :user => "root") do |tak|
 #     result = tak.exec!("apt-get autoremove -y ceph && apt-get autoremove -y ceph-deploy")
 #     tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
-     tak.exec!("echo deb http://apt.grid5000.fr/ceph5k/#{argDebian}/#{argRelease} / | tee /etc/apt/sources.list.d/ceph.list")
-     tak.exec!("apt-get -y autoremove ceph && apt-get -y purge ceph")
-     tak.exec!("apt-get -y update && apt-get -y --force-yes install ceph")
+     result = tak.exec!("echo deb http://apt.grid5000.fr/ceph5k/#{argDebian}/#{argRelease} / | tee /etc/apt/sources.list.d/ceph.list")
+puts result
+     result = tak.exec!("apt-get -y autoremove ceph && apt-get -y purge ceph")
+puts result
+     result = tak.exec!("apt-get -y update && apt-get -y --force-yes install ceph")
+puts result
      tak.loop()
 end
 
