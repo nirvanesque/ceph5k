@@ -239,7 +239,7 @@ puts "   monitor on: #{monitor}"
 puts "Doing pre-flight checklist..."
 
 # Add Ceph & Extras to each Ceph node ('firefly' is the most complete)
-argDebian = argEnv.slice(0,6)
+argDebian = argEnvClient.slice(0,6)
 
 # Specify explicit dependencies for Ceph packages 
 # See Bug #832714: Ceph from Jessie-backports
