@@ -225,14 +225,25 @@ puts "Doing pre-flight checklist..."
 #ceph_extras =  'http://ceph.com/packages/ceph-extras/debian wheezy main'
 argDebian = argEnvClient.slice(0,6)
 
+# Specify explicit dependencies for Ceph packages 
+# See Bug #832714: Ceph from Jessie-backports
+aptgetPurgeCmd = ""
+aptgetInstallCmd = ""
+if argDebian.include? "jessie"
+   aptgetPurgeCmd = "apt-get -y autoremove ceph ceph ceph-common libcephfs1 librados2 librbd1 python-ceph && apt-get -y purge ceph ceph-common libcephfs1 librados2 librbd1 python-ceph"
+   aptgetInstallCmd = "apt-get -y --force-yes install ceph=0.80.10-2~bpo8+1 chrony ceph-common=0.80.10-2~bpo8+1 python-ceph=0.80.10-2~bpo8+1 librbd1=0.80.10-2~bpo8+1 libcephfs1=0.80.10-2~bpo8+1 librados2=0.80.10-2~bpo8+1"
+else 
+   aptgetPurgeCmd = "apt-get -y autoremove ceph ceph-common && apt-get -y purge ceph ceph-common"
+   aptgetInstallCmd = "apt-get -y update && apt-get -y --force-yes install ceph"
+end # if argDebian.include? "jessie"
+
 Cute::TakTuk.start(clients, :user => "root") do |tak|
 #     result = tak.exec!("apt-get autoremove -y ceph && apt-get autoremove -y ceph-deploy")
 #     tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
-     result = tak.exec!("echo deb http://apt.grid5000.fr/ceph5k/#{argDebian}/#{argRelease} / | tee /etc/apt/sources.list.d/ceph.list")
+     tak.exec!("echo deb http://apt.grid5000.fr/ceph5k/#{argDebian}/#{argRelease} / | tee /etc/apt/sources.list.d/ceph.list")
+     result = tak.exec!(aptgetPurgeCmd)
 puts result
-     result = tak.exec!("apt-get -y autoremove ceph && apt-get -y purge ceph")
-puts result
-     result = tak.exec!("apt-get -y update && apt-get -y --force-yes install ceph")
+     result = tak.exec!(aptgetInstallCmd)
 puts result
      tak.loop()
 end
