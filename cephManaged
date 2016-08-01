@@ -253,7 +253,7 @@ puts "Pre-flight checklist completed."
 
 
 # Prepare ceph.conf file for managed Ceph cluster
-configFile = File.open(prodDir + "/" + argManagedCluster + "/ceph.conf", "w") do |file|
+configFile = File.open(prodDir + "/#{argManagedCluster}/ceph.conf", "w") do |file|
    file.puts("[global]")
    file.puts("  mon initial members = ceph0")
    if argManagedCluster == "rennes"
