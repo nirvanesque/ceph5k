@@ -253,7 +253,7 @@ else
    aptgetInstallCmd = "apt-get -y update && apt-get -y --force-yes install ceph"
 end # if argDebian.include? "jessie"
 
-Cute::TakTuk.start(nodes, :user => "root") do |tak|
+Cute::TakTuk.start(clients, :user => "root") do |tak|
      tak.exec!("echo deb http://apt.grid5000.fr/ceph5k/#{argDebian}/#{argRelease} / | tee /etc/apt/sources.list.d/ceph.list")
      tak.exec!(aptgetPurgeCmd) # Purge previous ceph packages & dependencies
      tak.exec!(aptgetInstallCmd) # Install ceph packages & dependencies
