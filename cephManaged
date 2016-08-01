@@ -241,9 +241,8 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
 #     result = tak.exec!("apt-get autoremove -y ceph && apt-get autoremove -y ceph-deploy")
 #     tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
      tak.exec!("echo deb http://apt.grid5000.fr/ceph5k/#{argDebian}/#{argRelease} / | tee /etc/apt/sources.list.d/ceph.list")
-     result = tak.exec!(aptgetPurgeCmd)
-puts result
-     result = tak.exec!(aptgetInstallCmd)
+     tak.exec!(aptgetPurgeCmd) # Purge previous ceph packages & dependencies
+     result = tak.exec!(aptgetInstallCmd) # Install ceph packages & dependencies
 puts result
      tak.loop()
 end
