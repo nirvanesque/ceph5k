@@ -251,8 +251,8 @@ end
 puts "Pre-flight checklist completed."
 
 
-
 # Prepare ceph.conf file for managed Ceph cluster
+FileUtils.mkpath(prodDir + "/#{argManagedCluster}")
 configFile = File.open(prodDir + "/#{argManagedCluster}/ceph.conf", "w") do |file|
    file.puts("[global]")
    file.puts("  mon initial members = ceph0")
@@ -264,7 +264,7 @@ configFile = File.open(prodDir + "/#{argManagedCluster}/ceph.conf", "w") do |fil
 end
 
 # Copy ceph.conf file to client state directory
-FileUtils.mkpath(clientStateDir + "/prod")
+FileUtils.mkpath(clientStateDir + "/prod/#{argManagedCluster}")
 FileUtils.cp("#{prodDir}/#{argManagedCluster}/ceph.conf", "#{clientStateDir}/prod/#{argManagedCluster}/ceph.conf")
 FileUtils.cp("/tmp/#{argManagedCluster}/ceph.client.#{user}.keyring", "#{clientStateDir}/prod/#{argManagedCluster}/ceph.client.#{user}.keyring")
 
