@@ -59,9 +59,9 @@ end
 
 # banner for script
 opts = Trollop::options do
-  version "ceph5k 0.0.7 (c) 2015-16 Anirvan BASU, INRIA RBA"
+  version "ceph5k 0.0.8 (c) 2015-16 Anirvan BASU, INRIA RBA"
   banner <<-EOS
-cephClient is a script for creating RBD and FS on a deployed Ceph cluster.
+cephClient is a script for creating RBD and FS on clients to access a deployed Ceph cluster.
 
 Usage:
        cephClient [options]
@@ -237,6 +237,30 @@ puts "   monitor on: #{monitor}"
 
 #1 Preflight Checklist
 puts "Doing pre-flight checklist..."
+
+# Add Ceph & Extras to each Ceph node ('firefly' is the most complete)
+argDebian = argEnv.slice(0,6)
+
+# Specify explicit dependencies for Ceph packages 
+# See Bug #832714: Ceph from Jessie-backports
+aptgetPurgeCmd = ""
+aptgetInstallCmd = ""
+if argDebian.include? "jessie"
+   aptgetPurgeCmd = "apt-get -y autoremove ceph ceph ceph-common libcephfs1 librados2 librbd1 python-ceph && apt-get -y purge ceph ceph-common libcephfs1 librados2 librbd1 python-ceph"
+   aptgetInstallCmd = "apt-get -y --force-yes install ceph=0.80.10-2~bpo8+1 chrony ceph-common=0.80.10-2~bpo8+1 python-ceph=0.80.10-2~bpo8+1 librbd1=0.80.10-2~bpo8+1 libcephfs1=0.80.10-2~bpo8+1 librados2=0.80.10-2~bpo8+1"
+else 
+   aptgetPurgeCmd = "apt-get -y autoremove ceph ceph-common && apt-get -y purge ceph ceph-common"
+   aptgetInstallCmd = "apt-get -y update && apt-get -y --force-yes install ceph"
+end # if argDebian.include? "jessie"
+
+Cute::TakTuk.start(nodes, :user => "root") do |tak|
+     tak.exec!("echo deb http://apt.grid5000.fr/ceph5k/#{argDebian}/#{argRelease} / | tee /etc/apt/sources.list.d/ceph.list")
+     tak.exec!(aptgetPurgeCmd) # Purge previous ceph packages & dependencies
+     tak.exec!(aptgetInstallCmd) # Install ceph packages & dependencies
+     tak.loop()
+end
+
+
 # Get ssh_config file from master/monitor
 Net::SFTP.start(monitor, 'root') do |sftp|
   sftp.download!("/root/.ssh/config", "#{tempDir}/config/config")

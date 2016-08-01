@@ -222,7 +222,6 @@ puts "Managed Ceph client(s) on: #{clients}"
 puts "Doing pre-flight checklist..."
 
 # Add Ceph & Extras to each Ceph node ('firefly' is the most complete)
-#ceph_extras =  'http://ceph.com/packages/ceph-extras/debian wheezy main'
 argDebian = argEnvClient.slice(0,6)
 
 # Specify explicit dependencies for Ceph packages 
@@ -242,8 +241,7 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
 #     tak.exec!("echo deb #{ceph_extras}  | sudo tee /etc/apt/sources.list.d/ceph-extras.list")
      tak.exec!("echo deb http://apt.grid5000.fr/ceph5k/#{argDebian}/#{argRelease} / | tee /etc/apt/sources.list.d/ceph.list")
      tak.exec!(aptgetPurgeCmd) # Purge previous ceph packages & dependencies
-     result = tak.exec!(aptgetInstallCmd) # Install ceph packages & dependencies
-puts result
+     tak.exec!(aptgetInstallCmd) # Install ceph packages & dependencies
      tak.loop()
 end
 
