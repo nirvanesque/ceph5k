@@ -268,7 +268,7 @@ FileUtils.cp("/tmp/#{argManagedCluster}/ceph.client.#{user}.keyring", "#{clientS
 
 # Then put ceph.conf file to the client
 Cute::TakTuk.start(clients, :user => "root") do |tak|
-#     tak.exec!("rm -rf prod/")
+     tak.exec!("mkdir -p /etc/ceph/#{argManagedCluster} && touch /etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring")
      tak.exec!("mkdir -p prod/#{argManagedCluster} && touch prod/#{argManagedCluster}/ceph.conf")
      tak.put("#{prodDir}/#{argManagedCluster}/ceph.conf", "/root/prod/#{argManagedCluster}/ceph.conf")
      tak.put("/tmp/#{argManagedCluster}/ceph.client.#{user}.keyring", "/etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring")
@@ -292,10 +292,11 @@ client = clients[0]
 Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("modprobe rbd")
      # Create RBD on managed cluster
-     result = tak.exec!("rados -c /root/prod/#{argManagedCluster}/ceph.conf --id #{user} lspools")
-     poolsList = result[client][:output].split("\n")
+     result = tak.exec!("rados -c /root/prod/#{argManagedCluster}/ceph.conf --id #{user} -k /etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring lspools")
 
+     poolsList = result[client][:output].split("\n") # Get list of pools in an array
      poolCount = 0
+
      poolsList.each do |pool|  # logic: it will take the alphabetic-last pool from user
         userRBD = ""
         if pool.include? "#{user}"
