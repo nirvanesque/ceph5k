@@ -268,15 +268,10 @@ FileUtils.cp("/tmp/#{argManagedCluster}/ceph.client.#{user}.keyring", "#{clientS
 
 # Then put ceph.conf file to the client
 Cute::TakTuk.start(clients, :user => "root") do |tak|
-#     tak.exec!("rm -rf prod/")
-     result = tak.exec!("mkdir -p /etc/ceph/#{argManagedCluster} && touch /etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring")
-puts result
+     tak.exec!("mkdir -p /etc/ceph/#{argManagedCluster} && touch /etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring")
      tak.exec!("mkdir -p prod/#{argManagedCluster} && touch prod/#{argManagedCluster}/ceph.conf")
-puts result
-     result = tak.put("#{prodDir}/#{argManagedCluster}/ceph.conf", "/root/prod/#{argManagedCluster}/ceph.conf")
-puts result
-     result = tak.put("/tmp/#{argManagedCluster}/ceph.client.#{user}.keyring", "/etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring")
-puts result
+     tak.put("#{prodDir}/#{argManagedCluster}/ceph.conf", "/root/prod/#{argManagedCluster}/ceph.conf")
+     tak.put("/tmp/#{argManagedCluster}/ceph.client.#{user}.keyring", "/etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring")
      tak.loop()
 end
 
@@ -298,7 +293,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("modprobe rbd")
      # Create RBD on managed cluster
      result = tak.exec!("rados -c /root/prod/#{argManagedCluster}/ceph.conf --id #{user} lspools")
-puts result[client][:output]
+puts result
      poolsList = result[client][:output].split("\n")
 
      poolCount = 0
