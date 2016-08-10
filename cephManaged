@@ -269,7 +269,8 @@ FileUtils.cp("/tmp/#{argManagedCluster}/ceph.client.#{user}.keyring", "#{clientS
 # Then put ceph.conf file to the client
 Cute::TakTuk.start(clients, :user => "root") do |tak|
 #     tak.exec!("rm -rf prod/")
-     tak.exec!("mkdir -p prod/#{argManagedCluster} && touch prod/#{argManagedCluster}/ceph.conf")
+     result = tak.exec!("mkdir -p prod/#{argManagedCluster} && touch prod/#{argManagedCluster}/ceph.conf")
+puts result
      result = tak.put("#{prodDir}/#{argManagedCluster}/ceph.conf", "/root/prod/#{argManagedCluster}/ceph.conf")
 puts result
      result = tak.put("/tmp/#{argManagedCluster}/ceph.client.#{user}.keyring", "/etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring")
