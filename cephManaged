@@ -270,8 +270,10 @@ FileUtils.cp("/tmp/#{argManagedCluster}/ceph.client.#{user}.keyring", "#{clientS
 Cute::TakTuk.start(clients, :user => "root") do |tak|
 #     tak.exec!("rm -rf prod/")
      tak.exec!("mkdir -p prod/#{argManagedCluster} && touch prod/#{argManagedCluster}/ceph.conf")
-     tak.put("#{prodDir}/#{argManagedCluster}/ceph.conf", "/root/prod/#{argManagedCluster}/ceph.conf")
-     tak.put("/tmp/#{argManagedCluster}/ceph.client.#{user}.keyring", "/etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring")
+     result = tak.put("#{prodDir}/#{argManagedCluster}/ceph.conf", "/root/prod/#{argManagedCluster}/ceph.conf")
+puts result
+     result = tak.put("/tmp/#{argManagedCluster}/ceph.client.#{user}.keyring", "/etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring")
+puts result
      tak.loop()
 end
 

@@ -69,7 +69,7 @@ cephHadoop is a script for deploying Apache Hadoop on a deployed Ceph cluster+cl
 
 Usage:
        cephHadoop [options]
-where [options] are: 
+where [options] are:
 EOS
 
   opt :ignore, "Ignore incorrect values"
