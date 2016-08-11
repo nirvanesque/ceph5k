@@ -393,10 +393,14 @@ configFile = File.open("#{hadoopConfDir}/hosts", "a") do |file|
 
    file.puts("\n")
    masterIP = Socket.getaddrinfo(master, "http", nil, :STREAM)[0][2]
-   file.puts("#{masterIP} #{master} master")
+#   file.puts("#{masterIP} #{master} master")
+   # Try without giving FQDN
+   file.puts("#{masterIP} master")
    slaves.each.with_index(1) do |slave, index| # loop over each slave
       slaveIP = Socket.getaddrinfo(slave, "http", nil, :STREAM)[0][2]
-      file.puts("#{slaveIP} #{slave} slave#{index}")
+#      file.puts("#{slaveIP} #{slave} slave#{index}")
+      # Try without giving FQDN
+      file.puts("#{slaveIP} slave#{index}")
    end # slaves.each do |slave, index|
 
 end
@@ -404,6 +408,20 @@ end
 # Copy /etc/hosts to master + slave nodes
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.put("#{hadoopConfDir}/hosts", "/etc/hosts")
+end
+
+# Change master & slaves hostnames using hostnamectl
+Cute::TakTuk.start([master], :user => "root") do |tak|
+
+     # First change hostname of master to same name as in /etc/hosts
+     tak.exec!("hostnamectl set-hostname master")
+
+     # Then change hostname of each slave to same name as in /etc/hosts
+     slaves.each.with_index(1) do |slave, index| # loop over each slave
+        tak.exec!("hostnamectl --host=root@#{slave} set-hostname slave#{index}")
+     end # slaves.each do |slave, index|
+
+     tak.loop()
 end
 
 # In masters file add line for master
