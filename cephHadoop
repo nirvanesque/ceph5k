@@ -428,7 +428,7 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
 end
 
 # Master & Slaves registered.
-puts "Master & Slaves registered."
+puts "Master & Slaves registered." 
 
 
 # Prepare file core-site.xml
