@@ -283,7 +283,7 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
         tak.exec!("#{hadoopDir}/bin/hdfs dfsadmin -safemode leave") # leave safemode
 
         tak.exec!("rm -f /mnt/#{argMntProd}/nameNode.tar.gz") 
-        result = tak.exec!("tar czf nameNode.tar.gz -C /mnt/#{argMntProd}/ #{hadoopTmpDir}/dfs/nn && mv nameNode.tar.gz /mnt/#{argMntProd}/")
+        result = tak.exec!("tar czfP nameNode.tar.gz -C /mnt/#{argMntProd}/ #{hadoopTmpDir}/dfs/nn && mv nameNode.tar.gz /mnt/#{argMntProd}/")
 puts result
      end # if argHadoop == "stop"
 
