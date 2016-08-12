@@ -306,7 +306,7 @@ end
 # If Hadoop restart then restore Namenode directories
 if argHadoop == "restart" 
    Cute::TakTuk.start([master], :user => "root") do |tak|
-        tak.exec!("tar xzf /mnt/#{argMntProd}/nameNode.tar.gz -C #{hadoopTmpDir} --strip-components=1")
+        tak.exec!("tar xzfP /mnt/#{argMntProd}/nameNode.tar.gz -C #{hadoopTmpDir} --strip-components=3")  # Note the level of subdir (3) has to coincide with tar archive
    end
    puts "Hadoop Namenode directories reinstalled."
 end # if argHadoop == "restart"
