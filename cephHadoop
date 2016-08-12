@@ -277,22 +277,22 @@ end # if argHadoopCluster == "managed"
 # Stopping Hadoop
 puts "Stopping any Hadoop daemons from master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
-     unless argHadoop == "start"
+     if argHadoop == "stop" # save namespace
         tak.exec!("#{hadoopDir}/bin/hdfs dfsadmin -safemode enter") # enter safemode
         tak.exec!("#{hadoopDir}/bin/hdfs dfsadmin -saveNamespace") # save Namespace
         tak.exec!("#{hadoopDir}/bin/hdfs dfsadmin -safemode leave") # leave safemode
-     end # if argHadoopRestart
+
+        tak.exec!("rm -f /mnt/#{argMntProd}/nameNode.tar.gz") 
+        result = tak.exec!("tar czf nameNode.tar.gz -C /mnt/#{argMntProd}/ #{hadoopTmpDir}/hdfs/nn && mv nameNode.tar.gz /mnt/#{argMntProd}/")
+
+     end # if argHadoop == "stop"
 
      tak.exec!("#{hadoopDir}/sbin/stop-all.sh") # stop previously running Hadoop daemons
 
-     if argHadoop == "stop"
-     tak.exec!("rm -f /mnt/#{argMntProd}/nameNode.tar.gz") 
-     result = tak.exec!("tar czf nameNode.tar.gz -C /mnt/#{argMntProd}/ #{hadoopTmpDir}/hdfs/nn && mv nameNode.tar.gz /mnt/#{argMntProd}/")
-puts result
-     # Abort script if option stop was chosen.
-     abort("Hadoop cluster stopped & snapshot taken. To recover data, please continue with option '--hadoop restart'")
-     end # if argHadoop == "stop"
 end
+
+# Abort script if option stop was chosen.
+abort("Hadoop cluster stopped & snapshot taken. To recover data, please continue with option '--hadoop restart'") if argHadoop == "stop"
 
 # Cleaning up Hadoop config files & temp directories
 puts "Cleaning up Hadoop config files & temp directories ..."
