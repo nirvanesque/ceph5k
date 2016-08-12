@@ -285,15 +285,14 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
 
      tak.exec!("#{hadoopDir}/sbin/stop-all.sh") # stop previously running Hadoop daemons
 
-     unless argHadoop == "start"
+     if argHadoop == "stop"
      tak.exec!("rm -f /mnt/#{argMntProd}/nameNode.tar.gz") 
      result = tak.exec!("tar czf nameNode.tar.gz -C /mnt/#{argMntProd}/ #{hadoopTmpDir}/hdfs/nn && mv nameNode.tar.gz /mnt/#{argMntProd}/")
 
-     end # unless argHadoop == "start"
+     # Abort script if option stop was chosen.
+     abort("Hadoop cluster stopped & snapshot taken. To recover data, please continue with option '--hadoop restart'")
+     end # if argHadoop == "stop"
 end
-
-# Abort script if option stop was chosen.
-abort("Hadoop cluster stopped & snapshot taken. To recover data, please continue with option '--hadoop restart'") if argHadoop == "stop"
 
 # Cleaning up Hadoop config files & temp directories
 puts "Cleaning up Hadoop config files & temp directories ..."
