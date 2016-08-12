@@ -277,6 +277,8 @@ end # if argHadoopCluster == "managed"
 # Stopping Hadoop
 puts "Stopping any Hadoop daemons from master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
+
+     # Save namespace and tarzip file to managed Ceph mounted directory
      if argHadoop == "stop" # save namespace
         tak.exec!("#{hadoopDir}/bin/hdfs dfsadmin -safemode enter") # enter safemode
         tak.exec!("#{hadoopDir}/bin/hdfs dfsadmin -saveNamespace") # save Namespace
@@ -284,14 +286,14 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
 
         tak.exec!("rm -f /mnt/#{argMntProd}/nameNode.tar.gz") 
         result = tak.exec!("tar czfP nameNode.tar.gz -C /mnt/#{argMntProd}/ #{hadoopTmpDir}/dfs/nn && mv nameNode.tar.gz /mnt/#{argMntProd}/")
-puts result
      end # if argHadoop == "stop"
 
-     tak.exec!("#{hadoopDir}/sbin/stop-all.sh") # stop previously running Hadoop daemons
+     # Stop previously running Hadoop daemons
+     tak.exec!("#{hadoopDir}/sbin/stop-all.sh")
 
 end
 
-# Abort script if option stop was chosen.
+# Abort script if option "stop" was chosen.
 abort("Hadoop cluster stopped & snapshot taken. To recover data, please continue with option '--hadoop restart'") if argHadoop == "stop"
 
 # Cleaning up Hadoop config files & temp directories
