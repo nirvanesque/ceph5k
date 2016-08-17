@@ -150,8 +150,10 @@ abort("No deployed Ceph cluster found. First run cephDeploy & cephClient scripts
 
 
 # Remind where is the deployed Ceph monitor
-puts "Deployed Ceph cluster details:"
-puts "   monitor on: #{monitor}"
+if argHadoopCluster == "deployed"
+   puts "Deployed Ceph cluster details:"
+   puts "   monitor on: #{monitor}"
+end # if argHadoopCluster == "deployed"
 
 # Next get job for Ceph clients
 jobCephClient = nil # Ceph client job
@@ -285,7 +287,7 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
         tak.exec!("#{hadoopDir}/bin/hdfs dfsadmin -safemode leave") # leave safemode
 
         tak.exec!("rm -f /mnt/#{argMntProd}/nameNode.tar.gz") 
-        result = tak.exec!("tar czfP nameNode.tar.gz -C /mnt/#{argMntProd}/ #{hadoopTmpDir}/dfs/nn && mv nameNode.tar.gz /mnt/#{argMntProd}/")
+        tak.exec!("tar czfP nameNode.tar.gz -C /mnt/#{argMntProd}/ #{hadoopTmpDir}/dfs/nn && mv nameNode.tar.gz /mnt/#{argMntProd}/")
      end # if argHadoop == "stop"
 
      # Stop previously running Hadoop daemons
@@ -294,14 +296,15 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
 end
 
 # Abort script if option "stop" was chosen.
-abort("Hadoop cluster stopped & snapshot taken. To recover data, please continue with option '--hadoop restart'") if argHadoop == "stop"
+abort("Hadoop cluster stopped. To recover data, please continue with option '--hadoop restart'") if argHadoop == "stop"
 
 # Cleaning up Hadoop config files & temp directories
 puts "Cleaning up Hadoop config files & temp directories ..."
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml; rm #{hadoopDir}/etc/hadoop/hdfs-site.xml; rm #{hadoopDir}/etc/hadoop/yarn-site.xml; rm #{hadoopDir}/etc/hadoop/mapred-site.xml; rm #{hadoopDir}/etc/hadoop/hadoop-env.sh")
-     tak.exec!("rm -Rf #{hadoopTmpDir}")
-     tak.exec!("mkdir #{hadoopTmpDir}; mkdir #{hadoopTmpDir}/dfs; mkdir #{hadoopTmpDir}/yarn; mkdir #{hadoopTmpDir}/mapred && chmod -R 777 #{hadoopTmpDir}")
+     result = tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml #{hadoopDir}/etc/hadoop/hdfs-site.xml #{hadoopDir}/etc/hadoop/yarn-site.xml #{hadoopDir}/etc/hadoop/mapred-site.xml #{hadoopDir}/etc/hadoop/hadoop-env.sh")
+puts result
+     result = tak.exec!("mkdir -p #{hadoopTmpDir}/dfs #{hadoopTmpDir}/yarn #{hadoopTmpDir}/mapred && chmod -R 777 #{hadoopTmpDir}")
+puts result
      tak.loop()
 end
 
