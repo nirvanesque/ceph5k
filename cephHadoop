@@ -433,19 +433,22 @@ end
 # Change master & slaves hostnames using hostnamectl
 if argHadoop == "start" 
    Cute::TakTuk.start([master], :user => "root") do |tak|
-
         # First change hostname of master to same name as in /etc/hosts
         tak.exec!("hostnamectl set-hostname master")
-
-        # Then change hostname of each slave to same name as in /etc/hosts
-        slaves.each.with_index(1) do |slave, index| # loop over each slave
-           slaveIndex = "slave#{index}"
-           tak.exec!("hostnamectl --host=root@#{slave} set-hostname #{slaveIndex}")
-           tak.exec!("echo '#{slaveIndex}' > #{nodeIDFile}")
-        end # slaves.each do |slave, index|
-
+        tak.exec!("echo 'master' > #{nodeIDFile}")
         tak.loop()
    end
+
+   # Then change hostname of each slave to same name as in /etc/hosts
+   slaves.each.with_index(1) do |slave, index| # loop over each slave
+      slaveIndex = "slave#{index}"
+      Cute::TakTuk.start([slave], :user => "root") do |tak|
+           tak.exec!("hostnamectl set-hostname #{slaveIndex}")
+           tak.exec!("echo '#{slaveIndex}' > #{nodeIDFile}")
+           tak.loop()
+      end
+   end # slaves.each do |slave, index|
+
 end # if argHadoop == "start"
 
 # In masters file add line for master
