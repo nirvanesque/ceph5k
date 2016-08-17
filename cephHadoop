@@ -56,8 +56,8 @@ end    # if (["--def-conf", "-d"])
 # Populate the hash with default parameters from YAML file.
 defaults = begin
   YAML.load(File.open(currentConfigFile))
-rescue ArgumentError => e
-  puts "Could not parse YAML: #{e.message}"
+  rescue ArgumentError => e
+     puts "Could not parse YAML: #{e.message}"
 end
 
 
@@ -157,7 +157,6 @@ end # if argHadoopCluster == "deployed"
 
 # Next get job for Ceph clients
 jobCephClient = nil # Ceph client job
-clients = [] # Array of client nodes
 
 unless [nil, 0].include?(argJobID)
    # If jobID is specified, get the specific job
@@ -168,11 +167,11 @@ else
 
    # get the job with name "cephClient"
    jobs.each do |job|
+
       if job["name"] == argJobClient # if client job exists already, get nodes
          jobCephClient = job
-         clients = jobCephClient["assigned_nodes"]
-
       end # if job["name"] == argJobName
+
    end # jobs.each do |job|
 end # if argJobID
 # At this point job details were fetched
@@ -185,10 +184,33 @@ abort("No Ceph client(s) found. First run cephClient script, then run this scrip
 puts "Hadoop cluster details recovered."
 
 
-# Change to be read/write from YAML file
+# Get and assign correctly the nodes in a Hadoop cluster
 nodes = jobCephClient["assigned_nodes"]
-master = nodes[0] # The first node in the list becomes the master
-slaves = nodes - [master]
+master = ""
+slaves = []
+# nodeID (master, slave1, slave2, ... ) is stored in this file
+nodeIDFile = argHadoopCluster == "managed" ? "/mnt/" + argMntProd + "/hadoop/node-id" : "/mnt/" + argMntDepl + "/hadoop/node-id" 
+
+nodeID = ""
+newMaster = ""
+newSlaves = []
+if argHadoopCluster == "managed"
+   unless argHadoop == "start"
+      nodes.each do |node|
+         Cute::TakTuk.start([node], :user => "root") do |tak|
+            result = tak.exec!("cat #{nodeIDFile}")
+puts result
+            tak.loop()
+         end
+      end # nodes.each do |node|
+   else 
+      master = nodes[0] # The first node in the list becomes the master
+      slaves = nodes - [master]
+   end # unless argHadoop == "start"
+else 
+   master = nodes[0] # The first node in the list becomes the master
+   slaves = nodes - [master]
+end # if argHadoopCluster == "managed"
 
 # At this point job was created / fetched
 puts "Deploying Hadoop cluster as follows:"
@@ -301,10 +323,8 @@ abort("Hadoop cluster stopped. To recover data, please continue with option '--h
 # Cleaning up Hadoop config files & temp directories
 puts "Cleaning up Hadoop config files & temp directories ..."
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     result = tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml #{hadoopDir}/etc/hadoop/hdfs-site.xml #{hadoopDir}/etc/hadoop/yarn-site.xml #{hadoopDir}/etc/hadoop/mapred-site.xml #{hadoopDir}/etc/hadoop/hadoop-env.sh")
-puts result
-     result = tak.exec!("mkdir -p #{hadoopTmpDir}/dfs #{hadoopTmpDir}/yarn #{hadoopTmpDir}/mapred && chmod -R 777 #{hadoopTmpDir}")
-puts result
+     tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml #{hadoopDir}/etc/hadoop/hdfs-site.xml #{hadoopDir}/etc/hadoop/yarn-site.xml #{hadoopDir}/etc/hadoop/mapred-site.xml #{hadoopDir}/etc/hadoop/hadoop-env.sh")
+     tak.exec!("mkdir -p #{hadoopTmpDir}/dfs #{hadoopTmpDir}/yarn #{hadoopTmpDir}/mapred && chmod -R 777 #{hadoopTmpDir}")
      tak.loop()
 end
 
@@ -411,18 +431,22 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Change master & slaves hostnames using hostnamectl
-Cute::TakTuk.start([master], :user => "root") do |tak|
+if argHadoop == "start" 
+   Cute::TakTuk.start([master], :user => "root") do |tak|
 
-     # First change hostname of master to same name as in /etc/hosts
-     tak.exec!("hostnamectl set-hostname master")
+        # First change hostname of master to same name as in /etc/hosts
+        tak.exec!("hostnamectl set-hostname master")
 
-     # Then change hostname of each slave to same name as in /etc/hosts
-     slaves.each.with_index(1) do |slave, index| # loop over each slave
-        tak.exec!("hostnamectl --host=root@#{slave} set-hostname slave#{index}")
-     end # slaves.each do |slave, index|
+        # Then change hostname of each slave to same name as in /etc/hosts
+        slaves.each.with_index(1) do |slave, index| # loop over each slave
+           slaveIndex = "slave#{index}"
+           tak.exec!("hostnamectl --host=root@#{slave} set-hostname #{slaveIndex}")
+           tak.exec!("echo '#{slaveIndex}' > #{nodeIDFile}")
+        end # slaves.each do |slave, index|
 
-     tak.loop()
-end
+        tak.loop()
+   end
+end # if argHadoop == "start"
 
 # In masters file add line for master
 configFile = File.open("#{hadoopConfDir}/masters", "w") do |file|
