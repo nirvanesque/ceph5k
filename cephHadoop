@@ -150,8 +150,10 @@ abort("No deployed Ceph cluster found. First run cephDeploy & cephClient scripts
 
 
 # Remind where is the deployed Ceph monitor
-puts "Deployed Ceph cluster details:"
-puts "   monitor on: #{monitor}"
+if argHadoopCluster == "deployed"
+   puts "Deployed Ceph cluster details:"
+   puts "   monitor on: #{monitor}"
+end # if argHadoopCluster == "deployed"
 
 # Next get job for Ceph clients
 jobCephClient = nil # Ceph client job
