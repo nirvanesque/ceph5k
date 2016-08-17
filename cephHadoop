@@ -299,8 +299,9 @@ abort("Hadoop cluster stopped & snapshot taken. To recover data, please continue
 # Cleaning up Hadoop config files & temp directories
 puts "Cleaning up Hadoop config files & temp directories ..."
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml #{hadoopDir}/etc/hadoop/hdfs-site.xml #{hadoopDir}/etc/hadoop/yarn-site.xml #{hadoopDir}/etc/hadoop/mapred-site.xml #{hadoopDir}/etc/hadoop/hadoop-env.sh")
-     tak.exec!("mkdir -p #{hadoopTmpDir}/dfs #{hadoopTmpDir}/yarn #{hadoopTmpDir}/mapred && chmod -R 777 #{hadoopTmpDir}")
+     tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml; rm #{hadoopDir}/etc/hadoop/hdfs-site.xml; rm #{hadoopDir}/etc/hadoop/yarn-site.xml; rm #{hadoopDir}/etc/hadoop/mapred-site.xml; rm #{hadoopDir}/etc/hadoop/hadoop-env.sh")
+     tak.exec!("rm -Rf #{hadoopTmpDir}")
+     tak.exec!("mkdir #{hadoopTmpDir}; mkdir #{hadoopTmpDir}/dfs; mkdir #{hadoopTmpDir}/yarn; mkdir #{hadoopTmpDir}/mapred && chmod -R 777 #{hadoopTmpDir}")
      tak.loop()
 end
 
@@ -398,6 +399,8 @@ configFile = File.open("#{hadoopConfDir}/hosts", "a") do |file|
    file.puts("#{masterIP} master")
    slaves.each.with_index(1) do |slave, index| # loop over each slave
       slaveIP = Socket.getaddrinfo(slave, "http", nil, :STREAM)[0][2]
+#      file.puts("#{slaveIP} #{slave} slave#{index}")
+      # Try without giving FQDN
       file.puts("#{slaveIP} slave#{index}")
    end # slaves.each do |slave, index|
 
