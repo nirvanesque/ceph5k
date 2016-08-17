@@ -565,8 +565,8 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
         # Simply restart Hadoop namenode
         result = tak.exec!("#{hadoopDir}/bin/hdfs namenode --config $HADOOP_CONF_DIR") # start namenode
      else
-        # Format namenode & restart
-        result = tak.exec!("#{hadoopDir}/bin/hdfs namenode -format") 
+        # Format namenode & start
+        result = tak.exec!("#{hadoopDir}/bin/hdfs namenode -format -force") 
      end # if argHadoop == "restart"
 puts result
 
