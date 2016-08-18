@@ -194,15 +194,35 @@ nodeIDFile = argHadoopCluster == "managed" ? "/mnt/" + argMntProd + "/hadoop/nod
 nodeID = ""
 newMaster = ""
 newSlaves = []
+newNodes = []
 if argHadoopCluster == "managed"
    unless argHadoop == "start"
       nodes.each do |node|
          Cute::TakTuk.start([node], :user => "root") do |tak|
             result = tak.exec!("cat #{nodeIDFile}")
-puts result
+puts result[:output]
+            nodeID = result[:output]
+
+            # Get the FQDN of the "master"
+            if nodeID.include? "master"
+               resultFQDN = tak.exec!("hostname --fqdn")
+puts resultFQDN[:output]
+               slaveID = nodeID.slice(4, -1).to_i
+puts slaveID
+               newNodes[slaveID] = resultFQDN[:output]
+            end
+
+            # Get the FQDNs of the "slaves"
+            if nodeID.include? "slave"
+               resultFQDN = tak.exec!("hostname --fqdn")
+puts resultFQDN[:output]
+               newNodes[0] = resultFQDN[:output]
+            end
+
             tak.loop()
          end
       end # nodes.each do |node|
+      nodes = newNodes
    else 
       master = nodes[0] # The first node in the list becomes the master
       slaves = nodes - [master]
