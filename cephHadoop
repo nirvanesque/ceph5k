@@ -205,7 +205,7 @@ puts result[node][:output]
             resultIP = tak.exec!("hostname --ip-address")
             ipAddress = resultIP[node][:output].split.first
             resultFQDN = tak.exec!('host #{ipAddress} | tail -n 1 | sed -e "s/^.* //;s/[[:punct:]]*$//"')
-puts resultFQDN
+puts node
 puts "node is: #{nodeID}"
 
             # Get the FQDN of the "master"
