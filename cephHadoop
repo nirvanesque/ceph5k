@@ -174,14 +174,13 @@ else
 
    end # jobs.each do |job|
 end # if argJobID
-# At this point job details were fetched
-puts "Ceph client job details recovered." if !jobCephClient.nil?
 
 # If no Ceph clients found, abort Hadoop deployment
-abort("No Ceph client(s) found. First run cephClient script, then run this script.") if jobCephClient.nil?
-
-# At this point Big Data nodes were created or fetched
-puts "Hadoop cluster details recovered."
+if jobCephClient.nil?
+   abort("No Ceph client(s) found. First run cephClient script, then run this script.")
+else
+   puts "Ceph client job details recovered. Using them to create Hadoop cluster."
+end # if jobCephClient.nil?
 
 
 # Get and assign correctly the nodes in a Hadoop cluster
