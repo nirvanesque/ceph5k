@@ -588,7 +588,6 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
         # Format namenode & start
         result = tak.exec!("#{hadoopDir}/bin/hdfs namenode -format -force") 
      end # if argHadoop == "restart"
-puts result
 
      tak.exec!("#{hadoopDir}/sbin/start-all.sh") # start all Hadoop daemons
      tak.exec!("#{hadoopDir}/sbin/mr-jobhistory-daemon.sh --config $HADOOP_CONF_DIR start historyserver") # start MapReduce jobhistory server
