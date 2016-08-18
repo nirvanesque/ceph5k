@@ -223,14 +223,10 @@ puts "slaveID is: #{slaveID}"
          end
       end # nodes.each do |node|
       nodes = newNodes
-   else 
-      master = nodes[0] # The first node in the list becomes the master
-      slaves = nodes - [master]
    end # unless argHadoop == "start"
-else 
-   master = nodes[0] # The first node in the list becomes the master
-   slaves = nodes - [master]
 end # if argHadoopCluster == "managed"
+master = nodes[0] # The first node in the list becomes the master
+slaves = nodes - [master]
 
 # At this point job was created / fetched
 puts "Deploying Hadoop cluster as follows:"
