@@ -191,6 +191,7 @@ slaves = []
 # nodeID (master, slave1, slave2, ... ) is stored in this file
 nodeIDFile = argHadoopCluster == "managed" ? "/mnt/" + argMntProd + "/hadoop/node-id" : "/mnt/" + argMntDepl + "/hadoop/node-id" 
 
+# If "restart" then reorder the "nodes" array
 if argHadoopCluster == "managed"
    unless argHadoop == "start"
       nodeID = ""
@@ -198,10 +199,7 @@ if argHadoopCluster == "managed"
       nodes.each do |node|
          Cute::TakTuk.start([node], :user => "root") do |tak|
             result = tak.exec!("cat #{nodeIDFile}")
-puts result[node][:output]
             nodeID = result[node][:output]
-puts node
-puts "node is: #{nodeID}"
 
             # Get the FQDN of the "master"
             if nodeID.include? "master"
@@ -211,16 +209,19 @@ puts "node is: #{nodeID}"
             # Get the FQDNs of the "slaves"
             if nodeID.include? "slave"
                slaveID = nodeID.slice(5..-1).to_i
-puts "slaveID is: #{slaveID}"
                newNodes[slaveID] = node
             end
 
             tak.loop()
          end
+
       end # nodes.each do |node|
-      nodes = newNodes
+
+      nodes = newNodes # Assign the new ordering to the array "nodes"
+
    end # unless argHadoop == "start"
 end # if argHadoopCluster == "managed"
+
 master = nodes[0] # The first node in the list becomes the master
 slaves = nodes - [master]
 
