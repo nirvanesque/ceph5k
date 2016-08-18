@@ -191,12 +191,10 @@ slaves = []
 # nodeID (master, slave1, slave2, ... ) is stored in this file
 nodeIDFile = argHadoopCluster == "managed" ? "/mnt/" + argMntProd + "/hadoop/node-id" : "/mnt/" + argMntDepl + "/hadoop/node-id" 
 
-nodeID = ""
-newMaster = ""
-newSlaves = []
-newNodes = []
 if argHadoopCluster == "managed"
    unless argHadoop == "start"
+      nodeID = ""
+      newNodes = []
       nodes.each do |node|
          Cute::TakTuk.start([node], :user => "root") do |tak|
             result = tak.exec!("cat #{nodeIDFile}")
