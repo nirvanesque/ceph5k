@@ -206,7 +206,7 @@ puts result[node][:output]
             # Get the FQDN of the "master"
             if nodeID.include? "master"
                resultFQDN = tak.exec!("hostname --ip-address")
-puts resultFQDN[node][:output][0]
+puts resultFQDN[node][:output][1]
                newNodes[0] = resultFQDN[node][:output][0]
             end
 
