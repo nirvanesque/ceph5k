@@ -206,17 +206,17 @@ puts result[node][:output]
             # Get the FQDN of the "master"
             if nodeID.include? "master"
                resultFQDN = tak.exec!("hostname --ip-address")
-puts resultFQDN[node][:output][1]
-               newNodes[0] = resultFQDN[node][:output][0]
+puts resultFQDN[node][:output].split.first
+               newNodes[0] = resultFQDN[node][:output].split.first
             end
 
             # Get the FQDNs of the "slaves"
             if nodeID.include? "slave"
                resultFQDN = tak.exec!("hostname --ip-address")
-puts resultFQDN[node][:output][0]
+puts resultFQDN[node][:output].split.first
                slaveID = nodeID.slice(4, -1).to_i
 puts "slaveID is: #{slaveID}"
-               newNodes[slaveID] = resultFQDN[node][:output][0]
+               newNodes[slaveID] = resultFQDN[node][:output].split.first
             end
 
             tak.loop()
