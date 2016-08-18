@@ -202,7 +202,7 @@ if argHadoopCluster == "managed"
             result = tak.exec!("cat #{nodeIDFile}")
 puts result[node][:output]
             nodeID = result[node][:output]
-
+puts nodeID
             # Get the FQDN of the "master"
             if nodeID.include? "master"
                resultFQDN = tak.exec!("hostname --ip-address")
@@ -214,7 +214,7 @@ puts resultFQDN[node][:output].split.first
             if nodeID.include? "slave"
                resultFQDN = tak.exec!("hostname --ip-address")
 puts resultFQDN[node][:output].split.first
-               slaveID = nodeID.slice(4, -1).to_i
+               slaveID = nodeID.slice(5, -1).to_i
 puts "slaveID is: #{slaveID}"
                newNodes[slaveID] = resultFQDN[node][:output].split.first
             end
