@@ -202,21 +202,22 @@ if argHadoopCluster == "managed"
             result = tak.exec!("cat #{nodeIDFile}")
 puts result[node][:output]
             nodeID = result[node][:output]
+            resultIP = tak.exec!("hostname --ip-address")
+            ipAddress = resultIP[node][:output].split.first
+            resultFQDN = tak.exec!('host #{ipAddress} | tail -n 1 | sed -e "s/^.* //;s/[[:punct:]]*$//"')
+puts resultFQDN[node][:output]
 puts "node is: #{nodeID}"
+
             # Get the FQDN of the "master"
             if nodeID.include? "master"
-               resultFQDN = tak.exec!("hostname --ip-address")
-puts resultFQDN[node][:output].split.first
-               newNodes[0] = resultFQDN[node][:output].split.first
+               newNodes[0] = resultFQDN[node][:output]
             end
 
             # Get the FQDNs of the "slaves"
             if nodeID.include? "slave"
-               resultFQDN = tak.exec!("hostname --ip-address")
-puts resultFQDN[node][:output].split.first
                slaveID = nodeID.slice(5..-1).to_i
 puts "slaveID is: #{slaveID}"
-               newNodes[slaveID] = resultFQDN[node][:output].split.first
+               newNodes[slaveID] = resultFQDN[node][:output]
             end
 
             tak.loop()
