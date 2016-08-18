@@ -200,23 +200,23 @@ if argHadoopCluster == "managed"
       nodes.each do |node|
          Cute::TakTuk.start([node], :user => "root") do |tak|
             result = tak.exec!("cat #{nodeIDFile}")
-puts result[:output]
-            nodeID = result[:output]
+puts result[node][:output]
+            nodeID = result[node][:output]
 
             # Get the FQDN of the "master"
             if nodeID.include? "master"
                resultFQDN = tak.exec!("hostname --fqdn")
-puts resultFQDN[:output]
+puts resultFQDN[node][:output]
                slaveID = nodeID.slice(4, -1).to_i
 puts slaveID
-               newNodes[slaveID] = resultFQDN[:output]
+               newNodes[slaveID] = resultFQDN[node][:output]
             end
 
             # Get the FQDNs of the "slaves"
             if nodeID.include? "slave"
                resultFQDN = tak.exec!("hostname --fqdn")
-puts resultFQDN[:output]
-               newNodes[0] = resultFQDN[:output]
+puts resultFQDN[node][:output]
+               newNodes[0] = resultFQDN[node][:output]
             end
 
             tak.loop()
