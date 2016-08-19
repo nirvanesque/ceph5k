@@ -199,7 +199,7 @@ if argHadoopCluster == "managed"
          Cute::TakTuk.start([node], :user => "root") do |tak|
             result = tak.exec!("cat #{nodeIDFile}")
             nodeID = result[node][:output]
-
+puts nodeID
             # Get the FQDN of the "master"
             if nodeID.include? "master"
                newNodes[0] = node
