@@ -443,7 +443,7 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Change master & slaves hostnames using hostnamectl
-if argHadoop == "start" 
+unless argHadoop == "stop"
    Cute::TakTuk.start([master], :user => "root") do |tak|
         # First change hostname of master to same name as in /etc/hosts
         tak.exec!("hostnamectl set-hostname master")
@@ -461,7 +461,7 @@ if argHadoop == "start"
       end
    end # slaves.each do |slave, index|
 
-end # if argHadoop == "start"
+end # unless argHadoop == "stop"
 
 # In masters file add line for master
 configFile = File.open("#{hadoopConfDir}/masters", "w") do |file|
