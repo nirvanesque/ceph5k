@@ -335,8 +335,10 @@ abort("Hadoop cluster stopped. To recover data, please continue with option '--h
 # Cleaning up Hadoop config files & temp directories
 puts "Cleaning up Hadoop config files & temp directories ..."
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml #{hadoopDir}/etc/hadoop/hdfs-site.xml #{hadoopDir}/etc/hadoop/yarn-site.xml #{hadoopDir}/etc/hadoop/mapred-site.xml #{hadoopDir}/etc/hadoop/hadoop-env.sh")
+     result = tak.exec!("rm #{hadoopDir}/etc/hadoop/core-site.xml #{hadoopDir}/etc/hadoop/hdfs-site.xml #{hadoopDir}/etc/hadoop/yarn-site.xml #{hadoopDir}/etc/hadoop/mapred-site.xml #{hadoopDir}/etc/hadoop/hadoop-env.sh")
+puts result
      result = tak.exec!("mkdir -p #{hadoopTmpDir}/dfs #{hadoopTmpDir}/yarn #{hadoopTmpDir}/mapred && chmod -R 777 #{hadoopTmpDir}")
+puts result
      tak.loop()
 end
 
