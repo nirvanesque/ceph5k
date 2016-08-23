@@ -442,7 +442,8 @@ end
 
 # Copy /etc/hosts to master + slave nodes
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.put("#{hadoopConfDir}/hosts", "/etc/hosts")
+     result = tak.put("#{hadoopConfDir}/hosts", "/etc/hosts")
+puts result
 end
 
 # Change master & slaves hostnames using hostnamectl
