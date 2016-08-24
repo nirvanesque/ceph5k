@@ -578,13 +578,14 @@ FileUtils.cp("#{hadoopConfDir}/slaves", "#{clientStateDir}/hadoop/slaves")
 
 
 # Starting Hadoop daemons 
-puts "Preparing & starting Hadoop daemons from master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
      if argHadoop == "restart" && flagRestart == true
-        # Simply restart Hadoop namenode
-        result = tak.exec!("#{hadoopDir}/bin/hdfs namenode --config $HADOOP_CONF_DIR") # start namenode
+        # Do "restart" of Hadoop namenode ONLY if both conditions are true
+        puts "Preparing & restarting Hadoop daemons from master node ..."
+        tak.exec!("#{hadoopDir}/bin/hdfs namenode --config $HADOOP_CONF_DIR") # start namenode
      else
         # Format namenode & start
+        puts "Preparing & restarting Hadoop daemons from master node ..."
         tak.exec!("#{hadoopDir}/bin/hdfs namenode -format -force") 
      end # if argHadoop == "restart"
 
