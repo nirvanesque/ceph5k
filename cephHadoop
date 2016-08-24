@@ -216,7 +216,7 @@ if argHadoopCluster == "managed"
 
       end # nodes.each do |node|
 
-      nodes = newNodes # Assign the new ordering to the array "nodes"
+      nodes = newNodes unless newNodes.empty? # Assign new ordering to array "nodes"
 
    end # unless argHadoop == "start"
 end # if argHadoopCluster == "managed"
@@ -585,6 +585,8 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
      end # if argHadoop == "restart"
 
      tak.exec!("#{hadoopDir}/sbin/start-all.sh") # start all Hadoop daemons
+
+     tak.exec!("#{hadoopDir}/bin/hdfs dfsadmin -safemode leave") # leave safemode
 
 #     tak.exec!("#{hadoopDir}/sbin/mr-jobhistory-daemon.sh --config $HADOOP_CONF_DIR start historyserver") # start MapReduce jobhistory server
 end
