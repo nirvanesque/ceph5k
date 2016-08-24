@@ -337,8 +337,8 @@ abort("Hadoop cluster stopped. To recover data, please continue with option '--h
 puts "Cleaning up Hadoop config files & temp directories ..."
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm -f #{hadoopDir}/etc/hadoop/core-site.xml #{hadoopDir}/etc/hadoop/hdfs-site.xml #{hadoopDir}/etc/hadoop/yarn-site.xml #{hadoopDir}/etc/hadoop/mapred-site.xml #{hadoopDir}/etc/hadoop/hadoop-env.sh")
-     result = tak.exec!("mkdir -p #{hadoopTmpDir}/dfs #{hadoopTmpDir}/yarn #{hadoopTmpDir}/mapred")
-#     tak.exec!("chmod -R 777 #{hadoopTmpDir}")
+     tak.exec!("mkdir -p #{hadoopTmpDir}/dfs #{hadoopTmpDir}/yarn #{hadoopTmpDir}/mapred")
+     tak.exec!("chmod -R 777 #{hadoopTmpDir}")
 
      tak.loop()
 end
@@ -442,8 +442,7 @@ end
 
 # Copy /etc/hosts to master + slave nodes
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     result = tak.put("#{hadoopConfDir}/hosts", "/etc/hosts")
-puts result
+     tak.put("#{hadoopConfDir}/hosts", "/etc/hosts")
 end
 
 # Change master & slaves hostnames using hostnamectl
@@ -582,12 +581,11 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
         result = tak.exec!("#{hadoopDir}/bin/hdfs namenode --config $HADOOP_CONF_DIR") # start namenode
      else
         # Format namenode & start
-        result = tak.exec!("#{hadoopDir}/bin/hdfs namenode -format -force") 
+        tak.exec!("#{hadoopDir}/bin/hdfs namenode -format -force") 
      end # if argHadoop == "restart"
-puts result
 
-     result = tak.exec!("#{hadoopDir}/sbin/start-all.sh") # start all Hadoop daemons
-puts result
+     tak.exec!("#{hadoopDir}/sbin/start-all.sh") # start all Hadoop daemons
+
 #     tak.exec!("#{hadoopDir}/sbin/mr-jobhistory-daemon.sh --config $HADOOP_CONF_DIR start historyserver") # start MapReduce jobhistory server
 end
 
