@@ -216,10 +216,10 @@ if argHadoopCluster == "managed"
          end
 
       end # nodes.each do |node|
-puts newNodes
+puts "new nodes: #{newNodes}"
       # Assign new ordering to "nodes" ONLY if exact no. of nodes in master-slave config
       newNodesCount = newNodes.count{|newNode| newNode.present?}
-puts newNodesCount
+puts "new nodes: #{newNodesCount}"
       unless newNodes.empty? && nodes.count != newNodesCount
          nodes = newNodes
          flagRestart = true
