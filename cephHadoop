@@ -187,6 +187,7 @@ end # if jobCephClient.nil?
 nodes = jobCephClient["assigned_nodes"]
 master = ""
 slaves = []
+flagRestart = false
 # nodeID (master, slave1, slave2, ... ) is stored in this file
 nodeIDFile = argHadoopCluster == "managed" ? "/mnt/" + argMntProd + "/hadoop/node-id" : "/mnt/" + argMntDepl + "/hadoop/node-id" 
 
@@ -216,13 +217,16 @@ if argHadoopCluster == "managed"
 
       end # nodes.each do |node|
 
-      nodes = newNodes unless newNodes.empty? # Assign new ordering to array "nodes"
+      unless newNodes.empty? # Assign new ordering to array "nodes"
+         nodes = newNodes
+         flagRestart = true
+      end
 
    end # unless argHadoop == "start"
 end # if argHadoopCluster == "managed"
 
 master = nodes[0] # The first node in the list becomes the master
-slaves = nodes - [master]
+slaves = nodes - [master] # The rest of the nodes become slaves
 
 # At this point job was created / fetched
 puts "Deploying Hadoop cluster as follows:"
@@ -576,7 +580,7 @@ FileUtils.cp("#{hadoopConfDir}/slaves", "#{clientStateDir}/hadoop/slaves")
 # Starting Hadoop daemons 
 puts "Preparing & starting Hadoop daemons from master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
-     if argHadoop == "restart"
+     if argHadoop == "restart" && flagRestart == true
         # Simply restart Hadoop namenode
         result = tak.exec!("#{hadoopDir}/bin/hdfs namenode --config $HADOOP_CONF_DIR") # start namenode
      else
