@@ -217,7 +217,8 @@ if argHadoopCluster == "managed"
 
       end # nodes.each do |node|
 
-      unless newNodes.empty? # Assign new ordering to array "nodes"
+      # Assign new ordering to array "nodes"
+      unless newNodes.empty? && newNodes.count != nodes.count
          nodes = newNodes
          flagRestart = true
       end
