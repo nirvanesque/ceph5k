@@ -323,7 +323,7 @@ poolRBDList = []
 firstClient = clients[0]
 Cute::TakTuk.start([firstClient], :user => "root") do |tak|
      result = tak.exec!("rbd -c /root/prod/#{argManagedCluster}/ceph.conf --id #{user} -k /etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring --pool #{userPool} ls")
-
+puts result[firstClient][:output]
      poolRBDList = result[firstClient][:output].split("\n") 
      tak.loop()
 end
