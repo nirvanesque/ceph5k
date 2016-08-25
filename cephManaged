@@ -330,6 +330,7 @@ end
 abort("Script exited - number mismatch between list of RBDs in pool #{userPool} and number of clients: #{argNumClient}") unless poolRBDList.count == 0 || poolRBDList.count == argNumClient
 
 # Get list of client RBD images if specified in file
+puts "List of defaults: #{default}"
 clientRBDList = nil
 unless argRBDListFile
    clientRBDList = begin
@@ -345,7 +346,7 @@ puts "List of client RBDs: #{clientRBDList}"
 
 
    # Verify if number of client RBDs specified 
-end # if argRBDListFile
+end # unless argRBDListFile
 
 Cute::TakTuk.start(clients, :user => "root") do |tak|
 
