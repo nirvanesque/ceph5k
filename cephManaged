@@ -331,7 +331,7 @@ abort("Script exited - number mismatch between list of RBDs in pool #{userPool} 
 
 # Get list of client RBD images if specified in file
 puts "List of defaults: #{defaults}"
-clientRBDList = nil
+clientRBDList = {}
 unless argRBDListFile
    clientRBDList = begin
      YAML.load(File.open(argRBDListFile))

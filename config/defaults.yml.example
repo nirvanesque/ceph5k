@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License. 
 
-config:
 site: rennes                  # Grid 5000 site for deploying Ceph cluster
 cluster: parasilo             # Grid 5000 cluster in specified site
 job-name: cephDeploy          # Grid'5000 job name for deployed Ceph cluster
