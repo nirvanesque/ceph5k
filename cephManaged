@@ -120,7 +120,7 @@ argMultiClient = opts[:'multi-client'] # Multiple clients to access Ceph Managed
 argNumClient = opts[:'num-client'] # Nodes in Ceph Client cluster.
 argNoDeployed = opts[:'no-deployed'] # Not using any deployed Ceph cluster.
 argRBDListFile = opts[:'rbd-list-file'] # YAML file with RBD list. No. of RBDs must be same as no. of clients.
-puts argRBDListFile
+
 
 # Next get job for Ceph clients
 jobCephClient = nil # Ceph client job
@@ -330,7 +330,7 @@ end
 abort("Script exited - number mismatch between list of RBDs in pool #{userPool} and number of clients: #{argNumClient}") unless poolRBDList.count == 0 || poolRBDList.count == argNumClient
 
 # Get list of client RBD images if specified in file
-clientRBDList = []
+clientRBDList = nil
 unless argRBDListFile
    clientRBDList = begin
      YAML.load(File.open(argRBDListFile))
