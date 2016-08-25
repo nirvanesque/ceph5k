@@ -333,7 +333,7 @@ abort("Script exited - number mismatch between list of RBDs in pool #{userPool} 
 
 # Get list of client RBD images if specified in file
 clientRBDList = []
-if argRBDListFile
+unless argRBDListFile
    clientRBDList = begin
      YAML.load(File.open(argRBDListFile))
    rescue ArgumentError => e
