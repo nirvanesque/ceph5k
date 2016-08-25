@@ -79,7 +79,7 @@ EOS
   opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => defaults["walltime"]
 
   opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
-  opt :'client-pool-name', "Pool name on Ceph cluster (userid_ added)", :type => String, :default => defaults["client-pool-name"]
+  opt :'pool-name', "Pool name on Ceph cluster (userid_ added)", :type => String, :default => defaults["client-pool-name"]
   opt :'pool-size', "Pool size on Ceph cluster", :default => defaults["client-pool-size"]
   opt :'rbd-name', "RBD name for Ceph pool (userid_ added)", :type => String, :default => defaults["client-rbd-name"]
   opt :'rbd-size', "RBD size on Ceph pool", :default => defaults["client-rbd-size"]
@@ -104,10 +104,10 @@ argG5KCluster = opts[:cluster] # G5K cluster name if specified.
 argWallTime = opts[:walltime] # walltime for the client reservation.
 
 argRelease = opts[:release] # Ceph release name. 
-argPoolName = "#{user}_" + opts[:'client-pool-name'] # Name of pool to create on clusters.
-argPoolSize = opts[:'client-pool-size'] # Size of pool to create on clusters.
-argRBDName = "#{user}_" + opts[:'client-rbd-name'] # Name of pool to create on clusters.
-argRBDSize = opts[:'client-rbd-size'] # Size of pool to create on clusters.
+argPoolName = "#{user}_" + opts[:'pool-name'] # Name of pool to create on clusters.
+argPoolSize = opts[:'pool-size'] # Size of pool to create on clusters.
+argRBDName = "#{user}_" + opts[:'rbd-name'] # Name of pool to create on clusters.
+argRBDSize = opts[:'rbd-size'] # Size of pool to create on clusters.
 argFileSystem = opts[:'file-system'] # File System to be formatted on created RBDs.
 argMntProd = opts[:'mnt-prod'] # Mount point for RBD on production cluster.
 
