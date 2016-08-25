@@ -295,7 +295,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("modprobe rbd")
      # Create RBD on managed cluster
      result = tak.exec!("rados -c /root/prod/#{argManagedCluster}/ceph.conf --id #{user} -k /etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring lspools")
-
+puts result[client][:output]
      poolsList = result[client][:output].split("\n") # Get list of pools in an array
 
      poolsList.each do |pool|  # logic: it will take the alphabetic-last pool from user
