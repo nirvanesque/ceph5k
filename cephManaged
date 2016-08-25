@@ -330,7 +330,7 @@ end
 abort("Script exited - number mismatch between list of RBDs in pool #{userPool} and number of clients: #{argNumClient}") unless poolRBDList.count == 0 || poolRBDList.count == argNumClient
 
 # Get list of client RBD images if specified in file
-puts "List of defaults: #{default}"
+puts "List of defaults: #{defaults}"
 clientRBDList = nil
 unless argRBDListFile
    clientRBDList = begin
