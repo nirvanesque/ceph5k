@@ -340,7 +340,7 @@ unless argRBDListFile.nil?
 
 puts "List of client RBDs: #{clientRBDList}"
 
-   abort("Script exited - mismatch between supplied list of RBDs and RBDs found in pool #{userPool}") unless clientRBDList & poolRBDList == clientRBDList
+   abort("Script exited - mismatch between supplied list of RBDs and RBDs found in pool #{userPool}") unless clientRBDList & poolRBDList == clientRBDList || poolRBDList.count == 0
    abort("Script exited - Count mismatch between supplied list of RBDs and number of clients: #{argNumClient}") unless clientRBDList.count == argNumClient
 
 
