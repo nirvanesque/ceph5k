@@ -93,6 +93,7 @@ EOS
   opt :'multi-client', "Multiple clients to access Ceph Managed cluster", :default => defaults["multi-client"]
   opt :'num-client', "Nodes in Ceph Client cluster", :default => defaults["num-client"]
   opt :'no-deployed', "Not using any deployed Ceph cluster", :default => defaults["no-deployed"]
+  opt :'rbd-list-file', "YAML file with RBD list. No. of RBDs must be same as no. of clients", :type => String, :default => ""
 
 end
 
@@ -103,10 +104,10 @@ argG5KCluster = opts[:cluster] # G5K cluster name if specified.
 argWallTime = opts[:walltime] # walltime for the client reservation.
 
 argRelease = opts[:release] # Ceph release name. 
-argPoolName = "#{user}_" + opts[:'pool-name'] # Name of pool to create on clusters.
-argPoolSize = opts[:'pool-size'] # Size of pool to create on clusters.
-argRBDName = "#{user}_" + opts[:'rbd-name'] # Name of pool to create on clusters.
-argRBDSize = opts[:'rbd-size'] # Size of pool to create on clusters.
+argPoolName = "#{user}_" + opts[:'client-pool-name'] # Name of pool to create on clusters.
+argPoolSize = opts[:'client-pool-size'] # Size of pool to create on clusters.
+argRBDName = "#{user}_" + opts[:'client-rbd-name'] # Name of pool to create on clusters.
+argRBDSize = opts[:'client-rbd-size'] # Size of pool to create on clusters.
 argFileSystem = opts[:'file-system'] # File System to be formatted on created RBDs.
 argMntProd = opts[:'mnt-prod'] # Mount point for RBD on production cluster.
 
@@ -118,6 +119,7 @@ argManagedCluster = opts[:'managed-cluster'] # managed Ceph cluster: 'rennes' or
 argMultiClient = opts[:'multi-client'] # Multiple clients to access Ceph Managed cluster.
 argNumClient = opts[:'num-client'] # Nodes in Ceph Client cluster.
 argNoDeployed = opts[:'no-deployed'] # Not using any deployed Ceph cluster.
+argRBDListFile = opts[:'rbd-list-file'] # YAML file with RBD list. No. of RBDs must be same as no. of clients.
 
 
 # Next get job for Ceph clients
@@ -295,38 +297,18 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      result = tak.exec!("rados -c /root/prod/#{argManagedCluster}/ceph.conf --id #{user} -k /etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring lspools")
 
      poolsList = result[client][:output].split("\n") # Get list of pools in an array
-     poolCount = 0
 
      poolsList.each do |pool|  # logic: it will take the alphabetic-last pool from user
-        userRBD = ""
-        if pool.include? "#{user}"
-           userPool = pool
-           poolCount += 1
-           userPoolMatch = pool if pool.include? "#{argPoolName}" # Perfect match of pool name
-           # Check if RBD is already created, may contain data
-           resultPool = tak.exec!("rbd -c /root/prod/#{argManagedCluster}/ceph.conf --id #{user} --pool #{userPool} ls")
-
-           unless resultPool[client][:output].nil? # means no rbd in userPool
-              if resultPool[client][:output].include? "#{argRBDName}" 
-                 userRBD = argRBDName # There is an rbd with name argRBDName already
-                 puts "RBD #{argRBDName} already exists in Ceph managed cluster. Using it."
-              end # if resultPool[client][:output].include?
-           end # unless resultPool[client][:output].nil?
-
-        end # if pool.include? "#{user}"
-
+        userPool = pool if pool == argPoolName
      end # poolsList.each do
 
-     unless userPool.empty?
-        # If multiple pools from user, then confused, so exit.
-        abort("Script exited - multiple Ceph pools for #{user}") if poolCount > 1 && userPoolMatch.empty?
-
-     else   # There is no pool created on managed Ceph
-        puts "Create at least one Ceph pool from the Ceph managed cluster frontend"
+     if userPool.empty?   # There is no pool created on managed Ceph
+        puts "No Ceph pool found with name: #{argPoolName}"
+        puts "Specify correct pool name in config file or using option --client-pool-name"
+        puts "Or verify / create the Ceph pool from the Ceph managed cluster frontend"
         puts "Use this link to create pool: https://api.grid5000.fr/sid/storage/ceph/ui/"
         puts "Then rerun this script."
         abortFlag = true
-        break
      end # userPool.empty?
      tak.loop()
 end
@@ -334,8 +316,50 @@ end
 # Abort script if no pool in managed Ceph
 abort("Script exited - no pool for user in Managed Ceph clusters") if abortFlag
 
-# Create Ceph pools & RBD
+# At this point pool identified on Managed Ceph, now identify/create RBDs
+
+# Get list of RBD images in specified Ceph "pool", as an array
+poolRBDList = [] 
+firstClient = clients[0]
+Cute::TakTuk.start([firstClient], :user => "root") do |tak|
+     result = tak.exec!("rbd -c /root/prod/#{argManagedCluster}/ceph.conf --id #{user} -k /etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring --pool #{userPool} ls")
+
+     poolRBDList = result[firstClient][:output].split("\n") 
+     tak.loop()
+end
+
+puts "List of pool RBDs: #{poolRBDList}"
+abort("Script exited - number mismatch between list of RBDs in pool #{userPool} and number of clients: #{argNumClient}") unless clientRBDList.count == argNumClient
+
+# Get list of client RBD images if specified in file
+clientRBDList = []
+if argRBDListFile
+   clientRBDList = begin
+     YAML.load(File.open(argRBDListFile))
+   rescue ArgumentError => e
+     puts "Could not parse YAML: #{e.message}"
+   end
+
+puts "List of client RBDs: #{clientRBDList}"
+
+   abort("Script exited - mismatch between supplied list of RBDs and RBDs found in pool #{userPool}") unless clientRBDList & poolRBDList
+   abort("Script exited - number mismatch between supplied list of RBDs and number of clients: #{argNumClient}") unless clientRBDList.count == argNumClient
+
+
+   # Verify if number of client RBDs specified 
+end # if argRBDListFile
+
 Cute::TakTuk.start(clients, :user => "root") do |tak|
+
+     case
+     when rbdList.count == argNumClient
+        puts "Identified following RBD images: #{rbdList}"
+     when rbdList.count > argNumClient
+        puts "Identified following RBD images: #{rbdList}. Will use first subset for clients."
+     else # rbdList.count <= argNumClient
+        puts "RBDs insufficient for #{argNumClient} clients. Creating new ... "
+     end
+
      if userRBD.empty? # There was no rbd created for the user. So create it.
         results = tak.exec!("rbd -c /root/prod/#{argManagedCluster}/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring")
 
@@ -355,6 +379,25 @@ unless userPool.empty?
 end # unless userPool.empty?
 
 
+if argMultiClient
+   clients.each.with_index(0) do |client, index| # loop over each client to create RBD
+
+      Cute::TakTuk.start(clients, :user => "root") do |tak|
+           # Check if RBD is already created, may contain data
+           resultRBD = tak.exec!("rbd -c /root/prod/#{argManagedCluster}/ceph.conf --id #{user} --pool #{userPool} -k /etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring ls")
+
+           unless resultRBD[client][:output].nil? # means no rbd in userPool
+              if resultRBD[client][:output].include? "#{argRBDName}" 
+                 userRBD = argRBDName # There is an rbd with name argRBDName already
+                 puts "RBD #{argRBDName} already exists in Ceph managed cluster. Using it."
+              end # if resultPool[client][:output].include?
+           end # unless resultPool[client][:output].nil?
+
+      end
+
+   end # slaves.each do |client, index|
+
+else
 
 # Map RBD and create File Systems.
 puts "Mapping RBD in managed Ceph clusters ..."
@@ -410,4 +453,4 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
 
      tak.loop()
 end
-
+end # if argMultiClient
