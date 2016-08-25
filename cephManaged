@@ -329,7 +329,7 @@ Cute::TakTuk.start([firstClient], :user => "root") do |tak|
 end
 
 puts "List of pool RBDs: #{poolRBDList}"
-abort("Script exited - number mismatch between list of RBDs in pool #{userPool} and number of clients: #{argNumClient}") unless poolRBDList.count == argNumClient
+abort("Script exited - number mismatch between list of RBDs in pool #{userPool} and number of clients: #{argNumClient}") unless poolRBDList.count == 0 || poolRBDList.count == argNumClient
 
 # Get list of client RBD images if specified in file
 clientRBDList = []
