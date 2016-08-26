@@ -354,7 +354,8 @@ case
    when clientRBDList.any? && poolRBDList.any?
      puts "Map RBDs in client RBD list #{clientRBDList} to pool RBD list #{poolRBDList}"
    when clientRBDList.any? && poolRBDList.empty?
-     puts "Create & map RBDs in pool from client RBD list #{clientRBDList}"
+     puts "Creating, mapping & mounting RBDs in pool from RBD list: #{clientRBDList}"
+     createMapMount(create=true, clientRBDList)
    when clientRBDList.empty? && poolRBDList.any?
      puts "Map existing RBDs in pool #{poolRBDList} to clients list #{clients}"
    when clientRBDList.empty? && poolRBDList.empty?
@@ -362,6 +363,23 @@ case
    else # rbdList.count <= argNumClient
         abort("Script exited - possible mismatch between RBDs in pool and clients. Please try with a different pool and/or RBD list.")
 end
+
+def createMapMount(create=false, rbdList)
+
+   clients.each.with_index(0) do |client, index| # loop over each client to create RBD
+      Cute::TakTuk.start(client, :user => "root") do |tak|
+           if create
+              result = tak.exec!("rbd -c /root/prod/#{argManagedCluster}/ceph.conf --id #{user} --pool #{userPool} -k /etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring create #{rbdList[index]} --size #{argRBDSize}")
+puts result
+           end # if create
+           tak.loop()
+      end # Cute::TakTuk.start
+
+   end # clients.each do |client, index|
+
+end # createMapMount
+
+
 
 Cute::TakTuk.start(clients, :user => "root") do |tak|
 
@@ -401,7 +419,7 @@ if argMultiClient
 
       end
 
-   end # slaves.each do |client, index|
+   end # clients.each do |client, index|
 
 else
 
