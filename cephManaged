@@ -349,21 +349,16 @@ end # unless argRBDListFile.nil?
 
 # At this point we have the RBDs to map/create either in clientRBDList or poolRBDList
 
-
+createRBD = false
+rbdlist = []
 case
    when clientRBDList.any? && poolRBDList.any?
      puts "Map RBDs in client RBD list #{clientRBDList} to pool RBD list #{poolRBDList}"
 
    when clientRBDList.any? && poolRBDList.empty?
      puts "Creating, mapping & mounting RBDs in pool from RBD list: #{clientRBDList}"
-   clients.each.with_index(0) do |client, index| # loop over each client to create RBD
-      Cute::TakTuk.start(client, :user => "root") do |tak|
-           result = tak.exec!("rbd -c /root/prod/#{argManagedCluster}/ceph.conf --id #{user} --pool #{userPool} -k /etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring create #{rbdList[index]} --size #{argRBDSize}")
-puts result
-           tak.loop()
-      end # Cute::TakTuk.start
-
-   end # clients.each do |client, index|
+     createRBD = true
+     rbdList = clientRBDList
 
    when clientRBDList.empty? && poolRBDList.any?
      puts "Map existing RBDs in pool #{poolRBDList} to clients list #{clients}"
@@ -372,6 +367,17 @@ puts result
    else # rbdList.count <= argNumClient
         abort("Script exited - possible mismatch between RBDs in pool and clients. Please try with a different pool and/or RBD list.")
 end
+
+clients.each.with_index(0) do |client, index| # loop over each client to create RBD
+   Cute::TakTuk.start(client, :user => "root") do |tak|
+        if createRBD
+           result = tak.exec!("rbd -c /root/prod/#{argManagedCluster}/ceph.conf --id #{user} --pool #{userPool} -k /etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring create #{rbdList[index]} --size #{argRBDSize}")
+puts result
+        end # if create
+        tak.loop()
+   end # Cute::TakTuk.start
+
+end # clients.each do |client, index|
 
 
 
