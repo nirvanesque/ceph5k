@@ -24,7 +24,6 @@ require 'json'
 require 'net/http'
 require 'uri'
 require 'fileutils'
-require 'activesupport'
 
 
 g5k = Cute::G5K::API.new()
