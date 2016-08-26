@@ -353,19 +353,9 @@ end # unless argRBDListFile.nil?
 case
    when clientRBDList.any? && poolRBDList.any?
      puts "Map RBDs in client RBD list #{clientRBDList} to pool RBD list #{poolRBDList}"
+
    when clientRBDList.any? && poolRBDList.empty?
      puts "Creating, mapping & mounting RBDs in pool from RBD list: #{clientRBDList}"
-     createMapMount(create=true, clientRBDList)
-   when clientRBDList.empty? && poolRBDList.any?
-     puts "Map existing RBDs in pool #{poolRBDList} to clients list #{clients}"
-   when clientRBDList.empty? && poolRBDList.empty?
-     puts "Create & map RBDs in pool to client list #{clients}"
-   else # rbdList.count <= argNumClient
-        abort("Script exited - possible mismatch between RBDs in pool and clients. Please try with a different pool and/or RBD list.")
-end
-
-def createMapMount(create=false, rbdList)
-
    clients.each.with_index(0) do |client, index| # loop over each client to create RBD
       Cute::TakTuk.start(client, :user => "root") do |tak|
            if create
@@ -377,7 +367,13 @@ puts result
 
    end # clients.each do |client, index|
 
-end # createMapMount
+   when clientRBDList.empty? && poolRBDList.any?
+     puts "Map existing RBDs in pool #{poolRBDList} to clients list #{clients}"
+   when clientRBDList.empty? && poolRBDList.empty?
+     puts "Create & map RBDs in pool to client list #{clients}"
+   else # rbdList.count <= argNumClient
+        abort("Script exited - possible mismatch between RBDs in pool and clients. Please try with a different pool and/or RBD list.")
+end
 
 
 
