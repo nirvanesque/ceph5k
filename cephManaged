@@ -21,9 +21,10 @@ require 'erb'
 require 'socket'
 require 'trollop'
 require 'json'
-require "net/http"
-require "uri"
-require "fileutils"
+require 'net/http'
+require 'uri'
+require 'fileutils'
+require 'activesupport'
 
 
 g5k = Cute::G5K::API.new()
@@ -343,20 +344,26 @@ puts "List of client RBDs: #{clientRBDList}"
    abort("Script exited - mismatch between supplied list of RBDs and RBDs found in pool #{userPool}") unless clientRBDList & poolRBDList == clientRBDList || poolRBDList.count == 0
    abort("Script exited - Count mismatch between supplied list of RBDs and number of clients: #{argNumClient}") unless clientRBDList.count == argNumClient
 
-
-   # Verify if number of client RBDs specified 
 end # unless argRBDListFile.nil?
+
+# At this point we have the RBDs to map/create either in clientRBDList or poolRBDList
+
+
+case
+   when clientRBDList.any? && poolRBDList.any?
+     puts "Map RBDs in client RBD list #{clientRBDList} to pool RBD list #{poolRBDList}"
+   when clientRBDList.any? && poolRBDList.empty?
+     puts "Create & map RBDs in pool from client RBD list #{clientRBDList}"
+   when clientRBDList.empty? && poolRBDList.any?
+     puts "Map existing RBDs in pool #{poolRBDList} to clients list #{clients}"
+   when clientRBDList.empty? && poolRBDList.empty?
+     puts "Create & map RBDs in pool to client list #{clients}"
+   else # rbdList.count <= argNumClient
+        abort("Script exited - possible mismatch between RBDs in pool and clients. Please try with a different pool and/or RBD list.")
+end
 
 Cute::TakTuk.start(clients, :user => "root") do |tak|
 
-     case
-     when rbdList.count == argNumClient
-        puts "Identified following RBD images: #{rbdList}"
-     when rbdList.count > argNumClient
-        puts "Identified following RBD images: #{rbdList}. Will use first subset for clients."
-     else # rbdList.count <= argNumClient
-        puts "RBDs insufficient for #{argNumClient} clients. Creating new ... "
-     end
 
      if userRBD.empty? # There was no rbd created for the user. So create it.
         results = tak.exec!("rbd -c /root/prod/#{argManagedCluster}/ceph.conf --id #{user} --pool #{userPool} create #{argRBDName} --size #{argRBDSize} -k /etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring")
