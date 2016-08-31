@@ -1,10 +1,7 @@
 # Ceph5k
-Ceph5K is a tool suite for deploying a Ceph cluster on reserved nodes; then subsequently, connecting to Ceph clients as well as operations on deployed Ceph cluster and managed Ceph clusters (e.g. creating pools, RBD, FS, and mounting them on clients). The deployed Ceph cluster has the following :
-- single monitor,
-- multiple OSDs,
-- 1 or more clients accessing the cluster.
+Ceph5K is a tool suite for deploying a Ceph cluster on reserved nodes; then subsequently, connecting to Ceph clients as well as operations on deployed Ceph cluster and managed Ceph clusters (e.g. creating pools, RBD, FS, and mounting them on clients). 
 
-By default, the Ceph cluster itself is deployed using the "wheezy-x64-nfs" distribution of Linux while the Ceph clients use the "jessie-x64-nfs" deployment. Other Ceph-compatible distributions can also be used.
+By default, the Ceph cluster itself is deployed using the "wheezy-x64-nfs" distribution of Linux while the Ceph clients use the "jessie-x64-big" deployment. Other Ceph-compatible distributions can also be used.
 
 Detailed application and Use Cases of the Ceph5k toolsuite is discussed in the following Wiki page: https://www.grid5000.fr/mediawiki/index.php/Moving_Data_around_Grid'5000
 
@@ -20,21 +17,19 @@ At the CLI on a frontend:
         version: stable
         EOF
 
-## Installation & Execution
-The installation consists of the following steps:
-- Deploying a Ceph cluster (monitor node, client node, OSD nodes)
-- Creating Rados Block Devices (RBD) and installing a File System :
+Get the required gems and download from the repository as follows:
 
-        on the deployed Ceph cluster,
-        on the production Ceph cluster.
-
-### Deploying a Ceph cluster - cephDeploy
-The deployment of a Ceph cluster is done from any frontend on Grid'5000. At the CLI on a frontend (any sub-folder also):
-       
         gem install --user-install trollop
         gem install --user-install ruby-cute -v 0.3
         rm -rf ceph5k
         git clone https://github.com/nirvanesque/ceph5k.git
+
+### Deploying a Ceph cluster - cephDeploy
+This is for deploying a Ceph cluster. The deployed Ceph cluster has the following :
+- single monitor,
+- multiple OSDs,
+The deployment of a Ceph cluster is done from any frontend on Grid'5000. At the CLI on a frontend:
+       
         ./ceph5k/cephDeploy     # Creates and deploys the Ceph cluster
 
 Note: To have an easy start, all default parameters that are necessary for a deployment are configured and stored in the installation subdirectory at :
@@ -53,7 +48,7 @@ To facilitate easy human reading and editing the config file is in YAML format. 
 
 There are multiple options to use at the CLI. Please see the section, "Detailed Usage of Options" for details.
  
-### Creating RBD, installing an FS on deployed Ceph cluster - cephClient
+### Creating RBD +  FS on deployed Ceph cluster - cephClient
 Given a deployed Ceph cluster that is up and running, one needs to create pools, RBDs in the cluster, and subsequently format a File System (FS) and then mount the FS. Using the Ceph5k tools, one can even create multiple Ceph clients each with its own RBD mounted as File System, which can be used in experimental setup (e.g. Big Data experiments with 'n' nodes, each of which is a Ceph client accessing data chunks in a data storage cluster). 
 
 These tasks are automated on a Grid'5000 frontend using the following command:
@@ -66,24 +61,24 @@ At the end of successful execution of the script, you will have 1 or more Ceph c
 
 Again, there are multiple options to use at the CLI. Please see the section, "Detailed Usage of Options" for details.
  
-### Creating RBD and installing a File System on managed Ceph clusters
-Given a managed Ceph cluster on Grid'5000 (rennes or nantes sites), one needs to create pools, RBDs in the cluster(s), subsequently, format a File System (FS) and then mount the FS. 
+### Creating RBD + FS on managed Ceph clusters - cephManaged
+This is for accessing the managed Ceph clusters in rennes and nantes sites. Given a managed Ceph cluster on Grid'5000 (rennes or nantes sites), one needs to create pools, RBDs in the cluster(s), subsequently, format a File System (FS) and then mount the FS. 
 
 Note: To create an RBD on the managed Ceph cluster, it is required first to create your Ceph account and your Ceph pool using the Ceph web-client: https://api.grid5000.fr/sid/storage/ceph/ui/
 
-At the CLI on a site frontend:
+At the CLI on a frontend:
 
         ./ceph5k/cephClient.sh rennes    # Gets managed Ceph keyrings for user from site rennes or nantes
         ./ceph5k/cephManaged             # Creates RBD & FS on deployed Ceph and mounts it
 
-At the end of successful execution of the script, you will have a single Ceph client accessing the managed Ceph cluster, with pool and RBD mounted as file systems on your Ceph client, as follows:
+At the end of successful execution of the script, you will have 1 or more Ceph clients accessing the managed Ceph cluster, with pool and RBD mounted as file systems on your Ceph client(s) at:
 
         /mnt/ceph-prod/
 
 
-Important:
-- The single Ceph client that accesses both deployed and managed Ceph cluster is the first client in the list of client nodes.
-- To have access from a Ceph client to both deployed and managed Ceph clusters, it is essential to follow the above sequence of steps, i.e. first use the tool cephClient on the deployed Ceph cluster, and ONLY then use the tool cephManaged on the managed Ceph cluster.
+Important: To have access from a Ceph client to both deployed and managed Ceph clusters, it is essential to follow the above sequence of steps, i.e. 
+- first use the tool cephClient on the deployed Ceph cluster,
+- then use the tool cephManaged on the managed Ceph cluster.
 
 ##Detailed Usage of Options
 
@@ -124,7 +119,7 @@ Following are options related to Ceph cluster characteristics:
         -h, --help                       Show this message
         -i, --ignore                     Ignore incorrect values
 
-### Options for: cephClient - Creating RBD and installing a File System on Ceph clusters
+### Options for: cephClient - Creating RBD + File System on Ceph clusters
 The cephClient tool offers the following options at the command-line:
 
         ./ceph5k/cephClient [options]
@@ -169,7 +164,7 @@ Following are options related to Ceph cluster characteristics:
         -i, --ignore                     Ignore incorrect values
 
 
-### Options for: cephManaged - Creating RBD and installing a File System on managed Ceph clusters
+### Options for: cephManaged - Creating RBD + File System on managed Ceph clusters
 The cephManaged tool offers the following options at the command-line:
 
         ./ceph5k/cephManaged [options]
