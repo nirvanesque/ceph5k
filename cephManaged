@@ -327,8 +327,6 @@ Cute::TakTuk.start([firstClient], :user => "root") do |tak|
      tak.loop()
 end
 
-puts "List of pool RBDs: #{poolRBDList}"
-
 abort("Script exited - number mismatch between list of RBDs in pool #{userPool} and number of clients: #{argNumClient}") unless poolRBDList.count == 0 || poolRBDList.count == argNumClient
 
 # Get list of client RBD images if specified in file
@@ -339,8 +337,6 @@ unless argRBDListFile.nil?
    rescue ArgumentError => e
      puts "Could not parse YAML: #{e.message}"
    end
-
-puts "List of client RBDs: #{clientRBDList}"
 
    abort("Script exited - mismatch between supplied list of RBDs and RBDs found in pool #{userPool}") unless clientRBDList & poolRBDList == clientRBDList || poolRBDList.count == 0
    abort("Script exited - Count mismatch between supplied list of RBDs and number of clients: #{argNumClient}") unless clientRBDList.count == argNumClient
@@ -353,19 +349,24 @@ createRBD = false
 rbdlist = []
 case
    when clientRBDList.any? && poolRBDList.any?
-     puts "Map RBDs in client RBD list #{clientRBDList} to pool RBD list #{poolRBDList}"
+     rbdList = poolRBDList
+     puts "Mapping & mounting RBDs from list: #{rbdList} \nto clients: #{clients}"
 
    when clientRBDList.any? && poolRBDList.empty?
-     puts "Creating, mapping & mounting RBDs in pool from RBD list: #{clientRBDList}"
      createRBD = true
      rbdList = clientRBDList
+     puts "Creating, mapping & mounting RBDs from list: #{rbdList} \nto clients: #{clients}"
 
    when clientRBDList.empty? && poolRBDList.any?
-     puts "Map existing RBDs in pool #{poolRBDList} to clients list #{clients}"
      rbdList = poolRBDList
+     puts "Mapping & mounting RBDs from list: #{rbdList} \nto clients: #{clients}"
 
    when clientRBDList.empty? && poolRBDList.empty?
-     puts "Create & map RBDs in pool to client list #{clients}"
+     clients.each_with_index do |cephClient, index|
+        rbdList += "client.#{index}"
+     end # clients.each_with_index do
+     createRBD = true
+     puts "Creating, mapping & mounting RBDs from list: #{rbdList} \nto clients: #{clients}"
 
    else # rbdList.count <= argNumClient
         abort("Script exited - possible mismatch between RBDs in pool and clients. Please try with a different pool and/or RBD list.")
