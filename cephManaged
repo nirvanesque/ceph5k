@@ -368,11 +368,11 @@ case
         abort("Script exited - possible mismatch between RBDs in pool and clients. Please try with a different pool and/or RBD list.")
 end
 
+puts clients
 clients.each_with_index do |cephClient, index| # loop over each client to create RBD
-   Cute::TakTuk.start(cephClient, :user => "root") do |tak|
-puts rbdList[index]
+   Cute::TakTuk.start([cephClient], :user => "root") do |tak|
+
         if createRBD
-puts cephClient
            result = tak.exec!("rbd -c /root/prod/#{argManagedCluster}/ceph.conf --id #{user} --pool #{userPool} -k /etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring create #{rbdList[index]} --size #{argRBDSize}")
 puts result
         end # if create
