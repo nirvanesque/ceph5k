@@ -93,7 +93,7 @@ EOS
   opt :'multi-client', "Multiple clients to access Ceph Managed cluster", :default => defaults["multi-client"]
   opt :'num-client', "Nodes in Ceph Client cluster", :default => defaults["num-client"]
   opt :'no-deployed', "Not using any deployed Ceph cluster", :default => defaults["no-deployed"]
-  opt :'rbd-list-file', "YAML file with RBD list. No. of RBDs must be same as no. of clients", :type => String, :default => ""
+  opt :'rbd-list-file', "YAML file with RBD list. No. of RBDs must be same as no. of clients", :type => String, :default => nil
 
 end
 
@@ -295,7 +295,6 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("modprobe rbd")
      # Create RBD on managed cluster
      result = tak.exec!("rados -c /root/prod/#{argManagedCluster}/ceph.conf --id #{user} -k /etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring lspools")
-puts "Pools list: #{result}"
      poolsList = result[client][:output].split("\n") # Get list of pools in an array
 
      poolsList.each do |pool|  # logic: it will take the alphabetic-last pool from user
