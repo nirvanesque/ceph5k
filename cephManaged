@@ -295,7 +295,7 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      tak.exec!("modprobe rbd")
      # Create RBD on managed cluster
      result = tak.exec!("rados -c /root/prod/#{argManagedCluster}/ceph.conf --id #{user} -k /etc/ceph/#{argManagedCluster}/ceph.client.#{user}.keyring lspools")
-
+puts "Pools list: #{result}"
      poolsList = result[client][:output].split("\n") # Get list of pools in an array
 
      poolsList.each do |pool|  # logic: it will take the alphabetic-last pool from user
@@ -408,16 +408,16 @@ if argMultiClient
 
 else # single Ceph client
 
-# Map RBD and create File Systems.
-puts "Mapping RBD in managed Ceph clusters ..."
-Cute::TakTuk.start(clients, :user => "root") do |tak|
-     unless argNoDeployed
-        # Map RBD & create FS on deployed Ceph cluster
-        results = tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
-        tak.exec!("mkfs.#{argFileSystem} /dev/rbd/#{argPoolName}/#{argRBDName}")
+   # Map RBD and create File Systems.
+   puts "Mapping RBD in managed Ceph clusters ..."
+   Cute::TakTuk.start(clients, :user => "root") do |tak|
+        unless argNoDeployed
+           # Map RBD & create FS on deployed Ceph cluster
+           results = tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
+           tak.exec!("mkfs.#{argFileSystem} /dev/rbd/#{argPoolName}/#{argRBDName}")
 
-        results.each do |client, result|
-           puts "Mapped RBD #{myRBDName} on deployed Ceph to client #{client}." if result[:status] == 0
+           results.each do |client, result|
+              puts "Mapped RBD #{myRBDName} on deployed Ceph to client #{client}." if result[:status] == 0
         end # results.each do |client, result|
 
      end # if argNoDeployed
