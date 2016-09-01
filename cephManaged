@@ -361,12 +361,6 @@ case
      puts "Mapping & mounting RBDs from list: #{rbdList} \nto clients: #{clients}"
 
    when clientRBDList.empty? && poolRBDList.empty?
-if clients.kind_of?(Array)
-   puts "array of clients with elements: #{clients.count}"
-else
-   puts "client as string"
-end
-
      clients.each_with_index do |cephClient, index|
         rbdList[index] = "#{argRBDName}_#{index}"
      end # clients.each_with_index do
