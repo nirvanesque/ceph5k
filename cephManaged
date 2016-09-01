@@ -363,7 +363,7 @@ case
    when clientRBDList.empty? && poolRBDList.empty?
      clients.each_with_index do |cephClient, index|
 puts "client : #{cephClient} & index : #{index}"
-        rbdList = "#{argRBDName}_#{index}"
+        rbdList.push("#{argRBDName}_#{index}")
      end # clients.each_with_index do
      createRBD = true
      puts "Creating, mapping & mounting RBDs from list: #{rbdList} \nto clients: #{clients}"
