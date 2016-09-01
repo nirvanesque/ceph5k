@@ -326,7 +326,7 @@ Cute::TakTuk.start([firstClient], :user => "root") do |tak|
      tak.loop()
 end
 
-abort("Script exited - number mismatch between list of RBDs in pool #{userPool} and number of clients: #{argNumClient}") unless poolRBDList.count == 0 || poolRBDList.count == clients.count
+abort("Script exited - number mismatch between list of RBDs in pool #{userPool} and number of clients: #{argNumClient}") unless poolRBDList.count == 0 || poolRBDList.count == argNumClient
 
 # Get list of client RBD images if specified in file
 clientRBDList = []
@@ -338,7 +338,7 @@ unless argRBDListFile.nil?
    end
 
    abort("Script exited - mismatch between supplied list of RBDs and RBDs found in pool #{userPool}") unless clientRBDList & poolRBDList == clientRBDList || poolRBDList.count == 0
-   abort("Script exited - Count mismatch between supplied list of RBDs and number of clients: #{argNumClient}") unless clientRBDList.count == clients.count
+   abort("Script exited - Count mismatch between supplied list of RBDs and number of clients: #{argNumClient}") unless clientRBDList.count == argNumClient
 
 end # unless argRBDListFile.nil?
 
@@ -362,7 +362,7 @@ case
 
    when clientRBDList.empty? && poolRBDList.empty?
 puts clients
-     clients.each.with_index(0) do |cephClient, index|
+     clients.each_with_index do |cephClient, index|
 puts cephClient
         rbdList[index] = "#{argRBDName}_#{index}"
      end # clients.each_with_index do
