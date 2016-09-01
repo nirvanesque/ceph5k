@@ -219,7 +219,7 @@ end # if jobCephClient["deploy"].nil?
 # Remind where is the Ceph client
 puts "Managed Ceph client(s) on: #{clients}"
 
-if clients..kind_of?(Array)
+if clients.kind_of?(Array)
    puts "array of clients"
 else
    puts "client as string"
