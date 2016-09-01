@@ -219,11 +219,6 @@ end # if jobCephClient["deploy"].nil?
 # Remind where is the Ceph client
 puts "Managed Ceph client(s) on: #{clients}"
 
-if clients.kind_of?(Array)
-   puts "array of clients"
-else
-   puts "client as string"
-end
 
 #1 Preflight Checklist
 puts "Doing pre-flight checklist..."
@@ -366,8 +361,13 @@ case
      puts "Mapping & mounting RBDs from list: #{rbdList} \nto clients: #{clients}"
 
    when clientRBDList.empty? && poolRBDList.empty?
-puts "#{clients}"
-     [clients].each_with_index do |cephClient, index|
+if clients.kind_of?(Array)
+   puts "array of clients"
+else
+   puts "client as string"
+end
+
+     clients.each_with_index do |cephClient, index|
         rbdList += "#{argRBDName}_#{index}"
      end # clients.each_with_index do
      createRBD = true
