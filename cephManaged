@@ -345,7 +345,7 @@ end # unless argRBDListFile.nil?
 # At this point we have the RBDs to map/create either in clientRBDList or poolRBDList
 
 createRBD = false
-rbdlist = []
+rbdlist = Array.new()
 case
    when clientRBDList.any? && poolRBDList.any?
      rbdList = poolRBDList
