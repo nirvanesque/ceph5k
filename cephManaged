@@ -362,7 +362,7 @@ case
 
    when clientRBDList.empty? && poolRBDList.empty?
      clients.each_with_index do |cephClient, index|
-        rbdList += "#{argRBDName}_#{index}"
+        rbdList += ["#{argRBDName}_#{index}"]
      end # clients.each_with_index do
      createRBD = true
      puts "Creating, mapping & mounting RBDs from list: #{rbdList} \nto clients: #{clients}"
@@ -371,6 +371,7 @@ case
         abort("Script exited - possible mismatch between RBDs in pool and clients. Please try with a different pool and/or RBD list.")
 end
 
+puts "RBD list: #{rbdList}"
 if argMultiClient
    clients.each_with_index do |cephClient, index| # loop over each client to create RBD
       Cute::TakTuk.start([cephClient], :user => "root") do |tak|
