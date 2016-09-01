@@ -361,7 +361,7 @@ case
      puts "Mapping & mounting RBDs from list: #{rbdList} \nto clients: #{clients}"
 
    when clientRBDList.empty? && poolRBDList.empty?
-puts clients
+puts "#{clients}"
      clients.each_with_index do |cephClient, index|
         rbdList += "#{argRBDName}_#{index}"
      end # clients.each_with_index do
