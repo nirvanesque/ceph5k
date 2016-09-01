@@ -349,23 +349,23 @@ rbdList = []
 case
    when clientRBDList.any? && poolRBDList.any?
      rbdList = poolRBDList
-     puts "Mapping & mounting RBDs from list: #{rbdList} \nto clients: #{clients}"
+     puts "Mapping & mounting RBDs from list: #{rbdList} \nto client(s): #{clients}"
 
    when clientRBDList.any? && poolRBDList.empty?
      createRBD = true
      rbdList = clientRBDList
-     puts "Creating, mapping & mounting RBDs from list: #{rbdList} \nto clients: #{clients}"
+     puts "Creating, mapping & mounting RBDs from list: #{rbdList} \nto client(s): #{clients}"
 
    when clientRBDList.empty? && poolRBDList.any?
      rbdList = poolRBDList
-     puts "Mapping & mounting RBDs from list: #{rbdList} \nto clients: #{clients}"
+     puts "Mapping & mounting RBDs from list: #{rbdList} \nto client(s): #{clients}"
 
    when clientRBDList.empty? && poolRBDList.empty?
      clients.each_with_index do |cephClient, index|
         rbdList[index] = "#{argRBDName}_#{index}"
      end # clients.each_with_index do
      createRBD = true
-     puts "Creating, mapping & mounting RBDs from list: #{rbdList} \nto clients: #{clients}"
+     puts "Creating, mapping & mounting RBDs from list: #{rbdList} \nto client(s): #{clients}"
 
    else # rbdList.count <= argNumClient
         abort("Script exited - possible mismatch between RBDs in pool and clients. Please try with a different pool and/or RBD list.")
