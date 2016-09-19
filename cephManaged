@@ -80,7 +80,6 @@ EOS
 
   opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
   opt :'pool-name', "Pool name on Ceph cluster (userid_ added)", :type => String, :default => defaults["client-pool-name"]
-  opt :'pool-size', "Pool size on Ceph cluster", :default => defaults["client-pool-size"]
   opt :'rbd-name', "RBD name for Ceph pool (userid_ added)", :type => String, :default => defaults["client-rbd-name"]
   opt :'rbd-size', "RBD size on Ceph pool", :default => defaults["client-rbd-size"]
   opt :'file', "File with clients list, same option as in kadeploy3", :type => String, :default => ""
