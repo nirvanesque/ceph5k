@@ -37,7 +37,6 @@ num-client: 4                 # Nodes in Ceph Client cluster
 env-client: "jessie-x64-big"  # G5K environment for Ceph clients
 only-deploy: false            # Only deploy linux image but don't configure Ceph client
 client-pool-name: pool        # Pool name on each Ceph client (added "userid_")
-client-pool-size: 14400       # Pool size for each Ceph client (~ pool-size/num-clients)
 client-rbd-name: image        # RBD name on each Ceph client (added "userid_")
 client-rbd-size: 14400        # RBD size for each Ceph client (~ rbd-size/num-clients)
 no-deployed: false            # Not using deployed Ceph cluster (false = using deployed)
