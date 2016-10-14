@@ -269,9 +269,9 @@ end
 # Get ssh_config file from master/monitor
 remotePathToConfig = "/root/.ssh/config"
 Net::SFTP.start(monitor, 'root') do |sftp|
-  sftp.stat(remotePathToConfig) do |response|
+  sftp.stat!(remotePathToConfig) do |response|
 puts response
-    unless response.ok?
+    if response.ok?
       sftp.download!(remotePathToConfig, "#{tempDir}/config/config")
     end # unless response.ok?
   end # sftp.stat(remotePathToConfig)
