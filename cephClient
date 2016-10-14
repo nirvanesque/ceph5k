@@ -201,9 +201,14 @@ else # when no client-list is specified. Do deployment or start from scratch.
    # Assign roles to each node
    clients = jobCephClient["assigned_nodes"]
 
-   # Then, deploy the nodes with respective environments
-   depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClient)
-   g5k.wait_for_deploy(jobCephClient)
+   # if not yet deployed, then deploy it
+   if jobCephClient["deploy"].nil?
+      puts "Deploying #{argEnvClient} on client node(s): #{clients}"
+      depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClient) 
+      g5k.wait_for_deploy(jobCephClient)
+   end # if jobCephClient["deploy"].nil?
+
+
 
 end # unless argClientList.empty?
 
@@ -266,7 +271,7 @@ remotePathToConfig = "/root/.ssh/config"
 Net::SFTP.start(monitor, 'root') do |sftp|
   sftp.stat(remotePathToConfig) do |response|
 puts response
-    if response.ok?
+    unless response.ok?
       sftp.download!(remotePathToConfig, "#{tempDir}/config/config")
     end # unless response.ok?
   end # sftp.stat(remotePathToConfig)
