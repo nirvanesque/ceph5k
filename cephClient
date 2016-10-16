@@ -284,7 +284,8 @@ configFile = File.open("#{tempDir}/config/config", "a") do |file|
       file.puts("   Hostname #{client}")
       file.puts("   User root")
       file.puts("   StrictHostKeyChecking no")
-   end
+   end # clients.each do |client|
+
 end
 
 # Get ssh_config file from master/monitor
@@ -295,7 +296,8 @@ end
 # Copy first updated config for Ceph clients on monitor/master node
 ssh_key =  'id_rsa'
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
-     tak.put("#{tempDir}/config/config", "/root/.ssh/config") # copy the config file to master/monitor
+     result = tak.put("#{tempDir}/config/config", "/root/.ssh/config") # copy the config file to master/monitor
+puts result
      tak.loop()
 end
 
