@@ -29,13 +29,16 @@ rbd-name: image               # Name of rbd to create inside Ceph pool
 rbd-size: 57600               # Size of rbd to create inside Ceph pool
 file-system: ext4             # File System format on OSD disks and in created RBD
 mnt-depl: "ceph-depl"         # Mount point for RBD on deployed cluster
-mnt-prod: "ceph-prod"         # Mount point for RBD on production cluster
 
 job-client: cephClient        # Grid'5000 job name for Ceph clients
+client-site: rennes           # Grid 5000 site for deploying Ceph clients
+client-cluster: paravance     # Grid 5000 cluster for clients
 num-client: 4                 # Nodes in Ceph Client cluster
 env-client: "jessie-x64-big"  # G5K environment for Ceph clients
+
 client-pool-name: cpool       # Pool name on each Ceph client (added "userid_")
 client-pool-size: 14400       # Pool size for each Ceph client (~ pool-size/num-clients)
 client-rbd-name: cimage       # RBD name on each Ceph client (added "userid_")
 client-rbd-size: 14400        # RBD size for each Ceph client (~ rbd-size/num-clients)
+mnt-prod: "ceph-prod"         # Mount point for RBD on production cluster
 

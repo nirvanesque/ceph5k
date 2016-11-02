@@ -85,6 +85,8 @@ EOS
   opt :'mnt-depl', "Mount point for RBD on deployed cluster", :type => String, :default => defaults["mnt-depl"]
 
   opt :'job-client', "Grid'5000 job name for Ceph clients", :type => String, :default => defaults["job-client"]
+  opt :'client-site', "Grid 5000 site for deploying Ceph clients", :type => String, :default => defaults["client-site"]
+  opt :'client-cluster', "Grid 5000 cluster for clients", :type => String, :default => defaults["client-cluster"]
   opt :'num-client', "Number of Ceph client(s)", :default => defaults["num-client"]
   opt :'env-client', "G5K environment for client", :type => String, :default => defaults["env-client"]
   opt :'only-deploy', "Only deploy linux but don't configure Ceph client", :default => defaults["only-deploy"]
@@ -99,7 +101,6 @@ end
 argJobID = opts[:jobid] # Oarsub ID of the client job. 
 argSite = opts[:site] # site name. 
 argJobName = opts[:'job-name'] # Grid'5000 job for deployed Ceph cluster. 
-argG5KCluster = opts[:cluster] # G5K cluster name if specified. 
 argWallTime = opts[:walltime] # walltime for the client reservation.
 
 argRelease = opts[:release] # Ceph release name. 
@@ -110,6 +111,8 @@ argRBDSize = opts[:'rbd-size'] # Size of pool to create on clusters.
 argFileSystem = opts[:'file-system'] # File System to be formatted on created RBDs.
 argMntDepl = opts[:'mnt-depl'] # Mount point for RBD in deployed cluster.
 
+argClientSite = opts[:'client-site'] # site name of clients. 
+argClientCluster = opts[:'client-cluster'] # G5K cluster for Ceph clients. 
 argClientList = opts[:'file'] # File with clients list.
 argOnlyDeploy = opts[:'only-deploy'] # Only deploy linux but don't configure Ceph client.
 argEnvClient = opts[:'env-client'] # Grid'5000 environment to deploy Ceph clients. 
@@ -148,7 +151,7 @@ unless argClientList.empty?
    } # File.open
 
    # Recover job details of client-list
-   jobs = g5k.get_my_jobs(argSite, state = "running") 
+   jobs = g5k.get_my_jobs(argClientSite, state = "running") 
 
    jobs.each do |job|
       if job["assigned_nodes"] == clients # get job where nodes are same as client-list
@@ -161,12 +164,12 @@ else # when no client-list is specified. Do deployment or start from scratch.
 
    unless [nil, 0].include?(argJobID)
       # If jobID is specified, get the specific job
-      jobCephClient = g5k.get_job(argSite, argJobID)
+      jobCephClient = g5k.get_job(argClientSite, argJobID)
    else
       # Get all my jobs submitted in a site
       jobs = []
       ["waiting","running"].each do |state|
-         jobs += g5k.get_my_jobs(argSite, state)
+         jobs += g5k.get_my_jobs(argClientSite, state)
 
          # get the job with name "cephClient" or argJobName
          jobs.each do |job|
@@ -187,14 +190,14 @@ else # when no client-list is specified. Do deployment or start from scratch.
          begin
             job = g5k.wait_for_job(jobCephClient, :wait_time => 60)
          rescue Cute::G5K::EventTimeout
-            puts "Waited too long in site #{argSite}, releasing job #{argJobClient}"
+            puts "Waited too long in site #{argClientSite}, releasing job #{argJobClient}"
             g5k.release(job)
          end
       end # if jobCephClient["state"] == "waiting"
 
    else
       # Finally, if job does not yet exist reserve nodes
-      jobCephClient = g5k.reserve(:name => argJobClient, :nodes => argNumClient, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :type => :deploy) 
+      jobCephClient = g5k.reserve(:name => argJobClient, :nodes => argNumClient, :site => argClientSite, :cluster => argClientCluster, :walltime => argWallTime, :type => :deploy) 
 
    end # unless jobCephClient.nil?
 
@@ -218,7 +221,7 @@ puts "Deploying Ceph clients on nodes: #{clients}"
 
 # Additionally create a directory for saving details of clients deployed
 jobID = jobCephClient["uid"]
-clientStateDir = tempDir + "/#{argSite}/#{jobID}"
+clientStateDir = tempDir + "/#{argClientSite}/#{jobID}"
 FileUtils.mkpath(clientStateDir)
 
 # Prepare clients-list-file locally
