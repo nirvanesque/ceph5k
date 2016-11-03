@@ -80,7 +80,7 @@ EOS
   opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
   opt :'cluster-name', "Ceph cluster name", :type => String, :default => defaults["cluster-name"]
   opt :'multi-osd', "Multiple OSDs on each node", :default => defaults["multi-osd"]
-  opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
+  opt :'file-system', "File System to be formatted on OSDs", :type => String, :default => defaults["file-system"]
 
 end
 
