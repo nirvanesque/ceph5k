@@ -70,20 +70,20 @@ EOS
 
   opt :ignore, "Ignore incorrect values"
   opt :jobid, "Oarsub ID of the client job", :default => 0
-  opt :'job-name', "Grid'5000 job name for deployed Ceph cluster", :type => String, :default => defaults["job-name"]
+  opt :'job-name', "Grid'5000 job name for dedicated Ceph cluster", :type => String, :default => defaults["job-name"]
   opt :site, "Grid 5000 site where dedicated Ceph cluster is deployed", :type => String, :default => defaults["site"]
-  opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => defaults["walltime"]
+  opt :walltime, "Wall time for Ceph clients reservation", :type => String, :default => defaults["walltime"]
 
   opt :'job-client', "Grid'5000 job name for Ceph clients", :type => String, :default => defaults["job-client"]
-  opt :'client-site', "Grid 5000 site for deploying Ceph clients", :type => String, :default => defaults["client-site"]
-  opt :'client-cluster', "Grid 5000 cluster for clients", :type => String, :default => defaults["client-cluster"]
+  opt :'client-site', "Grid'5000 site for deploying Ceph clients", :type => String, :default => defaults["client-site"]
+  opt :'client-cluster', "Grid'5000 cluster for deploying Ceph clients", :type => String, :default => defaults["client-cluster"]
   opt :'num-client', "Number of Ceph client(s)", :default => defaults["num-client"]
-  opt :'env-client', "G5K environment for client", :type => String, :default => defaults["env-client"]
-  opt :'file', "File with clients list, same option as in kadeploy3", :type => String, :default => ""
+  opt :'env-client', "Grid'5000 environment for client", :type => String, :default => defaults["env-client"]
+  opt :'file', "File with list of predeployed clients, similar as in kadeploy3", :type => String, :default => ""
   opt :'only-deploy', "Only deploy linux but don't configure Ceph client", :default => defaults["only-deploy"]
 
   opt :'pool-name', "Pool name on Ceph cluster (userid_ prepended)", :type => String, :default => defaults["pool-name"]
-  opt :'rbd-name', "RBD name for Ceph pool (userid_ prepended)", :type => String, :default => defaults["rbd-name"]
+  opt :'rbd-name', "RBD name on Ceph pool (userid_ prepended)", :type => String, :default => defaults["rbd-name"]
   opt :'rbd-size', "RBD size on Ceph pool", :default => defaults["rbd-size"]
   opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
   opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
@@ -94,12 +94,12 @@ end
 # Move CLI arguments into variables. Later change to class attributes.
 argJobID = opts[:jobid] # Oarsub ID of the client job. 
 argSite = opts[:site] # site name. 
-argJobName = opts[:'job-name'] # Grid'5000 job for deployed Ceph cluster. 
-argWallTime = opts[:walltime] # walltime for the client reservation.
+argJobName = opts[:'job-name'] # Grid'5000 job for dedicated Ceph cluster. 
+argWallTime = opts[:walltime] # Wall time for Ceph clients reservation.
 
 argJobClient = opts[:'job-client'] # Grid'5000 job name for Ceph clients. 
 argClientSite = opts[:'client-site'] # site name of clients. 
-argClientCluster = opts[:'client-cluster'] # G5K cluster for Ceph clients. 
+argClientCluster = opts[:'client-cluster'] # G5K cluster for deploying Ceph clients. 
 argNumClient = opts[:'num-client'] # Nodes in Ceph Client cluster.
 argEnvClient = opts[:'env-client'] # Grid'5000 environment to deploy Ceph clients. 
 argClientList = opts[:'file'] # File with clients list.
@@ -158,7 +158,7 @@ else # when no client-list is specified. Do deployment or start from scratch.
       ["waiting","running"].each do |state|
          jobs += g5k.get_my_jobs(argClientSite, state)
 
-         # get the job with name "cephClient" or argJobName
+         # get the job with name "cephClient" or argJobClient
          jobs.each do |job|
             if job["name"] == argJobClient # if job exists already, get nodes
                jobCephClient = job
