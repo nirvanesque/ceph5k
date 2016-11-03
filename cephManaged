@@ -85,13 +85,13 @@ EOS
   opt :'num-client', "Nodes in Ceph Client cluster", :default => defaults["num-client"]
   opt :'no-deployed', "Not using any deployed Ceph cluster", :default => defaults["no-deployed"]
 
-  opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
   opt :'pool-name', "Pool name on Ceph cluster (userid_ prepended)", :type => String, :default => defaults["pool-name"]
   opt :'rbd-name', "RBD name for Ceph pool (userid_ prepended)", :type => String, :default => defaults["rbd-name"]
   opt :'rbd-size', "RBD size on Ceph pool", :default => defaults["rbd-size"]
   opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
-  opt :'mnt-prod', "Mount point for RBD on managed cluster", :type => String, :default => defaults["mnt-prod"]
   opt :'rbd-list-file', "YAML file with RBD list. No. of RBDs must be same as no. of clients", :type => String, :default => nil
+  opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
+  opt :'mnt-prod', "Mount point for RBD on managed cluster", :type => String, :default => defaults["mnt-prod"]
 
 end
 
