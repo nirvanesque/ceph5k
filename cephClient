@@ -269,19 +269,8 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
 end
 
 
-# Get ssh_config file from master/monitor
-remotePathToConfig = "/root/.ssh/config"
-Net::SFTP.start(monitor, 'root') do |sftp|
-  sftp.stat!(remotePathToConfig) do |response|
-puts response
-    if response.ok?
-      sftp.download!(remotePathToConfig, "#{tempDir}/config/config")
-    end # unless response.ok?
-  end # sftp.stat(remotePathToConfig)
-end
-
-# Append to config file locally, list of nodes for clients
-configFile = File.open("#{tempDir}/config/config", "a") do |file|
+# Prepare config file locally with list of nodes for clients
+configFile = File.open("#{tempDir}/config/config", "w") do |file|
    clients.each do |client|
       file.puts("Host #{client}")
       file.puts("   Hostname #{client}")
