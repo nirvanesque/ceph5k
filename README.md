@@ -34,14 +34,6 @@ Note: To have an easy start using Ceph5k, all default parameters necessary for a
 
         ./ceph5k/config/defaults.yml
 
-For all scripts in Ceph5k, it is possible to pass a different config file at the CLI using the '--def-conf' option. For cephDeploy this is done as follows:
-        ./ceph5k/cephDeploy --def-conf your-conf.yml
-
-or 
-
-        ./ceph5k/cephDeploy -d your-conf.yml
-
-
 To facilitate easy human reading and editing the config file is in YAML format. All parameters are declarative and by name. The file can be modified by a simple text editor to customise the Ceph deployment.
 
 For a detailed list of options at the CLI, please see the section, "Detailed Usage of Options".
@@ -82,7 +74,10 @@ After successful execution of the script, you will have 1 or more Ceph clients a
 
 ##Detailed Usage of Options
 
-Note: Default values of all these options are provided in the YAML file mentioned above. If the options are specified at the command-line, they override the default values in the YAML file.
+Note: Default values of all these options are provided in the YAML file mentioned above. If the options are specified at the command-line, they override the default values in the YAML file. For all scripts in Ceph5k, it is possible to pass a different config file at the CLI using the '--def-conf' option.
+
+        -d, --def-conf=string            Alternative configuration file (default: ceph5k/config/defaults.yml)
+
 
 ### Options for: cephDeploy - Deploying a dedicated Ceph cluster
 The deployment of a Ceph cluster is done from any frontend on Grid'5000. Usually, this is done using the following command :
@@ -91,7 +86,6 @@ The deployment of a Ceph cluster is done from any frontend on Grid'5000. Usually
 
 where [options] are:
 
-        -d, --def-conf=string            Alternative configuration file (default: ceph5k/config/defaults.yml)
 
 - Grid'5000-specific options :
 
@@ -129,13 +123,11 @@ where [options] are:
 
 - Grid'5000-specific options :
 
-Following are options related to reserving resources on Grid'5000:
+Following are options related to reserving specific resources on Grid'5000:
 
-        -d, --def-conf=string            Alternative configuration file (default: ceph5k/config/defaults.yml)
         -j, --jobid=int                  Oarsub ID of the Grid'5000 client job
         -o, --job-name=string            Name of Grid'5000 job if resources already reserved (default: cephClient)
-        -s, --site=string                Grid'5000 site for clients (default: rennes)
-        -c, --cluster=string             Grid'5000 cluster in site (default: parasilo)
+        -s, --site=string                Grid 5000 site where dedicated Ceph cluster is deployed
         -u, --num-client=integer         Number of Ceph client(s) (default: 4)
         -w, --walltime=hour:min:sec      Wall time for deployment (default: 03:00:00)
         -v, --env-client=string          G5K environment for client (default: jessie-x64-big)
