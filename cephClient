@@ -82,10 +82,10 @@ EOS
   opt :'file', "File with clients list, same option as in kadeploy3", :type => String, :default => ""
   opt :'only-deploy', "Only deploy linux but don't configure Ceph client", :default => defaults["only-deploy"]
 
-  opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
   opt :'pool-name', "Pool name on Ceph cluster (userid_ prepended)", :type => String, :default => defaults["pool-name"]
   opt :'rbd-name', "RBD name for Ceph pool (userid_ prepended)", :type => String, :default => defaults["rbd-name"]
   opt :'rbd-size', "RBD size on Ceph pool", :default => defaults["rbd-size"]
+  opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
   opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
   opt :'mnt-depl', "Mount point for RBD on deployed cluster", :type => String, :default => defaults["mnt-depl"]
 
@@ -105,10 +105,10 @@ argEnvClient = opts[:'env-client'] # Grid'5000 environment to deploy Ceph client
 argClientList = opts[:'file'] # File with clients list.
 argOnlyDeploy = opts[:'only-deploy'] # Only deploy linux but don't configure Ceph client.
 
-argRelease = opts[:release] # Ceph release name. 
 argPoolName = "#{user}_" + opts[:'pool-name'] # Name of pool to create on clusters.
 argRBDName = "#{user}_" + opts[:'rbd-name'] # Name of pool to create on clusters.
 argRBDSize = opts[:'rbd-size'] # Size of pool to create on clusters.
+argRelease = opts[:release] # Ceph release name. 
 argFileSystem = opts[:'file-system'] # File System to be formatted on created RBDs.
 argMntDepl = opts[:'mnt-depl'] # Mount point for RBD in deployed cluster.
 
