@@ -74,9 +74,9 @@ After successful execution of the script, you will have 1 or more Ceph clients a
 
 ##Detailed Usage of Options
 
-Note: Default values of all these options are provided in the YAML file mentioned above. If the options are specified at the command-line, they override the default values in the YAML file. For all scripts in Ceph5k, it is possible to pass a different config file at the CLI using the '--def-conf' option.
+Default values of all these options are provided in the YAML file mentioned above. If the options are specified at the command-line, they override the default values in the YAML file. For all scripts in Ceph5k, it is possible to pass at the command-line a different config file using the '--def-conf' option:
 
-        -d, --def-conf=string            Alternative configuration file (default: ceph5k/config/defaults.yml)
+        --def-conf=string            Alternative configuration file (default: ceph5k/config/defaults.yml)
 
 
 ### Options for: cephDeploy - Deploying a dedicated Ceph cluster
@@ -134,22 +134,19 @@ Following are options related to reserving specific resources on Grid'5000:
         -e, --env-client=string          Grid'5000 environment for Ceph clients (default: jessie-x64-big)
         -n, --num-client=integer         Number of Ceph client(s) (default: 4)
         -w, --walltime=hour:min:sec      Wall time for Ceph clients reservation (default: 03:00:00)
+        -y, --only-deploy                Only deploy linux but don't configure Ceph client
         -f, --file=string                File with list of predeployed clients, similar as in kadeploy3
 
 - Ceph-specific options :
 
 Following are options related to Ceph cluster characteristics:
 
+        -a, --release=string             Ceph Release name (default: firefly)
         -p, --pool-name=string           Pool name on Ceph cluster ("userid_" prepended) (default: pool)
         -r, --rbd-name=string            RBD name on Ceph pool ("userid_" prepended) (default: image)
         -d, --rbd-size=int               RBD size on Ceph pool (default: 57600)
-        -e, --file-system=string         File System to be formatted on created RBDs (default: ext4)
+        -t, --file-system=string         File System to be formatted on created RBDs (default: ext4)
         -m, --mnt-depl=string            Mount point on client for RBD of deployed Ceph cluster (default: ceph-depl)
-        -y, --only-deploy                Only deploy linux but don't configure Ceph client
-        -t, --client-pool-name=string    Pool name on each Ceph client ("userid_" added) (default: cpool)
-        -z, --client-pool-size=int       Pool size for each Ceph client (~ pool-size / num-clients) (default: 14400)
-        -a, --client-rbd-name=string     RBD name on each Ceph client ("userid_" added) (default: cpool)
-        --client-rbd-size=int            RBD size for each Ceph client (~ pool-size / num-clients) (default: 14400)
 
 - Other generic options :
 
