@@ -22,7 +22,7 @@ Get the required gems and download from the repository as follows:
         rm -rf ceph5k
         git clone https://github.com/nirvanesque/ceph5k.git
 
-### Deploying a dedicated Ceph cluster - cephDeploy
+## Deploying a dedicated Ceph cluster - cephDeploy
 This script is for deploying a dedicated Ceph cluster. If you are not deploying a dedicated Ceph cluster, you can skip this section and the following and go directly to the section on Managed Ceph clusters. The deployed Ceph cluster has the following :
 - single monitor
 - multiple OSDs
@@ -38,7 +38,7 @@ To facilitate easy human reading and editing the config file is in YAML format. 
 
 For a detailed list of options at the CLI, please see the section, "Detailed Usage of Options".
  
-### Creating RBD +  FS on dedicated Ceph cluster - cephClient
+## Creating RBD +  FS on dedicated Ceph cluster - cephClient
 This script is for accessing the dedicated Ceph cluster deployed in the previous section. Given a dedicated Ceph cluster that is currently deployed, one needs to create pools, RBDs in the cluster, and subsequently format a File System (FS) and then mount the FS on each Ceph client. If you are not deploying a dedicated Ceph cluster, you can skip this section and go directly to the section on Managed Ceph clusters. 
 
 These tasks are automated on a Grid'5000 frontend using the following command:
@@ -51,7 +51,7 @@ At the end of successful execution of the script, you will have 1 or more Ceph c
 
 For a detailed list of options at the CLI, please see the section, "Detailed Usage of Options".
  
-### Creating RBD + FS on managed Ceph clusters - cephManaged
+## Creating RBD + FS on managed Ceph clusters - cephManaged
 This script is for accessing the managed Ceph clusters. In Grid'5000, object-based persistent storage is provided in the form of managed Ceph clusters in rennes and nantes sites. To use them, a user needs to create pools and RBDs in the cluster(s) ; subsequently, format a File System (FS) and then mount the FS on one or more Ceph clients. 
 
 Note: For using the managed Ceph clusters, it is first required to create your Ceph account and your Ceph pool using the Ceph web-client: https://api.grid5000.fr/sid/storage/ceph/ui/
@@ -72,15 +72,15 @@ After successful execution of the script, you will have 1 or more Ceph clients a
         /mnt/ceph-prod/
 
 
-## Advanced usages of Ceph5k tool suite
+# Advanced usages of Ceph5k tool suite
 The following sections give advanced usages of the Ceph5k tool suite and corrections for errors, supplementary tools for Big Data use cases, etc.
 
-### Copying data from managed Ceph cluster to deployed Ceph cluster
+## Copying data from managed Ceph cluster to deployed Ceph cluster
 Once the Ceph cluster + client are deployed and block devices mapped and mounted, it is possible to copy data as normal files between the deployed Ceph cluster and the production Ceph cluster. This is required during the initial phase of preparing data before the run of experiments. On your Ceph client node, login as root@client-node. 
 
         # cp /mnt/ceph-prod/<filename> /mnt/ceph-depl/
 
-### Benchmarking your deployed Ceph cluster
+## Benchmarking your deployed Ceph cluster
 It is possible to run some benchmarking tests to check the performance of your deployed Ceph and production Ceph clusters. There are trial datasets available on Grid'5000, on nancy and sophia frontends on /home/abasu/public/ceph-data/. For this purpose, copy the following datasets to your deployed Ceph cluster as follows: 
 
 1. On your Ceph client node, login as root@client-node. 
@@ -95,7 +95,7 @@ It is possible to run some benchmarking tests to check the performance of your d
 3. You can study the performance in detail by varying the blocksize parameter 'bs' in the above command. Generally, the performance (whatever it may be) stabilises around bs=3M and above. Below bs=512K the performance deteriorates fast.
 
 
-### Improving performance through higher parallelism (more OSDs)
+## Improving performance through higher parallelism (more OSDs)
 Another way of improving the performance is by increasing the number of OSDs in the Ceph cluster deployed. This can be done by re-deploying the Ceph cluster as follows. On a front-end, deploy the Ceph cluster with following option:
 
         ./ceph5k/cephDeploy --numNodes=11    # Deploy Ceph cluster with 10 nodes for OSDs
@@ -103,7 +103,7 @@ Another way of improving the performance is by increasing the number of OSDs in 
 Then run the benchmarking steps as above.
 
 
-### In case of errors
+## In case of errors
 If using the Rados Block Device (RBD) with a different / lower distribution than "jessie" problems may be encountered. In that case, use the following commands first to avoid errors while mounting RBDs (this happens in the case of release firefly). 
 
 Login as root@monitor-node. Then the following commands at shell CLI :
@@ -112,7 +112,7 @@ Login as root@monitor-node. Then the following commands at shell CLI :
         crushtool -i /tmp/crush --set-chooseleaf_vary_r 0 -o /tmp/crush.new
         ceph osd setcrushmap -i /tmp/crush.new
 
-### Using the Ruby PRy shell to follow commands
+## Using the Ruby PRy shell to follow commands
 The scripts in the Ceph5k tool suite are written in Ruby using the Ruby-Cute framework. If interested in using the PRy shell interface, type at CLI:
 
         gem install --user-install pry
@@ -120,11 +120,11 @@ The scripts in the Ceph5k tool suite are written in Ruby using the Ruby-Cute fra
 
 And then simply copy & paste the lines of any of the tool scripts (cephDeploy, cephClient, cephManaged) in the PRy shell.
 
-### Big Data automation - Apache Hadoop, Spark, Flink
+# Big Data automation - Apache Hadoop, Spark, Flink
 In the Ceph5k toolsuite, supplementary scripts are provided to use the deployed and managed Ceph clusters and client nodes in Big Data experiments. Currently, the Apache Hadoop, Spark and Flink frameworks can be installed and configured on the Ceph client nodes, in Master-Slaves cluster configuration. For Hadoop, the Ceph backend can be on a deployed Ceph cluster or managed Ceph cluster. For Spark and Flink, this assumes that the deployed Ceph cluster is up and running (cephDeploy executed) AND the Ceph clients are installed to access the deployed Ceph cluster (cephClient executed). 
 
 
-#### Apache Hadoop
+## Apache Hadoop
 Then the script cephHadoop can be executed at any frontend by typing at CLI:
 
         ./ceph5k/cephHadoop               # Install and run the Hadoop framework (HDFS, YARN & MapReduce)
@@ -139,7 +139,7 @@ Following are options related to Hadoop deployment:
         --hadoop-cluster=string          Hadoop on Ceph cluster: deployed OR managed (default: deployed)
 
 
-#### Apache Spark
+## Apache Spark
 Then the script cephSpark can be executed at any frontend by typing at CLI:
 
         ./ceph5k/cephSpark               # Install and run the Spark framework
@@ -147,21 +147,22 @@ Then the script cephSpark can be executed at any frontend by typing at CLI:
 The above script installs the Apache Spark framework with the first client as Master node and the remaining clients as Slaves/Workers. Subsequently, you can launch your Big Data jobs (e.g. WordCount, PageRank, ... ) from the Master node. Please see the Wiki page for further details: https://www.grid5000.fr/mediawiki/index.php/Moving_Data_around_Grid'5000
 
 
-#### Apache Flink
+## Apache Flink
 Then the script cephFlink can be executed at any frontend by typing at CLI:
 
         ./ceph5k/cephFlink               # Install and run the Flink framework
 
 The above script installs the Apache Flink framework with the first client as Master node and the remaining clients as Slaves/Workers. Subsequently, you can launch your Big Data jobs (e.g. WordCount, PageRank, ... ) from the Master node. Please see the Wiki page for further details: https://www.grid5000.fr/mediawiki/index.php/Moving_Data_around_Grid'5000
 
-## Detailed Usage of Options
+
+# Detailed Usage of Options
 
 Default values of all these options are provided in the YAML file mentioned above. If the options are specified at the command-line, they override the default values in the YAML file. For all scripts in Ceph5k, it is possible to pass at the command-line a different config file using the '--def-conf' option:
 
         --def-conf=string            Alternative configuration file (default: ceph5k/config/defaults.yml)
 
 
-### Options for: cephDeploy - Deploying a dedicated Ceph cluster
+## Options for: cephDeploy - Deploying a dedicated Ceph cluster
 The deployment of a Ceph cluster is done from any frontend on Grid'5000. Usually, this is done using the following command :
 
         ./ceph5k/cephDeploy [options]
@@ -197,7 +198,7 @@ Following are options related to Ceph cluster characteristics:
         -i, --ignore                     Ignore incorrect values
 
 
-### Options for: cephClient - Creating RBD + File System on Ceph clusters
+## Options for: cephClient - Creating RBD + File System on Ceph clusters
 The cephClient tool offers the following options at the command-line:
 
         ./ceph5k/cephClient [options]
@@ -238,7 +239,7 @@ Following are options related to Ceph cluster characteristics:
         -i, --ignore                     Ignore incorrect values
 
 
-### Options for: cephManaged - Creating RBD + File System on managed Ceph clusters
+## Options for: cephManaged - Creating RBD + File System on managed Ceph clusters
 The cephManaged tool offers the following options at the command-line:
 
         ./ceph5k/cephManaged [options]
@@ -280,7 +281,7 @@ Following are options related to Ceph cluster characteristics:
         -i, --ignore                     Ignore incorrect values
 
 
-### Options for: cephHadoop - Deploying a Hadoop cluster on managed or dedicated Ceph cluster
+## Options for: cephHadoop - Deploying a Hadoop cluster on managed or dedicated Ceph cluster
 The cephHadoop tool offers the following options at the command-line:
 
         ./ceph5k/cephHadoop [options]
@@ -311,7 +312,7 @@ Following are options related to Hadoop cluster characteristics:
         -i, --ignore                     Ignore incorrect values
 
 
-### Options for: cephSpark - Deploying a Spark cluster on dedicated Ceph cluster
+## Options for: cephSpark - Deploying a Spark cluster on dedicated Ceph cluster
 The cephSpark tool offers the following options at the command-line:
 
         ./ceph5k/cephSpark [options]
@@ -339,7 +340,7 @@ Following are options related to Spark cluster characteristics:
         -i, --ignore                     Ignore incorrect values
 
 
-### Options for: cephFlink - Deploying a Flink cluster on dedicated Ceph cluster
+## Options for: cephFlink - Deploying a Flink cluster on dedicated Ceph cluster
 The cephFlink tool offers the following options at the command-line:
 
         ./ceph5k/cephFlink [options]
