@@ -39,9 +39,9 @@ client-pool-name: pool        # Pool name on each Ceph client (added "userid_")
 client-rbd-name: image        # RBD name on each Ceph client (added "userid_")
 client-rbd-size: 14400        # RBD size for each Ceph client (~ rbd-size/num-clients)
 
-mnt-depl: "ceph-depl"         # Mount point for RBD on deployed cluster
+mnt-depl: "ceph-depl"         # Mount point for RBD on dedicated cluster
 mnt-prod: "ceph-prod"         # Mount point for RBD on production cluster
 
 multi-client: true            # Multiple clients to access Ceph Managed cluster
-no-deployed: true             # Not using any deployed Ceph cluster
+no-deployed: false            # Not using any deployed Ceph cluster
 

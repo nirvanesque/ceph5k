@@ -72,132 +72,6 @@ After successful execution of the script, you will have 1 or more Ceph clients a
         /mnt/ceph-prod/
 
 
-##Detailed Usage of Options
-
-Default values of all these options are provided in the YAML file mentioned above. If the options are specified at the command-line, they override the default values in the YAML file. For all scripts in Ceph5k, it is possible to pass at the command-line a different config file using the '--def-conf' option:
-
-        --def-conf=string            Alternative configuration file (default: ceph5k/config/defaults.yml)
-
-
-### Options for: cephDeploy - Deploying a dedicated Ceph cluster
-The deployment of a Ceph cluster is done from any frontend on Grid'5000. Usually, this is done using the following command :
-
-        ./ceph5k/cephDeploy [options]
-
-where [options] are:
-
-
-- Grid'5000-specific options :
-
-Following are options for reserving specific resources on Grid'5000:
-
-        -j, --jobid=int                  Oarsub ID of the Grid'5000 job
-        -o, --job-name=string            Name of Grid'5000 job if resources already reserved (default: cephDeploy)
-        -s, --site=string                Grid'5000 site for cluster (default: rennes)
-        -c, --cluster=string             Grid'5000 cluster in site (default: parasilo)
-        -n, --num-nodes=integer          Total nodes in Ceph cluster (default: 5)
-        -w, --walltime=hour:min:sec      Wall time for deployment (default: 03:00:00)
-        -e, --env=string                 Grid'5000 environment to be deployed (default: wheezy-x64-nfs)
-
-- Ceph-specific options :
-
-Following are options related to Ceph cluster characteristics:
-
-        -r, --release=string             Ceph Release name (default: firefly)
-        -l, --cluster-name=string        Ceph cluster name (default: ceph)
-        -m, --multi-osd, --no-multi-osd  Multiple OSDs on each node (default: true)
-        -f, --file-system=string         File System to be formatted on OSD disks (default: ext4)
-
-- Other generic options :
-
-        -v, --version                    Print version and exit
-        -h, --help                       Show this message
-        -i, --ignore                     Ignore incorrect values
-
-### Options for: cephClient - Creating RBD + File System on Ceph clusters
-The cephClient tool offers the following options at the command-line:
-
-        ./ceph5k/cephClient [options]
-
-where [options] are:
-
-- Grid'5000-specific options :
-
-Following are options related to reserving specific resources on Grid'5000:
-
-        -j, --jobid=int                  Oarsub ID of the Grid'5000 client job
-        -s, --site=string                Grid'5000 site where dedicated Ceph cluster is deployed
-        -o, --job-name=string            Grid'5000 job name for dedicated Ceph cluster (default: cephDeploy)
-        -b, --job-client=string          Grid'5000 job name for Ceph clients (default: cephClient)
-        -c, --client-site=string         Grid'5000 site for deploying Ceph clients
-        -l, --client-cluster=string      Grid'5000 cluster for deploying Ceph clients
-        -e, --env-client=string          Grid'5000 environment for Ceph clients (default: jessie-x64-big)
-        -n, --num-client=integer         Number of Ceph client(s) (default: 4)
-        -w, --walltime=hour:min:sec      Wall time for Ceph clients reservation (default: 03:00:00)
-        -y, --only-deploy                Only deploy linux but don't configure Ceph client
-        -f, --file=string                File with list of predeployed clients, similar as in kadeploy3
-
-- Ceph-specific options :
-
-Following are options related to Ceph cluster characteristics:
-
-        -a, --release=string             Ceph Release name (default: firefly)
-        -p, --pool-name=string           Pool name on Ceph cluster ("userid_" prepended) (default: pool)
-        -r, --rbd-name=string            RBD name on Ceph pool ("userid_" prepended) (default: image)
-        -d, --rbd-size=int               RBD size on Ceph pool (default: 57600)
-        -t, --file-system=string         File System to be formatted on created RBDs (default: ext4)
-        -m, --mnt-depl=string            Mount point on client for RBD of deployed Ceph cluster (default: ceph-depl)
-
-- Other generic options :
-
-        --version                        Print version and exit
-        -h, --help                       Show this message
-        -i, --ignore                     Ignore incorrect values
-
-
-### Options for: cephManaged - Creating RBD + File System on managed Ceph clusters
-The cephManaged tool offers the following options at the command-line:
-
-        ./ceph5k/cephManaged [options]
-
-where [options] are:
-
-- Grid'5000-specific options:
-
-Following are options related to reserving resources on Grid'5000:
-
-        -j, --jobid=int                  Oarsub ID of the Grid'5000 client job
-        -o, --job-client=string          Grid'5000 job name for Ceph clients (default: cephClient)
-        -c, --client-site=string         Grid 5000 site for deploying Ceph clients
-        -l, --client-cluster=string      Grid 5000 cluster for clients
-        -n, --num-client=integer         Number of Ceph client(s) (default: 4)
-        -w, --walltime=hour:min:sec      Wall time for deployment (default: 03:00:00)
-        -e, --env-client=string          G5K environment for client (default: jessie-x64-big)
-
-- RBD & Ceph-specific options:
-
-Following are options related to Ceph cluster characteristics:
-
-        -m, --managed-cluster=string     site for managed Ceph cluster: 'rennes' or 'nantes' (default: rennes)
-        -p, --pool-name=string           Pool name on Ceph cluster ("userid_" prepended) (default: pool)
-        -r, --rbd-name=string            RBD name for Ceph pool ("userid_" prepended) (default: image)
-        -b, --rbd-size=int               RBD size on Ceph pool (default: 57600)
-        -f, --file=string                File with clients nodes list, same option as in kadeploy3
-        -l, --file-system=string         File System to be formatted on created RBDs (default: xfs)
-        -m, --mnt-prod=string            Mount point on client for RBD of managed Ceph cluster (default: ceph-prod)
-        -n, --num-client=int             Nodes in Ceph Client cluster (default: 4)
-        -u, --multi-client=bool          Multiple clients to access Ceph Managed cluster (default: false)
-        -a, --managed-cluster=string     Site for managed Ceph cluster: 'rennes' or 'nantes' (default: rennes)
-        -y, --no-deployed=bool           Not using any deployed Ceph cluster (default: false = using a deployed cluster)
-        -a, --managed-cluster=string     Site for managed Ceph cluster: 'rennes' or 'nantes' (default: rennes)
-
-- Other generic options:
-
-        -v, --version                    Print version and exit
-        -h, --help                       Show this message
-        -i, --ignore                     Ignore incorrect values
-
-
 ## Advanced usages of Ceph5k tool suite
 The following sections give advanced usages of the Ceph5k tool suite and corrections for errors, supplementary tools for Big Data use cases, etc.
 
@@ -279,6 +153,167 @@ Then the script cephFlink can be executed at any frontend by typing at CLI:
         ./ceph5k/cephFlink               # Install and run the Flink framework
 
 The above script installs the Apache Flink framework with the first client as Master node and the remaining clients as Slaves/Workers. Subsequently, you can launch your Big Data jobs (e.g. WordCount, PageRank, ... ) from the Master node. Please see the Wiki page for further details: https://www.grid5000.fr/mediawiki/index.php/Moving_Data_around_Grid'5000
+
+##Detailed Usage of Options
+
+Default values of all these options are provided in the YAML file mentioned above. If the options are specified at the command-line, they override the default values in the YAML file. For all scripts in Ceph5k, it is possible to pass at the command-line a different config file using the '--def-conf' option:
+
+        --def-conf=string            Alternative configuration file (default: ceph5k/config/defaults.yml)
+
+
+### Options for: cephDeploy - Deploying a dedicated Ceph cluster
+The deployment of a Ceph cluster is done from any frontend on Grid'5000. Usually, this is done using the following command :
+
+        ./ceph5k/cephDeploy [options]
+
+where [options] are:
+
+
+- Grid'5000-specific options :
+
+Following are options for reserving specific resources on Grid'5000:
+
+        -j, --jobid=int                  Oarsub ID of the Grid'5000 job
+        -o, --job-name=string            Name of Grid'5000 job if resources already reserved (default: cephDeploy)
+        -s, --site=string                Grid'5000 site for cluster (default: rennes)
+        -c, --cluster=string             Grid'5000 cluster in site (default: parasilo)
+        -n, --num-nodes=integer          Total nodes in Ceph cluster (default: 5)
+        -w, --walltime=hour:min:sec      Wall time for deployment (default: 03:00:00)
+        -e, --env=string                 Grid'5000 environment to be deployed (default: wheezy-x64-nfs)
+
+- Ceph-specific options :
+
+Following are options related to Ceph cluster characteristics:
+
+        -r, --release=string             Ceph Release name (default: firefly)
+        -l, --cluster-name=string        Ceph cluster name (default: ceph)
+        -m, --multi-osd, --no-multi-osd  Multiple OSDs on each node (default: true)
+        -f, --file-system=string         File System to be formatted on OSD disks (default: ext4)
+
+- Other generic options :
+
+        -v, --version                    Print version and exit
+        -h, --help                       Show this message
+        -i, --ignore                     Ignore incorrect values
+
+
+### Options for: cephClient - Creating RBD + File System on Ceph clusters
+The cephClient tool offers the following options at the command-line:
+
+        ./ceph5k/cephClient [options]
+
+where [options] are:
+
+- Grid'5000-specific options :
+
+Following are options related to reserving specific resources on Grid'5000:
+
+        -j, --jobid=int                  Oarsub ID of the Grid'5000 client job
+        -s, --site=string                Grid'5000 site where dedicated Ceph cluster is deployed
+        -o, --job-name=string            Grid'5000 job name for dedicated Ceph cluster (default: cephDeploy)
+        -b, --job-client=string          Grid'5000 job name for Ceph clients (default: cephClient)
+        -c, --client-site=string         Grid'5000 site for deploying Ceph clients
+        -l, --client-cluster=string      Grid'5000 cluster for deploying Ceph clients
+        -e, --env-client=string          Grid'5000 environment for Ceph clients (default: jessie-x64-big)
+        -n, --num-client=integer         Number of Ceph client(s) (default: 4)
+        -w, --walltime=hour:min:sec      Wall time for Ceph clients reservation (default: 03:00:00)
+        -y, --only-deploy                Only deploy linux but don't configure Ceph client
+        -f, --file=string                File with list of predeployed clients, similar as in kadeploy3
+
+- Ceph-specific options :
+
+Following are options related to Ceph cluster characteristics:
+
+        -a, --release=string             Ceph Release name (default: firefly)
+        -p, --pool-name=string           Pool name on Ceph cluster ("userid_" prepended) (default: pool)
+        -r, --rbd-name=string            RBD name on Ceph pool ("userid_" prepended) (default: image)
+        -d, --rbd-size=int               RBD size on Ceph pool (default: 57600)
+        -t, --file-system=string         File System to be formatted on created RBDs (default: ext4)
+        -m, --mnt-depl=string            Mount point for RBD on dedicated cluster (default: ceph-depl)
+
+- Other generic options :
+
+        --version                        Print version and exit
+        -h, --help                       Show this message
+        -i, --ignore                     Ignore incorrect values
+
+
+### Options for: cephManaged - Creating RBD + File System on managed Ceph clusters
+The cephManaged tool offers the following options at the command-line:
+
+        ./ceph5k/cephManaged [options]
+
+where [options] are:
+
+- Grid'5000-specific options:
+
+Following are options related to reserving resources on Grid'5000:
+
+        -j, --jobid=int                  Oarsub ID of the Grid'5000 client job
+        -o, --job-client=string          Grid'5000 job name for Ceph clients (default: cephClient)
+        -c, --client-site=string         Grid 5000 site for deploying Ceph clients
+        -l, --client-cluster=string      Grid 5000 cluster for clients
+        -n, --num-client=integer         Number of Ceph client(s) (default: 4)
+        -w, --walltime=hour:min:sec      Wall time for deployment (default: 03:00:00)
+        -e, --env-client=string          G5K environment for client (default: jessie-x64-big)
+        -f, --file=string                File with list of predeployed clients, similar as in kadeploy3
+
+- RBD & Ceph-specific options:
+
+Following are options related to Ceph cluster characteristics:
+
+        -m, --managed-cluster=string     site for managed Ceph cluster: 'rennes' or 'nantes' (default: rennes)
+        -u, --multi-client=bool          Multiple clients to access Ceph Managed cluster (default: true)
+        -d, --no-deployed=bool           Not using any dedicated Ceph cluster (default: false = not using dedicated cluster)
+        -p, --pool-name=string           Pool name on Ceph cluster ("userid_" prepended) (default: pool)
+        -r, --rbd-name=string            RBD name for Ceph pool ("userid_" prepended) (default: image)
+        -b, --rbd-size=int               RBD size on Ceph pool (default: 57600)
+        -s, --file-system=string         File System to be formatted on created RBDs (default: xfs)
+        -t, --rbd-list-file=string       YAML file name with RBD list. No. of RBDs must be same as no. of clients
+        -a, --release=string             Ceph Release name (default: firefly)
+        --mnt-prod=string                Mount point for RBD on managed cluster (default: ceph-prod)
+
+- Other generic options:
+
+        -v, --version                    Print version and exit
+        -h, --help                       Show this message
+        -i, --ignore                     Ignore incorrect values
+
+
+### Options for: cephHadoop - Deploying a Hadoop cluster on managed or dedicated Ceph cluster
+The cephhadoop tool offers the following options at the command-line:
+
+        ./ceph5k/cephHadoop [options]
+
+where [options] are:
+
+- Grid'5000-specific options :
+
+Following are options related to reserving specific resources on Grid'5000:
+
+        -j, --jobid=int                  Oarsub ID of the Hadoop nodes (Ceph clients) reservation
+        -s, --site=string                Grid'5000 site where dedicated Ceph cluster is deployed
+        -o, --job-client=string          Grid'5000 job name for Hadoop nodes (Ceph clients)
+        -c, --client-site=string         Grid'5000 site where Hadoop nodes (Ceph clients) are deployed
+
+- Hadoop-specific options :
+
+Following are options related to Ceph cluster characteristics:
+
+        -a, --release=string             Ceph Release name (default: firefly)
+        -p, --pool-name=string           Pool name on Ceph cluster ("userid_" prepended) (default: pool)
+        -r, --rbd-name=string            RBD name on Ceph pool ("userid_" prepended) (default: image)
+        -d, --rbd-size=int               RBD size on Ceph pool (default: 57600)
+        -t, --file-system=string         File System to be formatted on created RBDs (default: ext4)
+        -m, --mnt-depl=string            Mount point for RBD on dedicated cluster (default: ceph-depl)
+
+- Other generic options :
+
+        --version                        Print version and exit
+        -h, --help                       Show this message
+        -i, --ignore                     Ignore incorrect values
+
+
 
 # Licence Information
 Copyright (c) 2015-17 Anirvan BASU, INRIA Rennes - Bretagne Atlantique
