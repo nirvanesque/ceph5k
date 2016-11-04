@@ -166,24 +166,23 @@ where [options] are:
 
 Following are options related to reserving resources on Grid'5000:
 
-        -d, --def-conf=string            Alternative configuration file (default: ceph5k/config/defaults.yml)
         -j, --jobid=int                  Oarsub ID of the Grid'5000 client job
-        -e, --job-client=string          Grid'5000 job name for Ceph clients (default: cephClient)
+        -o, --job-client=string          Grid'5000 job name for Ceph clients (default: cephClient)
         -o, --job-name=string            Name of Grid'5000 job if resources already reserved (default: cephClient)
-        -s, --site=string                Grid'5000 site for clients (default: rennes)
-        -c, --cluster=string             Grid'5000 cluster in site (default: paravance)
-        -u, --num-client=integer         Number of Ceph client(s) (default: 4)
+        -c, --client-site=string         Grid 5000 site for deploying Ceph clients
+        -l, --client-cluster=string      Grid 5000 cluster for clients
+        -n, --num-client=integer         Number of Ceph client(s) (default: 4)
         -w, --walltime=hour:min:sec      Wall time for deployment (default: 03:00:00)
-        -n, --env-client=string          G5K environment for client (default: jessie-x64-big)
+        -e, --env-client=string          G5K environment for client (default: jessie-x64-big)
 
 - RBD & Ceph-specific options:
 
 Following are options related to Ceph cluster characteristics:
 
-        -p, --pool-name=string           Pool name on Ceph cluster ("userid_" added) (default: pool)
-        -l, --pool-size                  Pool size on Ceph cluster
-        -b, --rbd-name=string            RBD name for Ceph pool ("userid_" added) (default: image)
-        -d, --rbd-size=int               RBD size on Ceph pool (default: 57600)
+        -m, --managed-cluster=string     site for managed Ceph cluster: 'rennes' or 'nantes' (default: rennes)
+        -p, --pool-name=string           Pool name on Ceph cluster ("userid_" prepended) (default: pool)
+        -r, --rbd-name=string            RBD name for Ceph pool ("userid_" prepended) (default: image)
+        -b, --rbd-size=int               RBD size on Ceph pool (default: 57600)
         -f, --file=string                File with clients nodes list, same option as in kadeploy3
         -l, --file-system=string         File System to be formatted on created RBDs (default: xfs)
         -m, --mnt-prod=string            Mount point on client for RBD of managed Ceph cluster (default: ceph-prod)
