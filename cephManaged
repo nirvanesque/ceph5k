@@ -80,14 +80,15 @@ EOS
   opt :'client-site', "Grid 5000 site for deploying Ceph clients", :type => String, :default => defaults["client-site"]
   opt :'client-cluster', "Grid 5000 cluster for clients", :type => String, :default => defaults["client-cluster"]
   opt :'env-client', "G5K environment for client", :type => String, :default => defaults["env-client"]
+
   opt :'managed-cluster', "site for managed Ceph cluster: 'rennes' or 'nantes'", :type => String, :default => defaults["managed-cluster"]
   opt :'multi-client', "Multiple clients to access Ceph Managed cluster", :default => defaults["multi-client"]
   opt :'num-client', "Nodes in Ceph Client cluster", :default => defaults["num-client"]
   opt :'no-deployed', "Not using any deployed Ceph cluster", :default => defaults["no-deployed"]
 
-  opt :'pool-name', "Pool name on Ceph cluster (userid_ prepended)", :type => String, :default => defaults["pool-name"]
-  opt :'rbd-name', "RBD name for Ceph pool (userid_ prepended)", :type => String, :default => defaults["rbd-name"]
-  opt :'rbd-size', "RBD size on Ceph pool", :default => defaults["rbd-size"]
+  opt :'pool-name', "Pool name on Ceph cluster (userid_ prepended)", :type => String, :default => defaults["client-pool-name"]
+  opt :'rbd-name', "RBD name for Ceph pool (userid_ prepended)", :type => String, :default => defaults["client-rbd-name"]
+  opt :'rbd-size', "RBD size on Ceph pool", :default => defaults["client-rbd-size"]
   opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
   opt :'rbd-list-file', "YAML file with RBD list. No. of RBDs must be same as no. of clients", :type => String, :default => nil
   opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
@@ -408,9 +409,9 @@ else # single Ceph client
 
            results.each do |client, result|
               puts "Mapped RBD #{myRBDName} on deployed Ceph to client #{client}." if result[:status] == 0
-        end # results.each do |client, result|
+           end # results.each do |client, result|
 
-     end # if argNoDeployed
+        end # unless argNoDeployed
 
      myRBDName = ""
      # Map RBD & create FS on managed cluster

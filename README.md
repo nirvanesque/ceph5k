@@ -168,7 +168,6 @@ Following are options related to reserving resources on Grid'5000:
 
         -j, --jobid=int                  Oarsub ID of the Grid'5000 client job
         -o, --job-client=string          Grid'5000 job name for Ceph clients (default: cephClient)
-        -o, --job-name=string            Name of Grid'5000 job if resources already reserved (default: cephClient)
         -c, --client-site=string         Grid 5000 site for deploying Ceph clients
         -l, --client-cluster=string      Grid 5000 cluster for clients
         -n, --num-client=integer         Number of Ceph client(s) (default: 4)

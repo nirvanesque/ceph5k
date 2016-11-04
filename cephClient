@@ -82,9 +82,9 @@ EOS
   opt :'file', "File with list of predeployed clients, similar as in kadeploy3", :type => String, :default => ""
   opt :'only-deploy', "Only deploy linux but don't configure Ceph client", :default => defaults["only-deploy"]
 
-  opt :'pool-name', "Pool name on Ceph cluster (userid_ prepended)", :type => String, :default => defaults["pool-name"]
-  opt :'rbd-name', "RBD name on Ceph pool (userid_ prepended)", :type => String, :default => defaults["rbd-name"]
-  opt :'rbd-size', "RBD size on Ceph pool", :default => defaults["rbd-size"]
+  opt :'pool-name', "Pool name on Ceph cluster (userid_ prepended)", :type => String, :default => defaults["client-pool-name"]
+  opt :'rbd-name', "RBD name on Ceph pool (userid_ prepended)", :type => String, :default => defaults["client-rbd-name"]
+  opt :'rbd-size', "RBD size on Ceph pool", :default => defaults["client-rbd-size"]
   opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
   opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
   opt :'mnt-depl', "Mount point for RBD on deployed cluster", :type => String, :default => defaults["mnt-depl"]
