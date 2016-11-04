@@ -154,7 +154,7 @@ Then the script cephFlink can be executed at any frontend by typing at CLI:
 
 The above script installs the Apache Flink framework with the first client as Master node and the remaining clients as Slaves/Workers. Subsequently, you can launch your Big Data jobs (e.g. WordCount, PageRank, ... ) from the Master node. Please see the Wiki page for further details: https://www.grid5000.fr/mediawiki/index.php/Moving_Data_around_Grid'5000
 
-##Detailed Usage of Options
+## Detailed Usage of Options
 
 Default values of all these options are provided in the YAML file mentioned above. If the options are specified at the command-line, they override the default values in the YAML file. For all scripts in Ceph5k, it is possible to pass at the command-line a different config file using the '--def-conf' option:
 
@@ -281,7 +281,7 @@ Following are options related to Ceph cluster characteristics:
 
 
 ### Options for: cephHadoop - Deploying a Hadoop cluster on managed or dedicated Ceph cluster
-The cephhadoop tool offers the following options at the command-line:
+The cephHadoop tool offers the following options at the command-line:
 
         ./ceph5k/cephHadoop [options]
 
@@ -306,14 +306,69 @@ Following are options related to Hadoop cluster characteristics:
 
 - Other generic options :
 
-        --version                        Print version and exit
+        -v, --version                    Print version and exit
         -e, --help                       Show this message
         -i, --ignore                     Ignore incorrect values
 
 
+### Options for: cephSpark - Deploying a Spark cluster on dedicated Ceph cluster
+The cephSpark tool offers the following options at the command-line:
+
+        ./ceph5k/cephSpark [options]
+
+where [options] are:
+
+- Grid'5000-specific options :
+
+Following are options related to resources on Grid'5000:
+
+        -j, --jobid=int                  Oarsub ID of the Spark nodes (Ceph clients) reservation
+        -o, --job-client=string          Grid'5000 job name for Spark nodes (Ceph clients)
+        -s, --site=string                Grid'5000 site where Spark nodes (Ceph clients) are deployed
+
+- Spark-specific options :
+
+Following are options related to Spark cluster characteristics:
+
+        -m, --mnt-depl=string            Mount point for RBD on dedicated cluster (default: ceph-depl)
+
+- Other generic options :
+
+        -v, --version                    Print version and exit
+        -e, --help                       Show this message
+        -i, --ignore                     Ignore incorrect values
+
+
+### Options for: cephFlink - Deploying a Flink cluster on dedicated Ceph cluster
+The cephFlink tool offers the following options at the command-line:
+
+        ./ceph5k/cephFlink [options]
+
+where [options] are:
+
+- Grid'5000-specific options :
+
+Following are options related to resources on Grid'5000:
+
+        -j, --jobid=int                  Oarsub ID of the Flink nodes (Ceph clients) reservation
+        -o, --job-client=string          Grid'5000 job name for Flink nodes (Ceph clients)
+        -s, --site=string                Grid'5000 site where Flink nodes (Ceph clients) are deployed
+
+- Flink-specific options :
+
+Following are options related to Flink cluster characteristics:
+
+        -m, --mnt-depl=string            Mount point for RBD on dedicated cluster (default: ceph-depl)
+
+- Other generic options :
+
+        -v, --version                    Print version and exit
+        -e, --help                       Show this message
+        -i, --ignore                     Ignore incorrect values
+
 
 # Licence Information
-Copyright (c) 2015-17 Anirvan BASU, INRIA Rennes - Bretagne Atlantique
+Copyright (c) 2015-16 Anirvan BASU, INRIA - Rennes Bretagne Atlantique
 
 Licensed under the CeCCIL-B license (the "License"); you may not use this file except in compliance with the License.
 You may obtain a copy of the License at:   http://www.cecill.info/licences/Licence_CeCILL-B_V1-en.html
