@@ -289,28 +289,25 @@ where [options] are:
 
 - Grid'5000-specific options :
 
-Following are options related to reserving specific resources on Grid'5000:
+Following are options related to resources on Grid'5000:
 
         -j, --jobid=int                  Oarsub ID of the Hadoop nodes (Ceph clients) reservation
-        -s, --site=string                Grid'5000 site where dedicated Ceph cluster is deployed
         -o, --job-client=string          Grid'5000 job name for Hadoop nodes (Ceph clients)
-        -c, --client-site=string         Grid'5000 site where Hadoop nodes (Ceph clients) are deployed
+        -s, --site=string                Grid'5000 site where Hadoop nodes (Ceph clients) are deployed
 
 - Hadoop-specific options :
 
-Following are options related to Ceph cluster characteristics:
+Following are options related to Hadoop cluster characteristics:
 
-        -a, --release=string             Ceph Release name (default: firefly)
-        -p, --pool-name=string           Pool name on Ceph cluster ("userid_" prepended) (default: pool)
-        -r, --rbd-name=string            RBD name on Ceph pool ("userid_" prepended) (default: image)
-        -d, --rbd-size=int               RBD size on Ceph pool (default: 57600)
-        -t, --file-system=string         File System to be formatted on created RBDs (default: ext4)
         -m, --mnt-depl=string            Mount point for RBD on dedicated cluster (default: ceph-depl)
+        -n, --mnt-prod=string            Mount point for RBD on managed cluster (default: ceph-prod)
+        -h, --hadoop=string              start, stop, restart Hadoop cluster (default: start)
+        -a, --hadoop-cluster=string      Hadoop on Ceph cluster: deployed OR managed (default: deployed)
 
 - Other generic options :
 
         --version                        Print version and exit
-        -h, --help                       Show this message
+        -e, --help                       Show this message
         -i, --ignore                     Ignore incorrect values
 
 
