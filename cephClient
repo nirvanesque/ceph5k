@@ -276,7 +276,6 @@ end
 ssh_key =  'id_rsa'
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
      result = tak.put("#{tempDir}/config/config", "/root/.ssh/config") # copy the config file to master/monitor
-puts result
      tak.loop()
 end
 
