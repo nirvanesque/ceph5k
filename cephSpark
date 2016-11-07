@@ -77,7 +77,6 @@ EOS
   opt :'job-client', "Grid'5000 job name for Ceph clients", :type => String, :default => defaults["job-client"]
   opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["client-site"]
   opt :'mnt-depl', "Mount point for RBD in dedicated cluster", :type => String, :default => defaults["mnt-depl"]
-  opt :'spark-link', "Link to download Spark binary", :default => defaults["spark-link"]
 
 end
 
@@ -86,7 +85,6 @@ argJobID = opts[:jobid] # Oarsub ID of the client job.
 argClientSite = opts[:site] # G5K site for Ceph clients. 
 argJobClient = opts[:'job-client'] # Grid'5000 job name for Ceph clients. 
 argMntDepl = opts[:'mnt-depl'] # Mount point for RBD in dedicated cluster.
-argSparkLink = opts[:'spark-link'] # Link to download Spark binary.
 
 
 # Get job for Ceph clients
@@ -113,7 +111,7 @@ end # if argJobID
 # If no Ceph clients found, abort Spark deployment
 abort("No Ceph client(s) found. First run cephClient script, then run this script.") if jobCephClient.nil?
 
-# At this point Spark nodes were created or fetched
+# At this point Big Data nodes were created or fetched
 puts "Spark job details recovered."
 
 
@@ -181,7 +179,6 @@ sparkDir = "spark"
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm spark.tgz ; rm -rf #{sparkDir} ; mkdir #{sparkDir}")
      tak.put("/home/abasu/public/spark.tgz", "/root/spark.tgz")
-     tak.exec!("wget -O spark.tgz #{argSparkLink}")
      tak.exec!("tar xzf spark.tgz -C #{sparkDir} --strip-components=1")
      tak.loop()
 end
