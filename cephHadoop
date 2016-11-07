@@ -303,7 +303,7 @@ puts "Getting binary tar file and installing Hadoop ..."
 # Push hadoop tar file to all nodes & unpack
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm hadoop.tar.gz ; rm -rf #{hadoopDir} ; mkdir #{hadoopDir}")
-     tak.put("/home/abasu/public/hadoop.tar.gz", "/root/hadoop.tar.gz")
+     tak.exec!("wget http://apt.grid5000.fr/big-data/binaries/hadoop.tar.gz")
      tak.exec!("tar xzf hadoop.tar.gz -C #{hadoopDir} --strip-components=1")
      tak.loop()
 end
