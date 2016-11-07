@@ -181,8 +181,7 @@ sparkDir = "spark"
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm spark.tgz ; rm -rf #{sparkDir} ; mkdir #{sparkDir}")
      tak.put("/home/abasu/public/spark.tgz", "/root/spark.tgz")
-     result = tak.exec!("wget -O spark.tgz #{argSparkLink}")
-puts result
+     tak.exec!("wget -O spark.tgz #{argSparkLink}")
      tak.exec!("tar xzf spark.tgz -C #{sparkDir} --strip-components=1")
      tak.loop()
 end
