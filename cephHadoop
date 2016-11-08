@@ -53,7 +53,6 @@ else
    end # unless File.exist?
 end    # if (["--def-conf", "-d"])
 
-puts currentConfigFile
 # Populate the hash with default parameters from YAML file.
 defaults = begin
   YAML.load(File.open(currentConfigFile))
