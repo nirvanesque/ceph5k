@@ -304,6 +304,7 @@ Following are options related to Hadoop cluster characteristics:
         -n, --mnt-prod=string            Mount point for RBD on managed cluster (default: ceph-prod)
         -h, --hadoop=string              start, stop, restart Hadoop cluster (default: start)
         -a, --hadoop-cluster=string      Hadoop on Ceph cluster: deployed OR managed (default: deployed)
+        -d, --hadoop-link                URL link to download Hadoop binary
 
 - Other generic options :
 
@@ -332,6 +333,7 @@ Following are options related to resources on Grid'5000:
 Following are options related to Spark cluster characteristics:
 
         -m, --mnt-depl=string            Mount point for RBD on dedicated cluster (default: ceph-depl)
+        -p, --spark-link                 URL link to download Spark binary
 
 - Other generic options :
 
@@ -360,6 +362,7 @@ Following are options related to resources on Grid'5000:
 Following are options related to Flink cluster characteristics:
 
         -m, --mnt-depl=string            Mount point for RBD on dedicated cluster (default: ceph-depl)
+        -f, --flink-link                 URL link to download Flink binary
 
 - Other generic options :
 
