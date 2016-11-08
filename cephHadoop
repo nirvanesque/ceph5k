@@ -98,7 +98,7 @@ argHadoopLink = opts[:'hadoop-link'] # URL link to download Hadoop binary.
 # Get job for Ceph clients (for deployed or Managed cluster)
 jobCephClient = nil # Ceph client job
 puts "client site: #{argClientSite} ; client job : #{argJobClient}"
-unless [nil, 0].include?(argJobClient)
+unless [nil, 0].include?(argJobID)
    # If jobID is specified, get the specific job
    jobCephClient = g5k.get_job(argClientSite, argJobClient)
 else
@@ -113,7 +113,7 @@ else
       end # if job["name"] == argJobClient
 
    end # jobs.each do |job|
-end # unless [nil, 0].include?(argJobClient)
+end # unless [nil, 0].include?(argJobID)
 
 # If no Ceph clients found, abort Hadoop deployment
 if jobCephClient.nil?
