@@ -81,7 +81,7 @@ EOS
   opt :'mnt-prod', "Mount point for RBD on managed cluster", :type => String, :default => defaults["mnt-prod"]
   opt :'hadoop', "start, stop, restart Hadoop cluster", :type => String, :default => defaults["hadoop"]
   opt :'hadoop-cluster', "Hadoop on Ceph cluster: deployed OR managed", :default => defaults["hadoop-cluster"]
-  opt :'hadoop-link', "URL link to download Hadoop binary", :default => defaults["hadoop-link"]
+  opt :'hadoop-link', "URL link to download Hadoop binary", :type => String, :default => defaults["hadoop-link"]
 end
 
 # Move CLI arguments into variables. Later change to class attributes.
