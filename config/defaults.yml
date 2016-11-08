@@ -49,7 +49,7 @@ hadoop: start                 # start, stop, restart a Hadoop cluster
 hadoop-cluster                # Hadoop on Ceph cluster: dedicated OR managed
 
 # Link to download Hadoop binary
-hadoop-link:  "http://apache.crihan.fr/dist/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz"
+hadoop-link: "http://apache.crihan.fr/dist/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz"
 # Link to download Spark binary
 spark-link:  "http://apache.crihan.fr/dist/spark/spark-2.0.1/spark-2.0.1-bin-hadoop2.7.tgz"
 # Link to download Flink binary
