@@ -77,7 +77,7 @@ EOS
   opt :'job-client', "Grid'5000 job name for Ceph clients", :type => String, :default => defaults["job-client"]
   opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["client-site"]
   opt :'mnt-depl', "Mount point for RBD in dedicated cluster", :type => String, :default => defaults["mnt-depl"]
-  opt :'spark-link', "Link to download Spark binary", :default => defaults["spark-link"]
+  opt :'spark-link', "URL link to download Spark binary", :default => defaults["spark-link"]
 
 end
 
@@ -86,7 +86,7 @@ argJobID = opts[:jobid] # Oarsub ID of the client job.
 argClientSite = opts[:site] # G5K site for Ceph clients. 
 argJobClient = opts[:'job-client'] # Grid'5000 job name for Ceph clients. 
 argMntDepl = opts[:'mnt-depl'] # Mount point for RBD in dedicated cluster.
-argSparkLink = opts[:'spark-link'] # Link to download Spark binary.
+argSparkLink = opts[:'spark-link'] # URL link to download Spark binary.
 
 
 # Get job for Ceph clients
