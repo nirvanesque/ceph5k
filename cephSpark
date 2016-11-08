@@ -77,7 +77,7 @@ EOS
   opt :'job-client', "Grid'5000 job name for Ceph clients", :type => String, :default => defaults["job-client"]
   opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["client-site"]
   opt :'mnt-depl', "Mount point for RBD in dedicated cluster", :type => String, :default => defaults["mnt-depl"]
-  opt :'spark-link', "URL link to download Spark binary", :default => defaults["spark-link"]
+  opt :'spark-link', "URL link to download Spark binary", :default => "http://apache.crihan.fr/dist/spark/spark-2.0.1/spark-2.0.1-bin-hadoop2.7.tgz"
 
 end
 
@@ -180,7 +180,6 @@ puts "Getting Spark tar and setting up directory ..."
 sparkDir = "spark"
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm spark.tgz ; rm -rf #{sparkDir} ; mkdir #{sparkDir}")
-     tak.put("/home/abasu/public/spark.tgz", "/root/spark.tgz")
      tak.exec!("wget -O spark.tgz #{argSparkLink}")
      tak.exec!("tar xzf spark.tgz -C #{sparkDir} --strip-components=1")
      tak.loop()

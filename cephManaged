@@ -159,7 +159,7 @@ else # when no client-list is specified. Do deployment or start from scratch.
 
       end # ["waiting","running"].each do |state|
 
-   end # if argJobID
+   end # unless [nil, 0].include?(argJobID)
 
    # If job state is "waiting" then wait for resources to be assigned
    unless jobCephClient.nil?

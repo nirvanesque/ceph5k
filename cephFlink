@@ -78,7 +78,7 @@ EOS
   opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["client-site"]
 
   opt :'mnt-depl', "Mount point for RBD on deployed cluster", :type => String, :default => defaults["mnt-depl"]
-  opt :'flink-link', "URL link to download Flink binary", :default => defaults["flink-link"]
+  opt :'flink-link', "URL link to download Flink binary", :default => "http://apache.crihan.fr/dist/flink/flink-1.1.3/flink-1.1.3-bin-hadoop27-scala_2.11.tgz"
 
 end
 
@@ -181,7 +181,6 @@ puts "Getting Flink tar and setting up directory ..."
 flinkDir = "flink"
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm flink.tgz ; rm -rf #{flinkDir} ; mkdir #{flinkDir}")
-     tak.put("/home/abasu/public/flink.tgz", "/root/flink.tgz")
      tak.exec!("wget -O flink.tgz #{argFlinkLink}")
      tak.exec!("tar xzf flink.tgz -C #{flinkDir} --strip-components=1")
      tak.loop()
