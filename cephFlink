@@ -181,7 +181,6 @@ puts "Getting Flink tar and setting up directory ..."
 flinkDir = "flink"
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm flink.tgz ; rm -rf #{flinkDir} ; mkdir #{flinkDir}")
-     tak.put("/home/abasu/public/flink.tgz", "/root/flink.tgz")
      tak.exec!("wget -O flink.tgz #{argFlinkLink}")
      tak.exec!("tar xzf flink.tgz -C #{flinkDir} --strip-components=1")
      tak.loop()
