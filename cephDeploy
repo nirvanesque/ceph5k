@@ -71,7 +71,7 @@ EOS
   opt :ignore, "Ignore incorrect values"
   opt :'conf-file', "Configuration file to be used for deployment", :type => String, :default => currentConfigFile
 
-puts opt
+puts opts
 
   opt :jobid, "Oarsub ID of the job", :default => 0
   opt :'job-name', "Name of Grid'5000 job if already created", :type => String, :default => defaults["job-name"]
