@@ -83,8 +83,9 @@ EOS
   opt :'file-system', "File System to be formatted on OSDs", :type => String, :default => defaults["file-system"]
   opt :'conf-file', "Configuration file to be used for deployment", :type => String, :default => currentConfigFile
 
-end
 puts opts
+
+end
 
 # Move CLI arguments into variables. Later change to class attributes.
 argJobID = opts[:jobid] # Oarsub ID of the job. 
