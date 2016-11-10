@@ -34,6 +34,7 @@ client-site: rennes           # Grid 5000 site for deploying Ceph clients
 client-cluster: paravance     # Grid 5000 cluster for clients
 num-client: 4                 # Nodes in Ceph Client cluster
 env-client: "jessie-x64-big"  # G5K environment for Ceph clients
+only-deploy: false            # Only deploy linux image but don't configure Ceph 
 
 client-pool-name: pool        # Pool name on each Ceph client (added "userid_")
 client-rbd-name: image        # RBD name on each Ceph client (added "userid_")
@@ -46,5 +47,5 @@ multi-client: true            # Multiple clients to access Ceph Managed cluster
 no-deployed: false            # Not using any deployed Ceph cluster
 
 hadoop: start                 # start, stop, restart a Hadoop cluster
-hadoop-cluster                # Hadoop on Ceph cluster: dedicated OR managed
+hadoop-cluster: deployed      # Hadoop on Ceph cluster: dedicated OR managed
 

@@ -36,18 +36,11 @@ tempDir = scriptDir + "/.generated"
 FileUtils.mkpath(tempDir)
 FileUtils.mkpath(tempDir + "/config")
 
-currentConfigFile = ""
-if (["--def-conf", "-d"].include?(ARGV[0])  && !ARGV[1].empty? )
-   currentConfigFile = ARGV[1] # assign config file location to variable configFile
-   ARGV.delete_at(0)    # clean up ARGV array
-   ARGV.delete_at(0)
-else 
-   currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
-   unless File.exist?(currentConfigFile)
-     configFile = scriptDir + "/config/defaults.yml.example" # example config file
-     FileUtils.cp(configFile, currentConfigFile)
-   end # unless File.exist?
-end    # if (["--def-conf", "-d"])
+currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
+unless File.exist?(currentConfigFile)
+  configFile = scriptDir + "/config/defaults.yml.example" # example config file
+  FileUtils.cp(configFile, currentConfigFile)
+end # unless File.exist?
 
 # Populate the hash with default parameters from YAML file.
 defaults = begin
@@ -56,10 +49,17 @@ rescue ArgumentError => e
   puts "Could not parse YAML: #{e.message}"
 end
 
+# Version for script
+versionFile = scriptDir + "/version.yml"
+versionNo = begin
+  YAML.load(File.open(versionFile))
+rescue ArgumentError => e
+  puts "Could not parse YAML: #{e.message}"
+end
 
 # banner for script
 opts = Trollop::options do
-  version "ceph5k 0.0.8 (c) 2015-16 Anirvan BASU, INRIA RBA"
+  version "ceph5k #{versionNo} (c) 2015-16 Anirvan BASU, INRIA RBA"
   banner <<-EOS
 cephDeploy is a script for deploying a Ceph cluster on reserved nodes.
 
@@ -81,6 +81,7 @@ EOS
   opt :'cluster-name', "Ceph cluster name", :type => String, :default => defaults["cluster-name"]
   opt :'multi-osd', "Multiple OSDs on each node", :default => defaults["multi-osd"]
   opt :'file-system', "File System to be formatted on OSDs", :type => String, :default => defaults["file-system"]
+  opt :'conf-file', "Configuration file to be used for deployment", :type => String, :default => currentConfigFile
 
 end
 
