@@ -69,10 +69,6 @@ where [options] are:
 EOS
 
   opt :ignore, "Ignore incorrect values"
-  opt :'conf-file', "Configuration file to be used for deployment", :type => String, :default => currentConfigFile
-
-puts opts
-
   opt :jobid, "Oarsub ID of the job", :default => 0
   opt :'job-name', "Name of Grid'5000 job if already created", :type => String, :default => defaults["job-name"]
   opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["site"]
@@ -85,8 +81,10 @@ puts opts
   opt :'cluster-name', "Ceph cluster name", :type => String, :default => defaults["cluster-name"]
   opt :'multi-osd', "Multiple OSDs on each node", :default => defaults["multi-osd"]
   opt :'file-system', "File System to be formatted on OSDs", :type => String, :default => defaults["file-system"]
+  opt :'conf-file', "Configuration file to be used for deployment", :type => String, :default => currentConfigFile
 
 end
+puts opts
 
 # Move CLI arguments into variables. Later change to class attributes.
 argJobID = opts[:jobid] # Oarsub ID of the job. 
