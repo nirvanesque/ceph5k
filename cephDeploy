@@ -24,7 +24,7 @@ require 'json'
 require "net/http"
 require "uri"
 require "fileutils"
-require "helpers"
+require "helpers/abstractions.rb"
 
 g5k = Cute::G5K::API.new()
 user = g5k.g5k_user
