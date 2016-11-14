@@ -19,12 +19,12 @@ require 'cute/taktuk'
 require 'net/sftp'
 require 'erb'
 require 'socket'
-require 'trollop'
+require 'trollop's
 require 'json'
 require "net/http"
 require "uri"
 require "fileutils"
-
+require "helpers"
 
 g5k = Cute::G5K::API.new()
 user = g5k.g5k_user
@@ -37,55 +37,7 @@ FileUtils.mkpath(tempDir)
 FileUtils.mkpath(tempDir + "/config")
 
 currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
-unless File.exist?(currentConfigFile)
-  configFile = scriptDir + "/config/defaults.yml.example" # example config file
-  FileUtils.cp(configFile, currentConfigFile)
-end # unless File.exist?
-
-# Populate the hash with default parameters from YAML file.
-defaults = begin
-  YAML.load(File.open(currentConfigFile))
-rescue ArgumentError => e
-  puts "Could not parse YAML: #{e.message}"
-end
-
-# Version for script
-versionFile = scriptDir + "/version.yml"
-versionNo = begin
-  YAML.load(File.open(versionFile))
-rescue ArgumentError => e
-  puts "Could not parse YAML: #{e.message}"
-end
-
-# banner for script
-opts = Trollop::options do
-  version "ceph5k #{versionNo} (c) 2015-16 Anirvan BASU, INRIA RBA"
-  banner <<-EOS
-cephDeploy is a script for deploying a Ceph cluster on reserved nodes.
-
-Usage:
-       cephDeploy [options]
-where [options] are:
-EOS
-
-  opt :ignore, "Ignore incorrect values"
-  opt :jobid, "Oarsub ID of the job", :default => 0
-  opt :'job-name', "Name of Grid'5000 job if already created", :type => String, :default => defaults["job-name"]
-  opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["site"]
-  opt :cluster, "Grid 5000 cluster in specified site", :type => String, :default => defaults["cluster"]
-  opt :env, "G5K environment to be deployed", :type => String, :default => defaults["env"]
-  opt :'num-nodes', "Nodes in Ceph cluster", :default => defaults["num-nodes"]
-  opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => defaults["walltime"]
-
-  opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
-  opt :'cluster-name', "Ceph cluster name", :type => String, :default => defaults["cluster-name"]
-  opt :'multi-osd', "Multiple OSDs on each node", :default => defaults["multi-osd"]
-  opt :'file-system', "File System to be formatted on OSDs", :type => String, :default => defaults["file-system"]
-  opt :'conf-file', "Configuration file to be used for deployment", :type => String, :default => currentConfigFile
-
-puts opts
-
-end
+opts = readOptions(scriptDir, currentConfigFile)
 
 # Move CLI arguments into variables. Later change to class attributes.
 argJobID = opts[:jobid] # Oarsub ID of the job. 
