@@ -19,7 +19,7 @@ require 'cute/taktuk'
 require 'net/sftp'
 require 'erb'
 require 'socket'
-require 'trollop's
+require 'trollop'
 require 'json'
 require "net/http"
 require "uri"
