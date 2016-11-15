@@ -24,6 +24,7 @@ require 'json'
 require "net/http"
 require "uri"
 require "fileutils"
+require_relative "helpers/abstractions"
 
 
 g5k = Cute::G5K::API.new()
@@ -36,60 +37,8 @@ tempDir = scriptDir + "/.generated"
 FileUtils.mkpath(tempDir)
 FileUtils.mkpath(tempDir + "/config")
 
-currentConfigFile = ""
-if (["--def-conf", "-d"].include?(ARGV[0])  && !ARGV[1].empty? )
-   currentConfigFile = ARGV[1] # assign config file location to variable configFile
-   ARGV.delete_at(0)    # clean up ARGV array
-   ARGV.delete_at(0)
-else 
-   currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
-   unless File.exist?(currentConfigFile)
-     configFile = scriptDir + "/config/defaults.yml.example" # example config file
-     FileUtils.cp(configFile, currentConfigFile)
-   end # unless File.exist?
-end    # if (["--def-conf", "-d"])
-
-# Populate the hash with default parameters from YAML file.
-defaults = begin
-  YAML.load(File.open(currentConfigFile))
-rescue ArgumentError => e
-  puts "Could not parse YAML: #{e.message}"
-end
-
-
-# banner for script
-opts = Trollop::options do
-  version "ceph5k 0.0.8 (c) 2015-16 Anirvan BASU, INRIA RBA"
-  banner <<-EOS
-cephClient is a script for creating RBD and FS on clients to access a deployed Ceph cluster.
-
-Usage:
-       cephClient [options]
-where [options] are:
-EOS
-
-  opt :ignore, "Ignore incorrect values"
-  opt :jobid, "Oarsub ID of the client job", :default => 0
-  opt :'job-name', "Grid'5000 job name for dedicated Ceph cluster", :type => String, :default => defaults["job-name"]
-  opt :site, "Grid 5000 site where dedicated Ceph cluster is deployed", :type => String, :default => defaults["site"]
-  opt :walltime, "Wall time for Ceph clients reservation", :type => String, :default => defaults["walltime"]
-
-  opt :'job-client', "Grid'5000 job name for Ceph clients", :type => String, :default => defaults["job-client"]
-  opt :'client-site', "Grid'5000 site for deploying Ceph clients", :type => String, :default => defaults["client-site"]
-  opt :'client-cluster', "Grid'5000 cluster for deploying Ceph clients", :type => String, :default => defaults["client-cluster"]
-  opt :'num-client', "Number of Ceph client(s)", :default => defaults["num-client"]
-  opt :'env-client', "Grid'5000 environment for client", :type => String, :default => defaults["env-client"]
-  opt :'file', "File with list of predeployed clients, similar as in kadeploy3", :type => String, :default => ""
-  opt :'only-deploy', "Only deploy linux but don't configure Ceph client", :default => defaults["only-deploy"]
-
-  opt :'pool-name', "Pool name on Ceph cluster (userid_ prepended)", :type => String, :default => defaults["client-pool-name"]
-  opt :'rbd-name', "RBD name on Ceph pool (userid_ prepended)", :type => String, :default => defaults["client-rbd-name"]
-  opt :'rbd-size', "RBD size on Ceph pool", :default => defaults["client-rbd-size"]
-  opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
-  opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
-  opt :'mnt-depl', "Mount point for RBD on deployed cluster", :type => String, :default => defaults["mnt-depl"]
-
-end
+currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
+opts = readOptions(scriptDir, currentConfigFile)
 
 # Move CLI arguments into variables. Later change to class attributes.
 argJobID = opts[:jobid] # Oarsub ID of the client job. 
