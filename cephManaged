@@ -142,8 +142,7 @@ clientsFile = File.open("#{clientStateDir}/clients-list", "w") do |file|
 end
 
 # Get the client(s) for the managed Ceph cluster
-# For a single client, this is the 'first' node of the job
-clients = argMultiClient ? jobCephClient["assigned_nodes"] : [jobCephClient["assigned_nodes"][0]]
+clients = jobCephClient["assigned_nodes"]
 
 # if not yet deployed, then deploy it
 if jobCephClient["deploy"].nil?

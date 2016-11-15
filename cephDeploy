@@ -68,7 +68,6 @@ puts "Option for multiple OSDs per node: #{argMultiOSD}\n" + "\n"
 
 #Initialise some global variables
 jobCephCluster = nil
-myCephJobs = [] # an array to recover all my jobs in states "waiting" or "running"
 
 unless [nil, 0].include?(argJobID)
    # If jobID is specified, get the specific job
