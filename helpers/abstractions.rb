@@ -105,7 +105,6 @@ def readOptions(scriptDir, currentConfigFile, scriptName)
      opt :'cluster-name', "Ceph cluster name", :type => String, :default => defaults["cluster-name"]
      opt :'multi-osd', "Multiple OSDs on each node", :default => defaults["multi-osd"]
      opt :'file-system', "File System to be formatted on OSDs", :type => String, :default => defaults["file-system"]
-     opt :'conf-file', "Configuration file to be used for deployment", :type => String, :default => currentConfigFile
 
 
         when "cephClient" # options specific for script cephClient
@@ -150,6 +149,8 @@ def readOptions(scriptDir, currentConfigFile, scriptName)
 
 
      end # case scriptName
+
+     opt :'conf-file', "Configuration file to be used for deployment", :type => String, :default => currentConfigFile
 
    end
 
