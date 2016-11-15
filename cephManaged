@@ -37,6 +37,10 @@ tempDir = scriptDir + "/.generated"
 FileUtils.mkpath(tempDir)
 FileUtils.mkpath(tempDir + "/config")
 
+# Additionally create a directory for managed Ceph config files
+prodDir = tempDir + "/config/prod"
+FileUtils.mkpath(prodDir)
+
 currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
 opts = readOptions(scriptDir, currentConfigFile, "cephManaged")
 
