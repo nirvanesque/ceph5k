@@ -26,7 +26,7 @@ require "uri"
 require "fileutils"
 
 
-def readOptions(scriptDir, currentConfigFile)
+def readOptions(scriptDir, currentConfigFile, scriptName)
    # Make the temporary files directory (if not created already)
    tempDir = scriptDir + "/.generated"
 
@@ -53,13 +53,40 @@ def readOptions(scriptDir, currentConfigFile)
    # banner for script
    opts = Trollop::options do
      version "ceph5k #{versionNo} (c) 2015-16 Anirvan BASU, INRIA RBA"
-     banner <<-EOS
-   cephDeploy is a script for deploying a Ceph cluster on reserved nodes.
+     case scriptName
+        when "cephDeploy"
+           banner <<-EOS
+         cephDeploy is a script for deploying a Ceph cluster on reserved nodes.
 
-   Usage:
-          cephDeploy [options]
-   where [options] are:
-   EOS
+         Usage: 
+                cephDeploy [options]
+         where [options] are:
+         EOS
+
+        when "cephClient"
+           banner <<-EOS
+         cephClient is a script for creating clients to access a deployed Ceph cluster.
+
+         Usage: 
+                cephClient [options]
+         where [options] are:
+         EOS
+
+        when "cephManaged"
+           banner <<-EOS
+         cephManaged is a script for creating clients to access a Managed Ceph cluster.
+
+         Usage: 
+                cephManaged [options]
+         where [options] are:
+         EOS
+
+        else
+           banner <<-EOS
+         ceph5k is a toolsuite for deploying Ceph clusters and clients.
+         EOS
+
+     end # case scriptName
 
      opt :ignore, "Ignore incorrect values"
      opt :jobid, "Oarsub ID of the job", :default => 0

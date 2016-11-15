@@ -38,7 +38,7 @@ FileUtils.mkpath(tempDir)
 FileUtils.mkpath(tempDir + "/config")
 
 currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
-opts = readOptions(scriptDir, currentConfigFile)
+opts = readOptions(scriptDir, currentConfigFile, "cephDeploy")
 
 # Move CLI arguments into variables. Later change to class attributes.
 argJobID = opts[:jobid] # Oarsub ID of the job. 
