@@ -38,19 +38,23 @@ FileUtils.mkpath(tempDir)
 FileUtils.mkpath(tempDir + "/config")
 
 currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
+# Read all options from CLI or config file
 opts = readOptions(scriptDir, currentConfigFile, "cephDeploy")
 
+# Prepare logFile for logging all actions
+logger = logCreate(tempDir, "cephDeploy")
+
 # Show parameters for creating Ceph cluster
-puts "Deploying Ceph cluster with the following parameters:"
-puts "Grid 5000 site: #{opts[:site]}"
-puts "Grid 5000 cluster: #{opts[:cluster]}"
-puts "Ceph Release: #{opts[:release]}"
-puts "Grid'5000 deployment: #{opts[:env]}"
-puts "Job name (for nodes reservation): #{opts[:'job-name']}"
-puts "Ceph cluster name: #{opts[:'cluster-name']}"
-puts "Total nodes in Ceph cluster: #{opts[:'num-nodes']}"
-puts "Deployment time: #{opts[:walltime]}\n"
-puts "Option for multiple OSDs per node: #{opts[:'multi-osd']}\n" + "\n"
+logger.info "Deploying Ceph cluster with the following parameters:"
+logger.info "Grid 5000 site: #{opts[:site]}"
+logger.info "Grid 5000 cluster: #{opts[:cluster]}"
+logger.info "Ceph Release: #{opts[:release]}"
+logger.info "Grid'5000 deployment: #{opts[:env]}"
+logger.info "Job name (for nodes reservation): #{opts[:'job-name']}"
+logger.info "Ceph cluster name: #{opts[:'cluster-name']}"
+logger.info "Total nodes in Ceph cluster: #{opts[:'num-nodes']}"
+logger.info "Deployment time: #{opts[:walltime]}\n"
+logger.info "Option for multiple OSDs per node: #{opts[:'multi-osd']}\n" + "\n"
 
 #Initialise some global variables
 jobCephCluster = nil
