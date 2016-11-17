@@ -178,7 +178,12 @@ end
 def logCreate(logDir, scriptName)
 # Creates a logFile at logDir/scriptName.log
    logFile = File.open("#{logDir}/#{scriptName}.log", "a+")
-   Logger.new MultiIO.new(STDOUT, logFile)
+   logger = Logger.new MultiIO.new(STDOUT, logFile)
+
+   logger.formatter = proc do |datetime, progname|
+  "#{datetime}: #{scriptName}\n"
+end
+
 end # logCreate()
 
 
