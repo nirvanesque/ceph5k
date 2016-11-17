@@ -177,7 +177,7 @@ end
 
 def logCreate(logDir, scriptName)
 # Creates a logFile at logDir/scriptName.log
-   logFile = File.open("#{logDir}/#{scriptName}.log", File::WRONLY | File::APPEND)
+   logFile = File.open("#{logDir}/#{scriptName}.log", "a+")
    Logger.new MultiIO.new(STDOUT, logFile)
 end # logCreate()
 
