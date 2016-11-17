@@ -181,7 +181,7 @@ def logCreate(logDir, scriptName)
    logger = Logger.new MultiIO.new(STDOUT, logFile)
 
    logger.formatter = proc do |severity, datetime, progname, msg|
-     "#{datetime}, #{datetime}: #{scriptName} - #{msg}\n"
+     "#{severity}, #{datetime}: #{scriptName} - #{msg}\n"
    end # logger.formatter = proc do 
 
    return logger
