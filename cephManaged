@@ -173,6 +173,10 @@ end
 puts "Pre-flight checklist completed."
 
 
+# Abort script if no managed Ceph cluster specified
+abort("Script exited - no managed Ceph cluster specified. Use option --managed-cluster to specify rennes or nantes") if opts[:'managed-cluster'].empty?
+
+
 # Prepare ceph.conf file for managed Ceph cluster
 FileUtils.mkpath(prodDir + "/#{opts[:'managed-cluster']}")
 configFile = File.open(prodDir + "/#{opts[:'managed-cluster']}/ceph.conf", "w") do |file|
