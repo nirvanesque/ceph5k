@@ -38,11 +38,16 @@ FileUtils.mkpath(tempDir)
 FileUtils.mkpath(tempDir + "/config")
 
 currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
+# Read all options from CLI or config file
 opts = readOptions(scriptDir, currentConfigFile, "cephClient")
 
 # Adapt some CLI arguments into global variables. Later change to class attributes.
 opts[:'pool-name'] = "#{user}_" + opts[:'pool-name'] # Name of pool to create on clusters.
 opts[:'rbd-name'] = "#{user}_" + opts[:'rbd-name'] # Name of pool to create on clusters.
+
+# Prepare logFile for logging all actions
+logger = logCreate(tempDir, "cephClient")
+
 
 
 # Initialise some global variables"
@@ -75,7 +80,7 @@ unless opts[:'file'].empty?
    jobs.each do |job|
       if job["assigned_nodes"] == clients # get job where nodes are same as client-list
          jobCephClient = job
-         puts "Ceph client job recovered with nodes: #{clients}"
+         logger.info "Ceph client job recovered with nodes: #{clients}"
        end # if job["assigned_nodes"] == clients
    end # jobs.each do |job|
 
@@ -109,7 +114,7 @@ else # when no client-list is specified. Do deployment or start from scratch.
          begin
             job = g5k.wait_for_job(jobCephClient, :wait_time => 60)
          rescue Cute::G5K::EventTimeout
-            puts "Waited too long in site #{opts[:'client-site']}, releasing job #{opts[:'job-client']}"
+            logger.error "Waited too long in site #{opts[:'client-site']}, releasing job #{opts[:'job-client']}"
             g5k.release(job)
          end
       end # if jobCephClient["state"] == "waiting"
@@ -125,7 +130,7 @@ else # when no client-list is specified. Do deployment or start from scratch.
 
    # if not yet deployed, then deploy it
    if jobCephClient["deploy"].nil?
-      puts "Deploying #{opts[:'env-client']} on client node(s): #{clients}"
+      logger.info "Deploying #{opts[:'env-client']} on client node(s): #{clients}"
       depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => opts[:'env-client']) 
       g5k.wait_for_deploy(jobCephClient)
    end # if jobCephClient["deploy"].nil?
@@ -135,7 +140,7 @@ else # when no client-list is specified. Do deployment or start from scratch.
 end # unless opts[:'file'].empty?
 
 # At this point Ceph client job was created / fetched
-puts "Deploying Ceph clients on nodes: #{clients}" 
+logger.info "Deploying Ceph clients on nodes: #{clients}" 
 
 
 # Additionally create a directory for saving details of clients deployed
@@ -158,12 +163,12 @@ abort("Linux #{opts[:'env-client']} deployed on clients: #{clients}. \n Clients 
 abort("No deployed Ceph cluster found. First deploy Ceph cluster, then run script.") if jobCephCluster.nil?
 
 # Remind where is the deployed Ceph monitor
-puts "Deployed Ceph cluster details:"
-puts "   monitor on: #{monitor}"
+logger.info "Deployed Ceph cluster details:"
+logger.info "   monitor on: #{monitor}"
 
 
 #1 Preflight Checklist
-puts "Doing pre-flight checklist..."
+logger.info "Doing pre-flight checklist..."
 
 # Add Ceph & Extras to each Ceph node ('firefly' is the most complete)
 argDebian = opts[:'env-client'].slice(0,6)
@@ -220,24 +225,24 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
 end
 
 # Preflight checklist completed.
-puts "Pre-flight checklist completed." + "\n"
+logger.info "Pre-flight checklist completed." + "\n"
 
 
 # Install & administer clients to Ceph deployed cluster.
-puts "Adding following clients to deployed Ceph cluster:"
+logger.info "Adding following clients to deployed Ceph cluster:"
 clients.each do |client|
      clientShort = client.split(".").first
      Cute::TakTuk.start([monitor], :user => "root") do |tak|
           tak.exec!("ceph-deploy install --release #{opts[:release]} #{clientShort}")
           result = tak.exec!("ceph-deploy --overwrite-conf admin #{clientShort}")
-          puts "Added client: #{client}" if result[monitor][:status] == 0
+          logger.info "Added client: #{client}" if result[monitor][:status] == 0
           tak.loop()
      end
 end # clients.each do
 
 
 # Create Ceph pools on deployed cluster.
-puts "Creating Ceph pools on deployed cluster ..."
+logger.info "Creating Ceph pools on deployed cluster ..."
 # Create Ceph pools & RBDs
 Cute::TakTuk.start(clients, :user => "root") do |tak|
      tak.exec!("modprobe rbd")
@@ -247,12 +252,12 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
 end
 
 # Created Pools & RBDs for Ceph deployed cluster.
-puts "Created Ceph pool on deployed cluster as follows :" + "\n"
-puts "Pool name: #{opts[:'pool-name']} , RBD Name: #{opts[:'rbd-name']} , RBD Size: #{opts[:'rbd-size']} " + "\n"
+logger.info "Created Ceph pool on deployed cluster as follows :" + "\n"
+logger.info "Pool name: #{opts[:'pool-name']} , RBD Name: #{opts[:'rbd-name']} , RBD Size: #{opts[:'rbd-size']} " + "\n"
 
 
 # Map RBDs and create File Systems.
-puts "Mapping RBD in deployed Ceph clusters ..."
+logger.info "Mapping RBD in deployed Ceph clusters ..."
 Cute::TakTuk.start(clients, :user => "root") do |tak|
      # Map RBD & create FS on deployed cluster
      tak.exec!("rbd map #{opts[:'rbd-name']} --pool #{opts[:'pool-name']}")
@@ -260,11 +265,11 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
      tak.loop()
 end
 # Mapped RBDs & created FS for clients on Ceph deployed cluster.
-puts "Mapped RBDs #{opts[:'rbd-name']} for clients on deployed Ceph." + "\n"
+logger.info "Mapped RBDs #{opts[:'rbd-name']} for clients on deployed Ceph." + "\n"
 
 
 # Mount RBDs on Ceph client(s).
-puts "Mounting RBDs in deployed Ceph cluster on client(s) ..."
+logger.info "Mounting RBDs in deployed Ceph cluster on client(s) ..."
 clients.each do |client|
    Cute::TakTuk.start([client], :user => "root") do |tak|
 
@@ -273,7 +278,7 @@ clients.each do |client|
         tak.exec!("rmdir /mnt/#{opts[:'mnt-depl']}")
         tak.exec!("mkdir /mnt/#{opts[:'mnt-depl']}")
         result = tak.exec!("mount /dev/rbd/#{opts[:'pool-name']}/#{opts[:'rbd-name']} /mnt/#{opts[:'mnt-depl']}")
-        puts "Mounted RBD as File System on client: #{client}" if result[client][:status] == 0
+        logger.info "Mounted RBD as File System on client: #{client}" if result[client][:status] == 0
 
         tak.loop()
    end

@@ -21,9 +21,10 @@ require 'erb'
 require 'socket'
 require 'trollop'
 require 'json'
-require "net/http"
-require "uri"
-require "fileutils"
+require 'net/http'
+require 'uri'
+require 'fileutils'
+require 'logger'
 
 
 def readOptions(scriptDir, currentConfigFile, scriptName)
@@ -155,5 +156,37 @@ def readOptions(scriptDir, currentConfigFile, scriptName)
    end
 
 end # readOptions()
+
+
+
+# Class for abstracting simultaneous log writes to both logFile and stdout
+class MultiIO
+  def initialize(*targets)
+     @targets = targets
+  end
+
+  def write(*args)
+    @targets.each {|t| t.write(*args)}
+  end
+
+  def close
+    @targets.each(&:close)
+  end
+end
+
+
+def logCreate(logDir, scriptName)
+# Creates a logFile at logDir/scriptName.log
+   logFile = File.open("#{logDir}/ceph5k.log", "a+")
+   logger = Logger.new MultiIO.new(STDOUT, logFile)
+
+   logger.formatter = proc do |severity, datetime, progname, msg|
+     "#{severity}, #{datetime}: #{scriptName} - #{msg}\n"
+   end # logger.formatter = proc do 
+
+   return logger
+
+end # logCreate()
+
 
 

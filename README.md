@@ -28,11 +28,11 @@ This script is for deploying a dedicated Ceph cluster. If you are not deploying 
 - multiple OSDs
 The deployment of a Ceph cluster is done from any frontend on Grid'5000. At the CLI on a frontend:
        
-        ./ceph5k/cephDeploy     # Creates and deploys a dedicated Ceph cluster
+        ./ceph5k/cephDeploy --site nancy --cluster grimoire    # Creates and deploys a dedicated Ceph cluster
 
 Note: To have an easy start using Ceph5k, all default parameters necessary for any deployment are configured and stored in the installation subdirectory at :
 
-        ./ceph5k/config/defaults.yml
+        ./ceph5k/.generated/config/defaults.yml
 
 To facilitate easy human reading and editing the config file is in YAML format. All parameters are declarative and by name. The file can be modified by a simple text editor to customise the Ceph deployment.
 
@@ -43,9 +43,10 @@ This script is for accessing the dedicated Ceph cluster deployed in the previous
 
 These tasks are automated on a Grid'5000 frontend using the following command:
 
-        ./ceph5k/cephClient        # Creates RBD & FS on dedicated Ceph and mounts it
+        ./ceph5k/cephManaged --site nancy --num-client 4 \
+        --client-site nancy--client-cluster graphite
 
-At the end of successful execution of the script, you will have 1 or more Ceph clients accessing the deployed Ceph cluster, with pool and RBD mounted as file systems on your Ceph client(s), as follows:
+At the end of successful execution of the above script, you will have 4 Ceph clients on nodes in the 'graphite' cluster in nancy site, accessing the deployed Ceph cluster, with pool and RBD mounted as file systems as follows:
 
         /mnt/ceph-depl/
 
@@ -58,16 +59,16 @@ Note: For using the managed Ceph clusters, it is first required to create your C
 
 Subsequently, at the CLI on a frontend:
 
-        # Get managed Ceph keyrings for user from site rennes or nantes
+        # Get managed Ceph keyrings for user from site rennes
         ./ceph5k/cephClient.sh rennes
          
         # Prepare 4 Ceph clients, create RBD on managed Ceph as per names in YAML file
         # Mount an RBD on each Ceph client
-        ./ceph5k/cephManaged --site nancy --cluster graphene \
+        ./ceph5k/cephManaged --site nancy --cluster graphite \
         --multi-client true --num-client 4 --managed-cluster rennes \
         --rbd-list-file ./ceph5k/config/rbd-list.yml.example             
 
-After successful execution of the script, you will have 1 or more Ceph clients accessing the managed Ceph cluster, with pool and RBD mounted as file systems on your Ceph client(s) at:
+After successful execution of the script, you will have 4 Ceph clients on nodes in the 'graphite' cluster in nancy site, accessing the managed Ceph cluster at rennes, with pool and RBD mounted as file systems as follows:
 
         /mnt/ceph-prod/
 
@@ -120,6 +121,13 @@ The scripts in the Ceph5k tool suite are written in Ruby using the Ruby-Cute fra
 
 And then simply copy & paste the lines of any of the tool scripts (cephDeploy, cephClient, cephManaged) in the PRy shell.
 
+Note: Logs of all script actions can be found in the following folder on your frontend:
+
+        ./ceph5k/.generated/ceph5k.log
+
+All log statements are timestamped as well as annotated with the script which generated the log.
+
+
 # Big Data automation - Apache Hadoop, Spark, Flink
 In the Ceph5k toolsuite, supplementary scripts are provided to use the deployed and managed Ceph clusters and client nodes in Big Data experiments. Currently, the Apache Hadoop, Spark and Flink frameworks can be installed and configured on the Ceph client nodes, in Master-Slaves cluster configuration. For Hadoop, the Ceph backend can be on a deployed Ceph cluster or managed Ceph cluster. For Spark and Flink, this assumes that the deployed Ceph cluster is up and running (cephDeploy executed) AND the Ceph clients are installed to access the deployed Ceph cluster (cephClient executed). 
 
@@ -161,6 +169,12 @@ Default values of all these options are provided in the YAML file mentioned abov
 
         --def-conf=string            Alternative configuration file (default: ceph5k/config/defaults.yml)
 
+- Other generic options that are found in all scripts are:
+
+        -v, --version                    Print version and exit
+        -h, --help                       Show this message
+        -i, --ignore                     Ignore incorrect values
+
 
 ## Options for: cephDeploy - Deploying a dedicated Ceph cluster
 The deployment of a Ceph cluster is done from any frontend on Grid'5000. Usually, this is done using the following command :
@@ -168,7 +182,6 @@ The deployment of a Ceph cluster is done from any frontend on Grid'5000. Usually
         ./ceph5k/cephDeploy [options]
 
 where [options] are:
-
 
 - Grid'5000-specific options :
 
@@ -190,12 +203,6 @@ Following are options related to Ceph cluster characteristics:
         -l, --cluster-name=string        Ceph cluster name (default: ceph)
         -m, --multi-osd, --no-multi-osd  Multiple OSDs on each node (default: true)
         -f, --file-system=string         File System to be formatted on OSD disks (default: ext4)
-
-- Other generic options :
-
-        -v, --version                    Print version and exit
-        -h, --help                       Show this message
-        -i, --ignore                     Ignore incorrect values
 
 
 ## Options for: cephClient - Creating RBD + File System on Ceph clusters
@@ -231,12 +238,6 @@ Following are options related to Ceph cluster characteristics:
         -d, --rbd-size=int               RBD size on Ceph pool (default: 57600)
         -t, --file-system=string         File System to be formatted on created RBDs (default: ext4)
         -m, --mnt-depl=string            Mount point for RBD on dedicated cluster (default: ceph-depl)
-
-- Other generic options :
-
-        --version                        Print version and exit
-        -h, --help                       Show this message
-        -i, --ignore                     Ignore incorrect values
 
 
 ## Options for: cephManaged - Creating RBD + File System on managed Ceph clusters
@@ -274,12 +275,6 @@ Following are options related to Ceph cluster characteristics:
         -a, --release=string             Ceph Release name (default: firefly)
         --mnt-prod=string                Mount point for RBD on managed cluster (default: ceph-prod)
 
-- Other generic options:
-
-        -v, --version                    Print version and exit
-        -h, --help                       Show this message
-        -i, --ignore                     Ignore incorrect values
-
 
 ## Options for: cephHadoop - Deploying a Hadoop cluster on managed or dedicated Ceph cluster
 The cephHadoop tool offers the following options at the command-line:
@@ -306,12 +301,6 @@ Following are options related to Hadoop cluster characteristics:
         -a, --hadoop-cluster=string      Hadoop on Ceph cluster: deployed OR managed (default: deployed)
         -d, --hadoop-link                URL link to download Hadoop binary
 
-- Other generic options :
-
-        -v, --version                    Print version and exit
-        -e, --help                       Show this message
-        -i, --ignore                     Ignore incorrect values
-
 
 ## Options for: cephSpark - Deploying a Spark cluster on dedicated Ceph cluster
 The cephSpark tool offers the following options at the command-line:
@@ -335,12 +324,6 @@ Following are options related to Spark cluster characteristics:
         -m, --mnt-depl=string            Mount point for RBD on dedicated cluster (default: ceph-depl)
         -p, --spark-link                 URL link to download Spark binary
 
-- Other generic options :
-
-        -v, --version                    Print version and exit
-        -e, --help                       Show this message
-        -i, --ignore                     Ignore incorrect values
-
 
 ## Options for: cephFlink - Deploying a Flink cluster on dedicated Ceph cluster
 The cephFlink tool offers the following options at the command-line:
@@ -363,12 +346,6 @@ Following are options related to Flink cluster characteristics:
 
         -m, --mnt-depl=string            Mount point for RBD on dedicated cluster (default: ceph-depl)
         -f, --flink-link                 URL link to download Flink binary
-
-- Other generic options :
-
-        -v, --version                    Print version and exit
-        -e, --help                       Show this message
-        -i, --ignore                     Ignore incorrect values
 
 
 # Licence Information
