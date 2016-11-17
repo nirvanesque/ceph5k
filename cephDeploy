@@ -41,11 +41,6 @@ currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
 opts = readOptions(scriptDir, currentConfigFile, "cephDeploy")
 
 # Move CLI arguments into variables. Later change to class attributes.
-argJobID = opts[:jobid] # Oarsub ID of the job. 
-argJobName = opts[:'job-name'] # Grid'5000 ndoes reservation job. 
-argSite = opts[:site] # site name. 
-argG5KCluster = opts[:cluster] # G5K cluster name if specified. 
-argEnv = opts[:env] # Grid'5000 environment to deploy. 
 argNumNodes = opts[:'num-nodes'] # number of nodes in Ceph cluster.
 argWallTime = opts[:walltime] # walltime for the reservation.
 
@@ -56,11 +51,11 @@ argFileSystem = opts[:'file-system'] # File System to be formatted on OSDs.
 
 # Show parameters for creating Ceph cluster
 puts "Deploying Ceph cluster with the following parameters:"
-puts "Grid 5000 site: #{argSite}"
-puts "Grid 5000 cluster: #{argG5KCluster}"
+puts "Grid 5000 site: #{opts[:site]}"
+puts "Grid 5000 cluster: #{opts[:cluster]}"
 puts "Ceph Release: #{argRelease}"
-puts "Grid'5000 deployment: #{argEnv}"
-puts "Job name (for nodes reservation): #{argJobName}"
+puts "Grid'5000 deployment: #{opts[:env]}"
+puts "Job name (for nodes reservation): #{opts[:'job-name']}"
 puts "Ceph cluster name: #{argCephCluster}"
 puts "Total nodes in Ceph cluster: #{argNumNodes}"
 puts "Deployment time: #{argWallTime}\n"
@@ -69,26 +64,26 @@ puts "Option for multiple OSDs per node: #{argMultiOSD}\n" + "\n"
 #Initialise some global variables
 jobCephCluster = nil
 
-unless [nil, 0].include?(argJobID)
+unless [nil, 0].include?(opts[:jobid])
    # If jobID is specified, get the specific job
-   jobCephCluster = g5k.get_job(argSite, argJobID)
+   jobCephCluster = g5k.get_job(opts[:site], opts[:jobid])
 else
    # Get all my jobs submitted in a site
    jobs = []
    ["waiting","running"].each do |state|
-      jobs += g5k.get_my_jobs(argSite, state)
+      jobs += g5k.get_my_jobs(opts[:site], state)
 
-      # get the job with name "cephDeploy" or argJobName
+      # get the job with name "cephDeploy" or opts[:'job-name']
       jobs.each do |job|
-         if job["name"] == argJobName # if job exists already, get nodes
+         if job["name"] == opts[:'job-name'] # if job exists already, get nodes
             jobCephCluster = job
-         end # if job["name"] == argJobName
+         end # if job["name"] == opts[:'job-name']
 
       end # jobs.each do |job|
 
    end # ["waiting","running"].each do |state|
 
-end # if argJobID
+end # if opts[:jobid]
 
 # If job state is "waiting" then wait for resources to be assigned
 unless jobCephCluster.nil?
@@ -97,14 +92,14 @@ unless jobCephCluster.nil?
       begin
          job = g5k.wait_for_job(jobCephCluster, :wait_time => 60)
       rescue Cute::G5K::EventTimeout
-         puts "Waited too long in site #{argSite}, releasing job #{argJobName}"
+         puts "Waited too long in site #{opts[:site]}, releasing job #{opts[:'job-name']}"
          g5k.release(job)
       end # begin
    end # if jobCephCluster["state"] == "waiting"
 
 else # Finally, if job does not yet exist reserve nodes
 
-   jobCephCluster = g5k.reserve(:name => argJobName, :nodes => argNumNodes, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :type => :deploy)
+   jobCephCluster = g5k.reserve(:name => opts[:'job-name'], :nodes => argNumNodes, :site => opts[:site], :cluster => opts[:cluster], :walltime => argWallTime, :type => :deploy)
 
 end # unless jobCephCluster.nil?
 
@@ -117,7 +112,7 @@ radosGW = monitor # as of now the machine is the same for monitor & rados GW
 monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
 
 # Then, deploy the nodes with respective environments
-depCeph = g5k.deploy(jobCephCluster, :nodes => nodes, :env => argEnv)
+depCeph = g5k.deploy(jobCephCluster, :nodes => nodes, :env => opts[:env])
 g5k.wait_for_deploy(jobCephCluster)
 
 
@@ -132,7 +127,7 @@ puts "OSDs on: #{osdNodes}"
 
 # Additionally create a directory for saving details of deployment
 jobID = jobCephCluster["uid"]
-depStateDir = tempDir + "/#{argSite}/#{jobID}"
+depStateDir = tempDir + "/#{opts[:site]}/#{jobID}"
 FileUtils.mkpath(depStateDir)
 FileUtils.cp(currentConfigFile, depStateDir + "/defaults.yml")
 
@@ -149,7 +144,7 @@ end
 puts "Doing pre-flight checklist..."
 
 # Add Ceph & Extras to each Ceph node ('firefly' is the most complete)
-argDebian = argEnv.slice(0,6)
+argDebian = opts[:env].slice(0,6)
 
 # Specify explicit dependencies for Ceph packages 
 # See Bug #832714: Ceph from Jessie-backports
@@ -352,7 +347,7 @@ if argMultiOSD # Option for activating multiple OSDs per node
      storageDevices = []
 
      # Prepare URI & get node resources.
-     nodeURI = "https://api.grid5000.fr/stable/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}"
+     nodeURI = "https://api.grid5000.fr/stable/sites/#{opts[:site]}/clusters/#{g5kCluster}/nodes/#{nodeShort}"
      uri = URI(nodeURI)
      http = Net::HTTP.new(uri.host, uri.port)
      request = Net::HTTP::Get.new(uri.request_uri)
