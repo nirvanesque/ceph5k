@@ -40,40 +40,23 @@ FileUtils.mkpath(tempDir + "/config")
 currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
 opts = readOptions(scriptDir, currentConfigFile, "cephClient")
 
-# Move CLI arguments into variables. Later change to class attributes.
-argJobID = opts[:jobid] # Oarsub ID of the client job. 
-argSite = opts[:site] # site name. 
-argJobName = opts[:'job-name'] # Grid'5000 job for dedicated Ceph cluster. 
-argWallTime = opts[:walltime] # Wall time for Ceph clients reservation.
-
-argJobClient = opts[:'job-client'] # Grid'5000 job name for Ceph clients. 
-argClientSite = opts[:'client-site'] # site name of clients. 
-argClientCluster = opts[:'client-cluster'] # G5K cluster for deploying Ceph clients. 
-argNumClient = opts[:'num-client'] # Nodes in Ceph Client cluster.
-argEnvClient = opts[:'env-client'] # Grid'5000 environment to deploy Ceph clients. 
-argClientList = opts[:'file'] # File with clients list.
-argOnlyDeploy = opts[:'only-deploy'] # Only deploy linux but don't configure Ceph client.
-
-argPoolName = "#{user}_" + opts[:'pool-name'] # Name of pool to create on clusters.
-argRBDName = "#{user}_" + opts[:'rbd-name'] # Name of pool to create on clusters.
-argRBDSize = opts[:'rbd-size'] # Size of pool to create on clusters.
-argRelease = opts[:release] # Ceph release name. 
-argFileSystem = opts[:'file-system'] # File System to be formatted on created RBDs.
-argMntDepl = opts[:'mnt-depl'] # Mount point for RBD in deployed cluster.
+# Adapt some CLI arguments into global variables. Later change to class attributes.
+opts[:'pool-name'] = "#{user}_" + opts[:'pool-name'] # Name of pool to create on clusters.
+opts[:'rbd-name'] = "#{user}_" + opts[:'rbd-name'] # Name of pool to create on clusters.
 
 
 # Initialise some global variables"
 jobCephCluster = nil # Job for deployed Ceph cluster
 monitor = "" # Monitor for deployed Ceph cluster
 # Get all jobs submitted in a cluster
-jobs = g5k.get_my_jobs(argSite, state = "running") 
+jobs = g5k.get_my_jobs(opts[:site], state = "running") 
 
-# get the Ceph deploy job with name "cephDeploy" or argJobName
+# get the Ceph deploy job with name "cephDeploy" or opts[:'job-name']
 jobs.each do |job|
-   if job["name"] == argJobName # if job exists already, get nodes
+   if job["name"] == opts[:'job-name'] # if job exists already, get nodes
       jobCephCluster = job
       monitor = jobCephCluster["assigned_nodes"][0]
-   end # if job["name"] == argJobName
+   end # if job["name"] == opts[:'job-name']
 end # jobs.each do |job|
 
 # Initialise some global variables
@@ -81,13 +64,13 @@ jobCephClient = nil # Ceph client job
 clients = [] # Array of client nodes
 
 # If client-list specified in CLI argument, get list of clients & fill variable
-unless argClientList.empty?
-   clients = File.open(argClientList, 'r'){ |file| 
+unless opts[:'file'].empty?
+   clients = File.open(opts[:'file'], 'r'){ |file| 
       file.readlines.collect{ |line| line.chomp }
    } # File.open
 
    # Recover job details of client-list
-   jobs = g5k.get_my_jobs(argClientSite, state = "running") 
+   jobs = g5k.get_my_jobs(opts[:'client-site'], state = "running") 
 
    jobs.each do |job|
       if job["assigned_nodes"] == clients # get job where nodes are same as client-list
@@ -98,26 +81,26 @@ unless argClientList.empty?
 
 else # when no client-list is specified. Do deployment or start from scratch.
 
-   unless [nil, 0].include?(argJobID)
+   unless [nil, 0].include?(opts[:jobid])
       # If jobID is specified, get the specific job
-      jobCephClient = g5k.get_job(argClientSite, argJobID)
+      jobCephClient = g5k.get_job(opts[:'client-site'], opts[:jobid])
    else
       # Get all my jobs submitted in a site
       jobs = []
       ["waiting","running"].each do |state|
-         jobs += g5k.get_my_jobs(argClientSite, state)
+         jobs += g5k.get_my_jobs(opts[:'client-site'], state)
 
-         # get the job with name "cephClient" or argJobClient
+         # get the job with name "cephClient" or opts[:'job-client']
          jobs.each do |job|
-            if job["name"] == argJobClient # if job exists already, get nodes
+            if job["name"] == opts[:'job-client'] # if job exists already, get nodes
                jobCephClient = job
-            end # if job["name"] == argJobClient
+            end # if job["name"] == opts[:'job-client']
 
          end # jobs.each do |job|
 
       end # ["waiting","running"].each do |state|
 
-   end # if argJobID
+   end # if opts[:jobid]
 
    # If job state is "waiting" then wait for resources to be assigned
    unless jobCephClient.nil?
@@ -126,14 +109,14 @@ else # when no client-list is specified. Do deployment or start from scratch.
          begin
             job = g5k.wait_for_job(jobCephClient, :wait_time => 60)
          rescue Cute::G5K::EventTimeout
-            puts "Waited too long in site #{argClientSite}, releasing job #{argJobClient}"
+            puts "Waited too long in site #{opts[:'client-site']}, releasing job #{opts[:'job-client']}"
             g5k.release(job)
          end
       end # if jobCephClient["state"] == "waiting"
 
    else
       # Finally, if job does not yet exist reserve nodes
-      jobCephClient = g5k.reserve(:name => argJobClient, :nodes => argNumClient, :site => argClientSite, :cluster => argClientCluster, :walltime => argWallTime, :type => :deploy) 
+      jobCephClient = g5k.reserve(:name => opts[:'job-client'], :nodes => opts[:'num-client'], :site => opts[:'client-site'], :cluster => opts[:'client-cluster'], :walltime => opts[:walltime], :type => :deploy) 
 
    end # unless jobCephClient.nil?
 
@@ -142,14 +125,14 @@ else # when no client-list is specified. Do deployment or start from scratch.
 
    # if not yet deployed, then deploy it
    if jobCephClient["deploy"].nil?
-      puts "Deploying #{argEnvClient} on client node(s): #{clients}"
-      depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => argEnvClient) 
+      puts "Deploying #{opts[:'env-client']} on client node(s): #{clients}"
+      depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => opts[:'env-client']) 
       g5k.wait_for_deploy(jobCephClient)
    end # if jobCephClient["deploy"].nil?
 
 
 
-end # unless argClientList.empty?
+end # unless opts[:'file'].empty?
 
 # At this point Ceph client job was created / fetched
 puts "Deploying Ceph clients on nodes: #{clients}" 
@@ -157,7 +140,7 @@ puts "Deploying Ceph clients on nodes: #{clients}"
 
 # Additionally create a directory for saving details of clients deployed
 jobID = jobCephClient["uid"]
-clientStateDir = tempDir + "/#{argClientSite}/#{jobID}"
+clientStateDir = tempDir + "/#{opts[:'client-site']}/#{jobID}"
 FileUtils.mkpath(clientStateDir)
 
 # Prepare clients-list-file locally
@@ -168,7 +151,7 @@ clientsFile = File.open("#{clientStateDir}/clients-list", "w") do |file|
 end
 
 # Abort script if only Linux deployment flag was set
-abort("Linux #{argEnvClient} deployed on clients: #{clients}. \n Clients list file in: #{clientStateDir}/clients-list. \n Rerun script with option -f <nodes list file> to configure Ceph clients.") if argOnlyDeploy
+abort("Linux #{opts[:'env-client']} deployed on clients: #{clients}. \n Clients list file in: #{clientStateDir}/clients-list. \n Rerun script with option -f <nodes list file> to configure Ceph clients.") if opts[:'only-deploy']
 
 
 # Abort script if no deployed Ceph cluster
@@ -183,7 +166,7 @@ puts "   monitor on: #{monitor}"
 puts "Doing pre-flight checklist..."
 
 # Add Ceph & Extras to each Ceph node ('firefly' is the most complete)
-argDebian = argEnvClient.slice(0,6)
+argDebian = opts[:'env-client'].slice(0,6)
 
 # Specify explicit dependencies for Ceph packages 
 # See Bug #832714: Ceph from Jessie-backports
@@ -198,7 +181,7 @@ else
 end # if argDebian.include? "jessie"
 
 Cute::TakTuk.start(clients, :user => "root") do |tak|
-     tak.exec!("echo deb http://apt.grid5000.fr/ceph5k/#{argDebian}/#{argRelease} / | tee /etc/apt/sources.list.d/ceph.list")
+     tak.exec!("echo deb http://apt.grid5000.fr/ceph5k/#{argDebian}/#{opts[:release]} / | tee /etc/apt/sources.list.d/ceph.list")
      tak.exec!(aptgetPurgeCmd) # Purge previous ceph packages & dependencies
      tak.exec!(aptgetInstallCmd) # Install ceph packages & dependencies
      tak.loop()
@@ -245,7 +228,7 @@ puts "Adding following clients to deployed Ceph cluster:"
 clients.each do |client|
      clientShort = client.split(".").first
      Cute::TakTuk.start([monitor], :user => "root") do |tak|
-          tak.exec!("ceph-deploy install --release #{argRelease} #{clientShort}")
+          tak.exec!("ceph-deploy install --release #{opts[:release]} #{clientShort}")
           result = tak.exec!("ceph-deploy --overwrite-conf admin #{clientShort}")
           puts "Added client: #{client}" if result[monitor][:status] == 0
           tak.loop()
@@ -258,26 +241,26 @@ puts "Creating Ceph pools on deployed cluster ..."
 # Create Ceph pools & RBDs
 Cute::TakTuk.start(clients, :user => "root") do |tak|
      tak.exec!("modprobe rbd")
-     tak.exec!("rados mkpool #{argPoolName}")
-     tak.exec!("rbd create --image-format 2 #{argRBDName} --pool #{argPoolName} --size #{argRBDSize}")
+     tak.exec!("rados mkpool #{opts[:'pool-name']}")
+     tak.exec!("rbd create --image-format 2 #{opts[:'rbd-name']} --pool #{opts[:'pool-name']} --size #{opts[:'rbd-size']}")
      tak.loop()
 end
 
 # Created Pools & RBDs for Ceph deployed cluster.
 puts "Created Ceph pool on deployed cluster as follows :" + "\n"
-puts "Pool name: #{argPoolName} , RBD Name: #{argRBDName} , RBD Size: #{argRBDSize} " + "\n"
+puts "Pool name: #{opts[:'pool-name']} , RBD Name: #{opts[:'rbd-name']} , RBD Size: #{opts[:'rbd-size']} " + "\n"
 
 
 # Map RBDs and create File Systems.
 puts "Mapping RBD in deployed Ceph clusters ..."
 Cute::TakTuk.start(clients, :user => "root") do |tak|
      # Map RBD & create FS on deployed cluster
-     tak.exec!("rbd map #{argRBDName} --pool #{argPoolName}")
-     tak.exec!("mkfs.#{argFileSystem} -m0 /dev/rbd/#{argPoolName}/#{argRBDName}")
+     tak.exec!("rbd map #{opts[:'rbd-name']} --pool #{opts[:'pool-name']}")
+     tak.exec!("mkfs.#{opts[:'file-system']} -m0 /dev/rbd/#{opts[:'pool-name']}/#{opts[:'rbd-name']}")
      tak.loop()
 end
 # Mapped RBDs & created FS for clients on Ceph deployed cluster.
-puts "Mapped RBDs #{argRBDName} for clients on deployed Ceph." + "\n"
+puts "Mapped RBDs #{opts[:'rbd-name']} for clients on deployed Ceph." + "\n"
 
 
 # Mount RBDs on Ceph client(s).
@@ -286,10 +269,10 @@ clients.each do |client|
    Cute::TakTuk.start([client], :user => "root") do |tak|
 
         # mount RBD from deployed cluster
-        tak.exec!("umount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
-        tak.exec!("rmdir /mnt/#{argMntDepl}")
-        tak.exec!("mkdir /mnt/#{argMntDepl}")
-        result = tak.exec!("mount /dev/rbd/#{argPoolName}/#{argRBDName} /mnt/#{argMntDepl}")
+        tak.exec!("umount /dev/rbd/#{opts[:'pool-name']}/#{opts[:'rbd-name']} /mnt/#{opts[:'mnt-depl']}")
+        tak.exec!("rmdir /mnt/#{opts[:'mnt-depl']}")
+        tak.exec!("mkdir /mnt/#{opts[:'mnt-depl']}")
+        result = tak.exec!("mount /dev/rbd/#{opts[:'pool-name']}/#{opts[:'rbd-name']} /mnt/#{opts[:'mnt-depl']}")
         puts "Mounted RBD as File System on client: #{client}" if result[client][:status] == 0
 
         tak.loop()
