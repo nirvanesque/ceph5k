@@ -179,7 +179,11 @@ logger.info "Pre-flight checklist completed."
 
 
 # Abort script if no managed Ceph cluster specified
-abort("Script exited - no managed Ceph cluster specified. Use option --managed-cluster to specify 'rennes' or 'nantes'") if opts[:'managed-cluster'].nil?
+if opts[:'managed-cluster'].nil?
+   logger.info "Script exited - no managed Ceph cluster specified. Use option --managed-cluster to specify 'rennes' or 'nantes'"
+   abort() 
+end
+
 
 
 # Prepare ceph.conf file for managed Ceph cluster
@@ -244,7 +248,10 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
 end
 
 # Abort script if no pool in managed Ceph
-abort("Script exited - no pool for user in Managed Ceph clusters") if abortFlag
+if abortFlag
+   logger.error "Script exited - no pool for user in Managed Ceph clusters"
+   abort() 
+end
 
 # At this point pool identified on Managed Ceph, now identify/create RBDs
 
@@ -257,7 +264,11 @@ Cute::TakTuk.start([firstClient], :user => "root") do |tak|
      tak.loop()
 end
 
-abort("Script exited - number mismatch between list of RBDs in pool #{userPool} and number of clients: #{opts[:'num-client']}") unless poolRBDList.count == 0 || poolRBDList.count == opts[:'num-client']
+unless poolRBDList.count == 0 || poolRBDList.count == opts[:'num-client']
+   logger.error "Script exited - number mismatch between list of RBDs in pool #{userPool} and number of clients: #{opts[:'num-client']}"
+   abort() 
+end # unless poolRBDList.count == 0
+
 
 # Get list of client RBD images if specified in file
 clientRBDList = []
@@ -268,8 +279,15 @@ unless opts[:'rbd-list-file'].nil?
      logger.info "Could not parse YAML: #{e.message}"
    end
 
-   abort("Script exited - mismatch between supplied list of RBDs and RBDs found in pool #{userPool}") unless clientRBDList & poolRBDList == clientRBDList || poolRBDList.count == 0
-   abort("Script exited - Count mismatch between supplied list of RBDs and number of clients: #{opts[:'num-client']}") unless clientRBDList.count == opts[:'num-client']
+   unless clientRBDList & poolRBDList == clientRBDList || poolRBDList.count == 0
+      logger.error "Script exited - mismatch between supplied list of RBDs and RBDs found in pool #{userPool}"
+      abort() 
+   end # unless clientRBDList & poolRBDList == clientRBDList 
+
+   unless clientRBDList.count == opts[:'num-client']
+      logger.error "Script exited - Count mismatch between supplied list of RBDs and number of clients: #{opts[:'num-client']}"
+      abort() 
+   end # unless clientRBDList.count == opts[:'num-client']
 
 end # unless opts[:'rbd-list-file'].nil?
 
@@ -299,7 +317,8 @@ case
      logger.info "Creating, mapping & mounting RBDs from list: #{rbdList} \nto client(s): #{clients}"
 
    else # rbdList.count <= opts[:'num-client']
-        abort("Script exited - possible mismatch between RBDs in pool and clients. Please try with a different pool and/or RBD list.")
+      logger.error "Script exited - possible mismatch between RBDs in pool and clients. Please try with a different pool and/or RBD list."
+      abort() 
 end
 
 if opts[:'multi-client']
