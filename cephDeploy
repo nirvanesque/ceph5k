@@ -87,7 +87,7 @@ unless jobCephCluster.nil?
       begin
          job = g5k.wait_for_job(jobCephCluster, :wait_time => 60)
       rescue Cute::G5K::EventTimeout
-         puts "Waited too long in site #{opts[:site]}, releasing job #{opts[:'job-name']}"
+         logger.error "Waited too long in site #{opts[:site]}, releasing job #{opts[:'job-name']}"
          g5k.release(job)
       end # begin
    end # if jobCephCluster["state"] == "waiting"
@@ -112,13 +112,13 @@ g5k.wait_for_deploy(jobCephCluster)
 
 
 # At this point job was created or fetched
-puts "Ceph deployment job details recovered." + "\n"
+logger.info "Ceph deployment job details recovered." + "\n"
 
 # At this point job was created / fetched
-puts "Deploying Ceph cluster #{opts[:'cluster-name']} as follows:"
-puts "Cluster on nodes: #{nodes}" 
-puts "Monitor node on: #{monAllNodes}"
-puts "OSDs on: #{osdNodes}"
+logger.info "Deploying Ceph cluster #{opts[:'cluster-name']} as follows:"
+logger.info "Cluster on nodes: #{nodes}" 
+logger.info "Monitor node on: #{monAllNodes}"
+logger.info "OSDs on: #{osdNodes}"
 
 # Additionally create a directory for saving details of deployment
 jobID = jobCephCluster["uid"]
@@ -136,7 +136,7 @@ end
 
 
 #1 Preflight Checklist
-puts "Doing pre-flight checklist..."
+logger.info "Doing pre-flight checklist..."
 
 # Add Ceph & Extras to each Ceph node ('firefly' is the most complete)
 argDebian = opts[:env].slice(0,6)
@@ -199,11 +199,11 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Preflight checklist completed.
-puts "Pre-flight checklist completed."
+logger.info "Pre-flight checklist completed."
 
 
 # Purging any previous Ceph installations.
-puts "Purging any previous Ceph installations..."
+logger.info "Purging any previous Ceph installations..."
 
 nodesShort = nodes.map do |node|  # array of short names of nodes
      node.split(".").first
@@ -219,11 +219,11 @@ Cute::TakTuk.start([monitor], :user => "root") do |tak|
 end
 
 # Purged previous Ceph installations.
-puts "Purged previous Ceph installations." + "\n"
+logger.info "Purged previous Ceph installations." + "\n"
 
 
 # Creating & installing Ceph cluster.
-puts "Creating & installing Ceph cluster..."
+logger.info "Creating & installing Ceph cluster..."
 
 # Create the ceph cluster on the monitor node
 monitorShort = monitor.split(".").first
@@ -298,11 +298,11 @@ nodes.each do |node|
 end
 
 # Ceph installation on all nodes completed.
-puts "Ceph cluster installation completed."
+logger.info "Ceph cluster installation completed."
 
 
 # Adding & preparing monitor.
-puts "Adding monitor #{monitor} to cluster..."
+logger.info "Adding monitor #{monitor} to cluster..."
 
 # Add initial monitor/master
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
@@ -326,11 +326,11 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Monitor added and prepared.
-puts "Monitor added to Ceph cluster."
+logger.info "Monitor added to Ceph cluster."
 
 
 # Prepare & Activate OSDs.
-puts "Preparing & activating OSDs..."
+logger.info "Preparing & activating OSDs..."
 
 osdIndex = 0 # Iteration counter for OSDs created.
 # mkdir, Prepare & Activate each OSD
@@ -371,7 +371,7 @@ if opts[:'multi-osd'] # Option for activating multiple OSDs per node
                tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}")
                tak.loop()
            end
-           puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}5."
+           logger.info "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}5."
 
         else  # case of /dev/sdb, /dev/sdc, required to zap disc before deploy 
            # Remove all partitions, create primary partition (1), install FS
@@ -396,7 +396,7 @@ if opts[:'multi-osd'] # Option for activating multiple OSDs per node
                tak.exec!("ceph-deploy osd activate #{nodeShort}:/osd.#{osdIndex}")
                tak.loop()
            end # end of TakTuk loop for monitor
-           puts "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}1."
+           logger.info "Prepared & activated OSD.#{osdIndex} on: #{nodeShort}:/dev/#{device}1."
 
         end # end of if-else device == "sda"
         osdIndex += 1
@@ -430,7 +430,7 @@ end # if-else for single/multi-OSD per node
 
 
 # Distribute config & keyrings for cluster.
-puts "Distributing config and keyrings for cluster..."
+logger.info "Distributing config and keyrings for cluster..."
 
 # Pull config and keyrings for cluster
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
@@ -456,14 +456,14 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Config & keyrings distributed.
-puts "Ceph configuration & keyrings distributed throughout cluster."
+logger.info "Ceph configuration & keyrings distributed throughout cluster."
 
 
 # Finally check if Ceph Cluster was correctly deployed - result should be "active+clean"
 Cute::TakTuk.start([monitor], :user => "root") do |tak|
      result = tak.exec!("ceph status")
      resultText = result[monitor][:output]
-     puts "Ceph cluster up and running. In state 'active+clean'" if resultText.include? "active+clean"
+     logger.info "Ceph cluster up and running. In state 'active+clean'" if resultText.include? "active+clean"
      tak.loop()
 end
 
