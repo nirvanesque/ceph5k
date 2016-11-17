@@ -24,6 +24,7 @@ require 'json'
 require "net/http"
 require "uri"
 require "fileutils"
+require_relative "helpers/abstractions"
 
 
 g5k = Cute::G5K::API.new()
@@ -36,104 +37,44 @@ tempDir = scriptDir + "/.generated"
 FileUtils.mkpath(tempDir)
 FileUtils.mkpath(tempDir + "/config")
 
-currentConfigFile = ""
-if (["--def-conf", "-d"].include?(ARGV[0])  && !ARGV[1].empty? )
-   currentConfigFile = ARGV[1] # assign config file location to variable configFile
-   ARGV.delete_at(0)    # clean up ARGV array
-   ARGV.delete_at(0)
-else 
-   currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
-   unless File.exist?(currentConfigFile)
-     configFile = scriptDir + "/config/defaults.yml.example" # example config file
-     FileUtils.cp(configFile, currentConfigFile)
-   end # unless File.exist?
-end    # if (["--def-conf", "-d"])
-
-# Populate the hash with default parameters from YAML file.
-defaults = begin
-  YAML.load(File.open(currentConfigFile))
-rescue ArgumentError => e
-  puts "Could not parse YAML: #{e.message}"
-end
-
-
-# banner for script
-opts = Trollop::options do
-  version "ceph5k 0.0.8 (c) 2015-16 Anirvan BASU, INRIA RBA"
-  banner <<-EOS
-cephDeploy is a script for deploying a Ceph cluster on reserved nodes.
-
-Usage:
-       cephDeploy [options]
-where [options] are:
-EOS
-
-  opt :ignore, "Ignore incorrect values"
-  opt :jobid, "Oarsub ID of the job", :default => 0
-  opt :'job-name', "Name of Grid'5000 job if already created", :type => String, :default => defaults["job-name"]
-  opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["site"]
-  opt :cluster, "Grid 5000 cluster in specified site", :type => String, :default => defaults["cluster"]
-  opt :env, "G5K environment to be deployed", :type => String, :default => defaults["env"]
-  opt :'num-nodes', "Nodes in Ceph cluster", :default => defaults["num-nodes"]
-  opt :walltime, "Wall time for Ceph cluster deployed", :type => String, :default => defaults["walltime"]
-
-  opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
-  opt :'cluster-name', "Ceph cluster name", :type => String, :default => defaults["cluster-name"]
-  opt :'multi-osd', "Multiple OSDs on each node", :default => defaults["multi-osd"]
-  opt :'file-system', "File System to be formatted on OSDs", :type => String, :default => defaults["file-system"]
-
-end
-
-# Move CLI arguments into variables. Later change to class attributes.
-argJobID = opts[:jobid] # Oarsub ID of the job. 
-argJobName = opts[:'job-name'] # Grid'5000 ndoes reservation job. 
-argSite = opts[:site] # site name. 
-argG5KCluster = opts[:cluster] # G5K cluster name if specified. 
-argEnv = opts[:env] # Grid'5000 environment to deploy. 
-argNumNodes = opts[:'num-nodes'] # number of nodes in Ceph cluster.
-argWallTime = opts[:walltime] # walltime for the reservation.
-
-argRelease = opts[:release] # Ceph release name. 
-argCephCluster = opts[:'cluster-name'] # Ceph cluster name.
-argMultiOSD = opts[:'multi-osd'] # Multiple OSDs on each node.
-argFileSystem = opts[:'file-system'] # File System to be formatted on OSDs.
+currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
+opts = readOptions(scriptDir, currentConfigFile, "cephDeploy")
 
 # Show parameters for creating Ceph cluster
 puts "Deploying Ceph cluster with the following parameters:"
-puts "Grid 5000 site: #{argSite}"
-puts "Grid 5000 cluster: #{argG5KCluster}"
-puts "Ceph Release: #{argRelease}"
-puts "Grid'5000 deployment: #{argEnv}"
-puts "Job name (for nodes reservation): #{argJobName}"
-puts "Ceph cluster name: #{argCephCluster}"
-puts "Total nodes in Ceph cluster: #{argNumNodes}"
-puts "Deployment time: #{argWallTime}\n"
-puts "Option for multiple OSDs per node: #{argMultiOSD}\n" + "\n"
+puts "Grid 5000 site: #{opts[:site]}"
+puts "Grid 5000 cluster: #{opts[:cluster]}"
+puts "Ceph Release: #{opts[:release]}"
+puts "Grid'5000 deployment: #{opts[:env]}"
+puts "Job name (for nodes reservation): #{opts[:'job-name']}"
+puts "Ceph cluster name: #{opts[:'cluster-name']}"
+puts "Total nodes in Ceph cluster: #{opts[:'num-nodes']}"
+puts "Deployment time: #{opts[:walltime]}\n"
+puts "Option for multiple OSDs per node: #{opts[:'multi-osd']}\n" + "\n"
 
 #Initialise some global variables
 jobCephCluster = nil
-myCephJobs = [] # an array to recover all my jobs in states "waiting" or "running"
 
-unless [nil, 0].include?(argJobID)
+unless [nil, 0].include?(opts[:jobid])
    # If jobID is specified, get the specific job
-   jobCephCluster = g5k.get_job(argSite, argJobID)
+   jobCephCluster = g5k.get_job(opts[:site], opts[:jobid])
 else
    # Get all my jobs submitted in a site
    jobs = []
    ["waiting","running"].each do |state|
-      jobs += g5k.get_my_jobs(argSite, state)
+      jobs += g5k.get_my_jobs(opts[:site], state)
 
-      # get the job with name "cephDeploy" or argJobName
+      # get the job with name "cephDeploy" or opts[:'job-name']
       jobs.each do |job|
-         if job["name"] == argJobName # if job exists already, get nodes
+         if job["name"] == opts[:'job-name'] # if job exists already, get nodes
             jobCephCluster = job
-         end # if job["name"] == argJobName
+         end # if job["name"] == opts[:'job-name']
 
       end # jobs.each do |job|
 
    end # ["waiting","running"].each do |state|
 
-end # if argJobID
+end # if opts[:jobid]
 
 # If job state is "waiting" then wait for resources to be assigned
 unless jobCephCluster.nil?
@@ -142,14 +83,14 @@ unless jobCephCluster.nil?
       begin
          job = g5k.wait_for_job(jobCephCluster, :wait_time => 60)
       rescue Cute::G5K::EventTimeout
-         puts "Waited too long in site #{argSite}, releasing job #{argJobName}"
+         puts "Waited too long in site #{opts[:site]}, releasing job #{opts[:'job-name']}"
          g5k.release(job)
       end # begin
    end # if jobCephCluster["state"] == "waiting"
 
 else # Finally, if job does not yet exist reserve nodes
 
-   jobCephCluster = g5k.reserve(:name => argJobName, :nodes => argNumNodes, :site => argSite, :cluster => argG5KCluster, :walltime => argWallTime, :type => :deploy)
+   jobCephCluster = g5k.reserve(:name => opts[:'job-name'], :nodes => opts[:'num-nodes'], :site => opts[:site], :cluster => opts[:cluster], :walltime => opts[:walltime], :type => :deploy)
 
 end # unless jobCephCluster.nil?
 
@@ -162,7 +103,7 @@ radosGW = monitor # as of now the machine is the same for monitor & rados GW
 monAllNodes = [monitor] # List of all monitors. As of now, only single monitor.
 
 # Then, deploy the nodes with respective environments
-depCeph = g5k.deploy(jobCephCluster, :nodes => nodes, :env => argEnv)
+depCeph = g5k.deploy(jobCephCluster, :nodes => nodes, :env => opts[:env])
 g5k.wait_for_deploy(jobCephCluster)
 
 
@@ -170,14 +111,14 @@ g5k.wait_for_deploy(jobCephCluster)
 puts "Ceph deployment job details recovered." + "\n"
 
 # At this point job was created / fetched
-puts "Deploying Ceph cluster #{argCephCluster} as follows:"
+puts "Deploying Ceph cluster #{opts[:'cluster-name']} as follows:"
 puts "Cluster on nodes: #{nodes}" 
 puts "Monitor node on: #{monAllNodes}"
 puts "OSDs on: #{osdNodes}"
 
 # Additionally create a directory for saving details of deployment
 jobID = jobCephCluster["uid"]
-depStateDir = tempDir + "/#{argSite}/#{jobID}"
+depStateDir = tempDir + "/#{opts[:site]}/#{jobID}"
 FileUtils.mkpath(depStateDir)
 FileUtils.cp(currentConfigFile, depStateDir + "/defaults.yml")
 
@@ -194,7 +135,7 @@ end
 puts "Doing pre-flight checklist..."
 
 # Add Ceph & Extras to each Ceph node ('firefly' is the most complete)
-argDebian = argEnv.slice(0,6)
+argDebian = opts[:env].slice(0,6)
 
 # Specify explicit dependencies for Ceph packages 
 # See Bug #832714: Ceph from Jessie-backports
@@ -209,7 +150,7 @@ else
 end # if argDebian.include? "jessie"
 
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
-     tak.exec!("echo deb http://apt.grid5000.fr/ceph5k/#{argDebian}/#{argRelease} / | tee /etc/apt/sources.list.d/ceph.list")
+     tak.exec!("echo deb http://apt.grid5000.fr/ceph5k/#{argDebian}/#{opts[:release]} / | tee /etc/apt/sources.list.d/ceph.list")
      tak.exec!(aptgetPurgeCmd) # Purge previous ceph packages & dependencies
      tak.exec!(aptgetInstallCmd) # Install ceph packages & dependencies
      tak.loop()
@@ -347,7 +288,7 @@ end
 nodes.each do |node|
      nodeShort = node.split(".").first
      Cute::TakTuk.start([node], :user => "root") do |tak|
-          tak.exec!("export https_proxy=\"https://proxy:3128\"; export http_proxy=\"http://proxy:3128\"; ceph-deploy install --release #{argRelease} #{nodeShort}")
+          tak.exec!("ceph-deploy install --release #{opts[:release]} #{nodeShort}")
           tak.loop()
      end
 end
@@ -389,7 +330,7 @@ puts "Preparing & activating OSDs..."
 
 osdIndex = 0 # Iteration counter for OSDs created.
 # mkdir, Prepare & Activate each OSD
-if argMultiOSD # Option for activating multiple OSDs per node
+if opts[:'multi-osd'] # Option for activating multiple OSDs per node
 
    osdNodes.each do |node|    # loop over all OSD nodes
      nodeShort = node.split(".").first       # the shortname of the node
@@ -397,7 +338,7 @@ if argMultiOSD # Option for activating multiple OSDs per node
      storageDevices = []
 
      # Prepare URI & get node resources.
-     nodeURI = "https://api.grid5000.fr/stable/sites/#{argSite}/clusters/#{g5kCluster}/nodes/#{nodeShort}"
+     nodeURI = "https://api.grid5000.fr/stable/sites/#{opts[:site]}/clusters/#{g5kCluster}/nodes/#{nodeShort}"
      uri = URI(nodeURI)
      http = Net::HTTP.new(uri.host, uri.port)
      request = Net::HTTP::Get.new(uri.request_uri)
@@ -433,7 +374,7 @@ if argMultiOSD # Option for activating multiple OSDs per node
            Cute::TakTuk.start([node], :user => "root") do |tak|
                tak.exec!("parted -s /dev/#{device} mklabel msdos")
                tak.exec!("parted -s /dev/#{device} --align optimal mkpart primary 0 100%")
-               tak.exec!("mkfs -t #{argFileSystem} /dev/#{device}1")
+               tak.exec!("mkfs -t #{opts[:'file-system']} /dev/#{device}1")
                tak.loop()
            end # end of TakTuk loop for OSD node
 
