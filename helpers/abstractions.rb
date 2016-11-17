@@ -182,6 +182,8 @@ def logCreate(logDir, scriptName)
 
    logger.formatter = proc do |datetime, progname|
   "#{datetime}: #{scriptName}\n"
+
+   logger
 end
 
 end # logCreate()
