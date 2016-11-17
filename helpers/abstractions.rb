@@ -177,7 +177,7 @@ end
 
 def logCreate(logDir, scriptName)
 # Creates a logFile at logDir/scriptName.log
-   logFile = File.open("#{logDir}/#{scriptName}.log", "a+")
+   logFile = File.open("#{logDir}/ceph5k.log", "a+")
    logger = Logger.new MultiIO.new(STDOUT, logFile)
 
    logger.formatter = proc do |severity, datetime, progname, msg|

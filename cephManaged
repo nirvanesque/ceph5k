@@ -42,11 +42,16 @@ prodDir = tempDir + "/config/prod"
 FileUtils.mkpath(prodDir)
 
 currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
+# Read all options from CLI or config file
 opts = readOptions(scriptDir, currentConfigFile, "cephManaged")
 
 # Adapt some CLI arguments into global variables. Later change to class attributes.
 opts[:'pool-name'] = "#{user}_" + opts[:'pool-name'] # Name of pool to find on cluster.
 opts[:'rbd-name'] = "#{user}_" + opts[:'rbd-name'] # Name of RBD to create on cluster.
+
+
+# Prepare logFile for logging all actions
+logger = logCreate(tempDir, "cephManaged")
 
 
 # Next get job for Ceph clients
@@ -65,7 +70,7 @@ unless opts[:'file'].empty?
    jobs.each do |job|
       if job["assigned_nodes"] == clients # get job where nodes are same as client-list
          jobCephClient = job
-         puts "Ceph client job recovered with nodes: #{clients}"
+         logger.info "Ceph client job recovered with nodes: #{clients}"
        end # if job["assigned_nodes"] == clients
    end # jobs.each do |job|
 
@@ -99,7 +104,7 @@ else # when no client-list is specified. Do deployment or start from scratch.
          begin
             job = g5k.wait_for_job(jobCephClient, :wait_time => 60)
          rescue Cute::G5K::EventTimeout
-            puts "Waited too long in site #{opts[:'client-site']}, releasing job #{opts[:'job-client']}"
+            logger.info "Waited too long in site #{opts[:'client-site']}, releasing job #{opts[:'job-client']}"
             g5k.release(job)
          end
       end # if jobCephClient["state"] == "waiting"
@@ -133,17 +138,17 @@ clients = jobCephClient["assigned_nodes"]
 
 # if not yet deployed, then deploy it
 if jobCephClient["deploy"].nil?
-   puts "Deploying #{opts[:'env-client']} on client node(s): #{clients}"
+   logger.info "Deploying #{opts[:'env-client']} on client node(s): #{clients}"
    depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => opts[:'env-client']) 
    g5k.wait_for_deploy(jobCephClient)
 end # if jobCephClient["deploy"].nil?
 
 # Remind where is the Ceph client
-puts "Managed Ceph client(s) on: #{clients}"
+logger.info "Managed Ceph client(s) on: #{clients}"
 
 
 #1 Preflight Checklist
-puts "Doing pre-flight checklist..."
+logger.info "Doing pre-flight checklist..."
 
 # Add Ceph & Extras to each Ceph node ('firefly' is the most complete)
 argDebian = opts[:'env-client'].slice(0,6)
@@ -170,7 +175,7 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
 end
 
 # Preflight checklist completed.
-puts "Pre-flight checklist completed."
+logger.info "Pre-flight checklist completed."
 
 
 # Abort script if no managed Ceph cluster specified
@@ -204,11 +209,11 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
 end
 
 # Created & pushed config file for Managed Ceph cluster.
-puts "Created & pushed config file for managed Ceph cluster to client(s)."
+logger.info "Created & pushed config file for managed Ceph cluster to client(s)."
 
 
 # Creating Ceph pools on managed cluster.
-puts "Configuring Ceph pool & RBD on managed cluster ..."
+logger.info "Configuring Ceph pool & RBD on managed cluster ..."
 poolsList = []
 userPool = ""
 userPoolMatch = ""
@@ -228,11 +233,11 @@ Cute::TakTuk.start([client], :user => "root") do |tak|
      end # poolsList.each do
 
      if userPool.empty?   # There is no pool created on managed Ceph
-        puts "No Ceph pool found with name: #{opts[:'pool-name']}"
-        puts "Specify correct pool name in config file or using option --client-pool-name"
-        puts "Or verify / create the Ceph pool from the Ceph managed cluster frontend"
-        puts "Use this link to create pool: https://api.grid5000.fr/sid/storage/ceph/ui/"
-        puts "Then rerun this script."
+        logger.error "No Ceph pool found with name: #{opts[:'pool-name']}"
+        logger.error "Specify correct pool name in config file or using option --client-pool-name"
+        logger.error "Or verify / create the Ceph pool from the Ceph managed cluster frontend"
+        logger.error "Use this link to create pool: https://api.grid5000.fr/sid/storage/ceph/ui/"
+        logger.error "Then rerun this script."
         abortFlag = true
      end # userPool.empty?
      tak.loop()
@@ -260,7 +265,7 @@ unless opts[:'rbd-list-file'].nil?
    clientRBDList = begin
      YAML.load(File.open(opts[:'rbd-list-file']))
    rescue ArgumentError => e
-     puts "Could not parse YAML: #{e.message}"
+     logger.info "Could not parse YAML: #{e.message}"
    end
 
    abort("Script exited - mismatch between supplied list of RBDs and RBDs found in pool #{userPool}") unless clientRBDList & poolRBDList == clientRBDList || poolRBDList.count == 0
@@ -275,23 +280,23 @@ rbdList = []
 case
    when clientRBDList.any? && poolRBDList.any?
      rbdList = poolRBDList
-     puts "Mapping & mounting RBDs from list: #{rbdList} \nto client(s): #{clients}"
+     logger.info "Mapping & mounting RBDs from list: #{rbdList} \nto client(s): #{clients}"
 
    when clientRBDList.any? && poolRBDList.empty?
      createRBD = true
      rbdList = clientRBDList
-     puts "Creating, mapping & mounting RBDs from list: #{rbdList} \nto client(s): #{clients}"
+     logger.info "Creating, mapping & mounting RBDs from list: #{rbdList} \nto client(s): #{clients}"
 
    when clientRBDList.empty? && poolRBDList.any?
      rbdList = poolRBDList
-     puts "Mapping & mounting RBDs from list: #{rbdList} \nto client(s): #{clients}"
+     logger.info "Mapping & mounting RBDs from list: #{rbdList} \nto client(s): #{clients}"
 
    when clientRBDList.empty? && poolRBDList.empty?
      clients.each_with_index do |cephClient, index|
         rbdList[index] = "#{opts[:'rbd-name']}_#{index}"
      end # clients.each_with_index do
      createRBD = true
-     puts "Creating, mapping & mounting RBDs from list: #{rbdList} \nto client(s): #{clients}"
+     logger.info "Creating, mapping & mounting RBDs from list: #{rbdList} \nto client(s): #{clients}"
 
    else # rbdList.count <= opts[:'num-client']
         abort("Script exited - possible mismatch between RBDs in pool and clients. Please try with a different pool and/or RBD list.")
@@ -304,18 +309,18 @@ if opts[:'multi-client']
            # Create RBDs if pool is empty
            if createRBD
               result = tak.exec!("rbd -c /root/prod/#{opts[:'managed-cluster']}/ceph.conf --id #{user} --pool #{userPool} -k /etc/ceph/#{opts[:'managed-cluster']}/ceph.client.#{user}.keyring create #{rbdList[index]} --size #{opts[:'rbd-size']}")
-              puts "RBD #{rbdList[index]} created on Ceph managed cluster for client #{cephClient}." if result[cephClient][:status] == 0
+              logger.info "RBD #{rbdList[index]} created on Ceph managed cluster for client #{cephClient}." if result[cephClient][:status] == 0
            end # if createRBD
 
 
            # Map RBD on managed cluster
            result = tak.exec!("rbd -c /root/prod/#{opts[:'managed-cluster']}/ceph.conf --id #{user} --pool #{userPool} -k /etc/ceph/#{opts[:'managed-cluster']}/ceph.client.#{user}.keyring map #{rbdList[index]}")
-           puts "RBD #{rbdList[index]} mapped on Ceph managed cluster for client #{cephClient}." if result[cephClient][:status] == 0
+           logger.info "RBD #{rbdList[index]} mapped on Ceph managed cluster for client #{cephClient}." if result[cephClient][:status] == 0
 
            # Create an FS only if RBD is newly created
            if createRBD 
               result = tak.exec!("mkfs.#{opts[:'file-system']} /dev/rbd/#{userPool}/#{rbdList[index]}")
-              puts "RBD #{rbdList[index]} formatted with File system #{opts[:'file-system']} on client #{cephClient}." if result[cephClient][:status] == 0
+              logger.info "RBD #{rbdList[index]} formatted with File system #{opts[:'file-system']} on client #{cephClient}." if result[cephClient][:status] == 0
            end # if createRBD
 
            # mount RBD from managed cluster
@@ -323,7 +328,7 @@ if opts[:'multi-client']
            tak.exec!("rmdir /mnt/#{opts[:'mnt-prod']}")
            tak.exec!("mkdir /mnt/#{opts[:'mnt-prod']}")
            result = tak.exec!("mount /dev/rbd/#{userPool}/#{rbdList[index]} /mnt/#{opts[:'mnt-prod']}")
-           puts "Mounted RBD #{rbdList[index]} on managed Ceph client #{cephClient}." if result[cephClient][:status] == 0
+           logger.info "Mounted RBD #{rbdList[index]} on managed Ceph client #{cephClient}." if result[cephClient][:status] == 0
 
         tak.loop()
 
@@ -334,7 +339,7 @@ if opts[:'multi-client']
 else # single Ceph client
 
    # Map RBD and create File Systems.
-   puts "Mapping RBD in managed Ceph clusters ..."
+   logger.info "Mapping RBD in managed Ceph clusters ..."
    Cute::TakTuk.start(clients, :user => "root") do |tak|
         unless opts[:'no-deployed']
            # Map RBD & create FS on deployed Ceph cluster
@@ -342,7 +347,7 @@ else # single Ceph client
            tak.exec!("mkfs.#{opts[:'file-system']} /dev/rbd/#{opts[:'pool-name']}/#{opts[:'rbd-name']}")
 
            results.each do |client, result|
-              puts "Mapped RBD #{myRBDName} on deployed Ceph to client #{client}." if result[:status] == 0
+              logger.info "Mapped RBD #{myRBDName} on deployed Ceph to client #{client}." if result[:status] == 0
            end # results.each do |client, result|
 
         end # unless opts[:'no-deployed']
@@ -359,13 +364,13 @@ else # single Ceph client
 
      tak.loop()
      results.each do |client, result|
-        puts "Mapped RBD #{myRBDName} on managed Ceph to client #{client}." if result[:status] == 0
+        logger.info "Mapped RBD #{myRBDName} on managed Ceph to client #{client}." if result[:status] == 0
      end # results.each do |client, result|
 end
 
 
 # Mount RBDs as File Systems.
-puts "Mounting RBD as File Systems in managed Ceph cluster ..."
+logger.info "Mounting RBD as File Systems in managed Ceph cluster ..."
 Cute::TakTuk.start(clients, :user => "root") do |tak|
 
      result = nil
@@ -382,7 +387,7 @@ Cute::TakTuk.start(clients, :user => "root") do |tak|
         results = tak.exec!("mount /dev/rbd/#{userPool}/#{userRBD} /mnt/#{opts[:'mnt-prod']}")
      end # if userRBD.empty?
      results.each do |client, result|
-        puts "Mounted RBD on managed Ceph to client #{client}." if result[:status] == 0
+        logger.info "Mounted RBD on managed Ceph to client #{client}." if result[:status] == 0
      end # results.each do |client, result|
 
      tak.loop()
