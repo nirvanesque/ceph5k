@@ -174,7 +174,7 @@ puts "Pre-flight checklist completed."
 
 
 # Abort script if no managed Ceph cluster specified
-abort("Script exited - no managed Ceph cluster specified. Use option --managed-cluster to specify rennes or nantes") if opts[:'managed-cluster'].empty?
+abort("Script exited - no managed Ceph cluster specified. Use option --managed-cluster to specify rennes or ") if opts[:'managed-cluster'].nil?
 
 
 # Prepare ceph.conf file for managed Ceph cluster
