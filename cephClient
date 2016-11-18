@@ -62,7 +62,7 @@ end # if jobCephCluster.nil?
 monitor = jobCephCluster["assigned_nodes"][0]
 
 
-# Recover job details of client-list
+# Recover job details of clients
 jobCephClient = getJob(g5k, 0, opts[:'job-client'], opts[:'client-site'])
 clients = [] # Array of client nodes
 

@@ -59,23 +59,8 @@ logger.info "Option for multiple OSDs per node: #{opts[:'multi-osd']}\n" + "\n"
 # Get the job for Ceph cluster if it exists
 jobCephCluster = getJob(g5k, opts[:jobid], opts[:'job-name'], opts[:site])
 
-# If job state is "waiting" then wait for resources to be assigned
-unless jobCephCluster.nil?
-   if jobCephCluster["state"] == "waiting"
-
-      begin
-         job = g5k.wait_for_job(jobCephCluster, :wait_time => 60)
-      rescue Cute::G5K::EventTimeout
-         logger.error "Waited too long in site #{opts[:site]}, releasing job #{opts[:'job-name']}"
-         g5k.release(job)
-      end # begin
-   end # if jobCephCluster["state"] == "waiting"
-
-else # Finally, if job does not yet exist reserve nodes
-
-   jobCephCluster = g5k.reserve(:name => opts[:'job-name'], :nodes => opts[:'num-nodes'], :site => opts[:site], :cluster => opts[:cluster], :walltime => opts[:walltime], :type => :deploy)
-
-end # unless jobCephCluster.nil?
+# Finally create job if not yet created
+jobCephCluster = g5k.reserve(:name => opts[:'job-name'], :nodes => opts[:'num-nodes'], :site => opts[:site], :cluster => opts[:cluster], :walltime => opts[:walltime], :type => :deploy) if jobCephCluster.nil?
 
 
 # Assign roles to each node

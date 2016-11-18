@@ -54,71 +54,34 @@ opts[:'rbd-name'] = "#{user}_" + opts[:'rbd-name'] # Name of RBD to create on cl
 logger = logCreate(tempDir, "cephManaged")
 
 
-# Next get job for Ceph clients
-jobCephClient = nil # Ceph client job
+# Recover job details of clients
+jobCephClient = getJob(g5k, 0, opts[:'job-client'], opts[:'client-site'])
 clients = [] # Array of client nodes
 
-# If client-list specified in CLI argument, get list of clients & fill variable
+# If client-list specified in CLI argument, get list of clients & fill array
 unless opts[:'file'].empty?
    clients = File.open(opts[:'file'], 'r'){ |file| 
       file.readlines.collect{ |line| line.chomp }
-   }
-
-   # Recover job details of client-list
-   jobs = g5k.get_my_jobs(opts[:'client-site'], state = "running") 
-
-   jobs.each do |job|
-      if job["assigned_nodes"] == clients # get job where nodes are same as client-list
-         jobCephClient = job
-         logger.info "Ceph client job recovered with nodes: #{clients}"
-       end # if job["assigned_nodes"] == clients
-   end # jobs.each do |job|
-
+   } # File.open
 else # when no client-list is specified. Do deployment or start from scratch.
 
-   unless [nil, 0].include?(opts[:jobid])
-      # If jobID is specified, get the specific job
-      jobCephClient = g5k.get_job(opts[:'client-site'], opts[:jobid])
-   else
-      # Get all my jobs submitted in a site
-      jobs = []
-      ["waiting","running"].each do |state|
-         jobs += g5k.get_my_jobs(opts[:'client-site'], state)
-
-         # get the job with name "cephClient" or argJobName
-         jobs.each do |job|
-            if job["name"] == opts[:'job-client'] # if job exists already, get nodes
-               jobCephClient = job
-            end # if job["name"] == opts[:'job-client']
-
-         end # jobs.each do |job|
-
-      end # ["waiting","running"].each do |state|
-
-   end # unless [nil, 0].include?(opts[:jobid])
-
-   # If job state is "waiting" then wait for resources to be assigned
-   unless jobCephClient.nil?
-
-      if jobCephClient["state"] == "waiting"
-         begin
-            job = g5k.wait_for_job(jobCephClient, :wait_time => 60)
-         rescue Cute::G5K::EventTimeout
-            logger.info "Waited too long in site #{opts[:'client-site']}, releasing job #{opts[:'job-client']}"
-            g5k.release(job)
-         end
-      end # if jobCephClient["state"] == "waiting"
-
-   else
-      # Finally, if job does not yet exist reserve nodes
-      jobCephClient = g5k.reserve(:name => opts[:'job-client'], :nodes => opts[:'num-client'], :site => opts[:'client-site'], :cluster => opts[:'client-cluster'], :walltime => opts[:walltime], :type => :deploy) 
-
-   end # unless jobCephClient.nil?
+   # Finally, if job does not yet exist reserve nodes
+   jobCephClient = g5k.reserve(:name => opts[:'job-client'], :nodes => opts[:'num-client'], :site => opts[:'client-site'], :cluster => opts[:'client-cluster'], :walltime => opts[:walltime], :type => :deploy) if jobCephClient.nil?
 
    # Assign roles to each node
    clients = jobCephClient["assigned_nodes"]
 
+   # if not yet deployed, then deploy it
+   if jobCephClient["deploy"].nil?
+      logger.info "Deploying #{opts[:'env-client']} on client node(s): #{clients}"
+      depCephClient = g5k.deploy(jobCephClient, :nodes => clients, :env => opts[:'env-client']) 
+      g5k.wait_for_deploy(jobCephClient)
+   end # if jobCephClient["deploy"].nil?
+
 end # unless opts[:'file'].empty?
+
+# At this point Ceph client job was created / fetched
+logger.info "Deploying Ceph clients on nodes: #{clients}" 
 
 
 # Additionally create a directory for saving details of clients deployed
