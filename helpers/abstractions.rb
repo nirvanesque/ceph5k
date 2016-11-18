@@ -189,4 +189,47 @@ def logCreate(logDir, scriptName)
 end # logCreate()
 
 
+def getJob(g5k, jobID, jobName, site)
+# Gets the job with relevant parameters, if not returns nil
+
+   jobHash = nil
+
+   unless [nil, 0].include?(jobID)
+      # If jobID is specified, get the specific job
+      jobHash = g5k.get_job(site, jobID)
+   else
+      # Get all my jobs submitted in a site
+      jobs = []
+      ["waiting","running"].each do |state|
+         jobs += g5k.get_my_jobs(site, state)
+
+         # get the job with name "cephDeploy" or jobName
+         jobs.each do |job|
+            if job["name"] == jobName # if job exists already, get nodes
+               jobHash = job
+            end # if job["name"] == jobName
+
+         end # jobs.each do |job|
+
+      end # ["waiting","running"].each do |state|
+
+   end # unless [nil, 0].include?(jobID)
+
+   unless jobHash.nil?
+
+      if jobHash["state"] == "waiting"
+         begin
+            job = g5k.wait_for_job(jobHash, :wait_time => 60)
+         rescue Cute::G5K::EventTimeout
+            puts "Waited too long in site #{site}, releasing job #{jobName}"
+            g5k.release(job)
+         end
+      end # if jobHash["state"] == "waiting"
+
+   end # unless jobHash.nil?
+
+   return jobHash
+
+end # getJob()
+
 

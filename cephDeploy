@@ -56,29 +56,8 @@ logger.info "Total nodes in Ceph cluster: #{opts[:'num-nodes']}"
 logger.info "Deployment time: #{opts[:walltime]}\n"
 logger.info "Option for multiple OSDs per node: #{opts[:'multi-osd']}\n" + "\n"
 
-#Initialise some global variables
-jobCephCluster = nil
-
-unless [nil, 0].include?(opts[:jobid])
-   # If jobID is specified, get the specific job
-   jobCephCluster = g5k.get_job(opts[:site], opts[:jobid])
-else
-   # Get all my jobs submitted in a site
-   jobs = []
-   ["waiting","running"].each do |state|
-      jobs += g5k.get_my_jobs(opts[:site], state)
-
-      # get the job with name "cephDeploy" or opts[:'job-name']
-      jobs.each do |job|
-         if job["name"] == opts[:'job-name'] # if job exists already, get nodes
-            jobCephCluster = job
-         end # if job["name"] == opts[:'job-name']
-
-      end # jobs.each do |job|
-
-   end # ["waiting","running"].each do |state|
-
-end # if opts[:jobid]
+# Get the job for Ceph cluster if it exists
+jobCephCluster = getJob(g5k, opts[:jobid], opts[:'job-name'], opts[:site])
 
 # If job state is "waiting" then wait for resources to be assigned
 unless jobCephCluster.nil?

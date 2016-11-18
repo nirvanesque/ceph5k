@@ -18,7 +18,7 @@ At the CLI on a frontend:
 Get the required gems and download from the repository as follows:
 
         gem install --user-install trollop
-        gem install --user-install ruby-cute -v 0.3
+        gem install --user-install ruby-cute
         rm -rf ceph5k
         git clone https://github.com/nirvanesque/ceph5k.git
 
