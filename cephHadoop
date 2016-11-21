@@ -43,7 +43,7 @@ FileUtils.mkpath(hadoopConfDir)
 
 currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
 # Read all options from CLI or config file
-opts = readOptions(scriptDir, currentConfigFile, "cephDeploy")
+opts = readOptions(scriptDir, currentConfigFile, "cephHadoop")
 
 # Prepare logFile for logging all actions
 logger = logCreate(tempDir, "cephHadoop")
