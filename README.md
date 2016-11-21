@@ -135,9 +135,17 @@ In the Ceph5k toolsuite, supplementary scripts are provided to use the deployed 
 ## Apache Hadoop
 Then the script cephHadoop can be executed at any frontend by typing at CLI:
 
-        ./ceph5k/cephHadoop               # Install and run the Hadoop framework (HDFS, YARN & MapReduce)
+        ./ceph5k/cephHadoop --client-site nancy --hadoop start --hadoop-cluster deployed
 
-The above script installs the full Hadoop 2.x framework with the first client as Master node and the remaining clients as Slaves/Workers. This means that you will have your entire Hadoop daemons running, complete with HDFS, YARN resources manager and MapReduce daemon. Subsequently, you can launch your Big Data jobs (e.g. WordCount, PageRank, ... ) from the Master node. Please see the Wiki page for further details: https://www.grid5000.fr/mediawiki/index.php/Moving_Data_between_Hadoop_installations_on_Ceph
+The above script installs the full Hadoop 2.x framework (HDFS, YARN & MapReduce) on 'nancy' site with the first client as Master node and the remaining clients as Slaves/Workers. 
+
+Hadoop can also be deployed directly on a managed Ceph cluster by typing at CLI:
+
+        ./ceph5k/cephHadoop --client-site nancy --hadoop start --hadoop-cluster managed
+
+Note: The script assumes that there exist already Ceph 'clients' that access the deployed or managed Ceph cluster. If not, the script will give an error message and exit.
+
+Subsequently, you can launch your Big Data jobs (e.g. WordCount, PageRank, ... ) from the Master node. Please see the Wiki page for further details: https://www.grid5000.fr/mediawiki/index.php/Moving_Data_between_Hadoop_installations_on_Ceph
 
 - Hadoop-specific options:
 
@@ -289,7 +297,7 @@ Following are options related to resources on Grid'5000:
 
         -j, --jobid=int                  Oarsub ID of the Hadoop nodes (Ceph clients) reservation
         -o, --job-client=string          Grid'5000 job name for Hadoop nodes (Ceph clients)
-        -s, --site=string                Grid'5000 site where Hadoop nodes (Ceph clients) are deployed
+        -s, --client-site=string         Grid'5000 site where Hadoop nodes (Ceph clients) are deployed
 
 - Hadoop-specific options :
 

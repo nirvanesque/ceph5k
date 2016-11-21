@@ -91,11 +91,11 @@ def readOptions(scriptDir, currentConfigFile, scriptName)
 
   opt :ignore, "Ignore incorrect values"
   opt :jobid, "Oarsub ID of the client job", :default => 0
-  opt :walltime, "Wall time for reservation", :type => String, :default => defaults["walltime"]
 
      case scriptName
 
         when "cephDeploy" # options specific for script cephDeploy
+  opt :walltime, "Wall time for reservation", :type => String, :default => defaults["walltime"]
      opt :'job-name', "Name of Grid'5000 job if already created", :type =>    String, :default => defaults["job-name"]
      opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["site"]
      opt :cluster, "Grid 5000 cluster in specified site", :type => String, :default => defaults["cluster"]
@@ -109,6 +109,7 @@ def readOptions(scriptDir, currentConfigFile, scriptName)
 
 
         when "cephClient" # options specific for script cephClient
+  opt :walltime, "Wall time for reservation", :type => String, :default => defaults["walltime"]
   opt :'job-name', "Grid'5000 job name for dedicated Ceph cluster", :type => String, :default => defaults["job-name"]
   opt :site, "Grid 5000 site where dedicated Ceph cluster is deployed", :type => String, :default => defaults["site"]
 
@@ -125,10 +126,11 @@ def readOptions(scriptDir, currentConfigFile, scriptName)
   opt :'rbd-size', "RBD size on Ceph pool", :default => defaults["client-rbd-size"]
   opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
   opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
-  opt :'mnt-depl', "Mount point for RBD on deployed cluster", :type => String, :default => defaults["mnt-depl"]
+  opt :'mnt-depl', "Mount point for RBDs in deployed cluster", :type => String, :default => defaults["mnt-depl"]
 
 
         when "cephManaged" # options specific for script cephManaged
+  opt :walltime, "Wall time for reservation", :type => String, :default => defaults["walltime"]
   opt :'job-client', "Grid'5000 job name for Ceph clients", :type => String, :default => defaults["job-client"]
   opt :'file', "File with clients list, same option as in kadeploy3", :type => String, :default => ""
   opt :'client-site', "Grid 5000 site for deploying Ceph clients", :type => String, :default => defaults["client-site"]
@@ -146,7 +148,17 @@ def readOptions(scriptDir, currentConfigFile, scriptName)
   opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
   opt :'rbd-list-file', "YAML file with RBD list. No. of RBDs must be same as no. of clients", :type => String, :default => nil
   opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
-  opt :'mnt-prod', "Mount point for RBD on managed cluster", :type => String, :default => defaults["mnt-prod"]
+  opt :'mnt-prod', "Mount point for RBDs in managed cluster", :type => String, :default => defaults["mnt-prod"]
+
+
+        when "cephHadoop" # options specific for script cephHadoop
+  opt :'job-client', "Grid'5000 job name for Hadoop nodes (Ceph clients)", :type => String, :default => defaults["job-client"]
+  opt :'client-site', "Grid 5000 site where Ceph clients are deployed", :type => String, :default => defaults["client-site"]
+  opt :'mnt-depl', "Mount point for RBDs in dedicated cluster", :type => String, :default => defaults["mnt-depl"]
+  opt :'mnt-prod', "Mount point for RBD in managed cluster", :type => String, :default => defaults["mnt-prod"]
+  opt :'hadoop', "start, stop, restart Hadoop cluster", :type => String, :default => defaults["hadoop"]
+  opt :'hadoop-cluster', "Hadoop on Ceph cluster: deployed OR managed", :default => defaults["hadoop-cluster"]
+  opt :'hadoop-link', "URL link to download Hadoop binary", :type => String, :default => "http://apache.crihan.fr/dist/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz"
 
 
      end # case scriptName
@@ -159,8 +171,9 @@ end # readOptions()
 
 
 
-# Class for abstracting simultaneous log writes to both logFile and stdout
 class MultiIO
+# Class for abstracting simultaneous log writes to both logFile and stdout
+# Can be extended to multiple outputs also
   def initialize(*targets)
      @targets = targets
   end

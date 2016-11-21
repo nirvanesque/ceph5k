@@ -24,6 +24,7 @@ require 'json'
 require "net/http"
 require "uri"
 require "fileutils"
+require_relative "helpers/abstractions"
 
 
 g5k = Cute::G5K::API.new()
@@ -40,86 +41,22 @@ FileUtils.mkpath(tempDir + "/config")
 hadoopConfDir = tempDir + "/config/hadoop"
 FileUtils.mkpath(hadoopConfDir)
 
-currentConfigFile = ""
-if (["--def-conf", "-d"].include?(ARGV[0])  && !ARGV[1].empty? )
-   currentConfigFile = ARGV[1] # assign config file location to variable configFile
-   ARGV.delete_at(0)    # clean up ARGV array
-   ARGV.delete_at(0)
-else 
-   currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
-   unless File.exist?(currentConfigFile)
-     configFile = scriptDir + "/config/defaults.yml.example" # example config file
-     FileUtils.cp(configFile, currentConfigFile)
-   end # unless File.exist?
-end    # if (["--def-conf", "-d"])
+currentConfigFile = tempDir + "/config/defaults.yml" # config file to be used.
+# Read all options from CLI or config file
+opts = readOptions(scriptDir, currentConfigFile, "cephHadoop")
 
-# Populate the hash with default parameters from YAML file.
-defaults = begin
-  YAML.load(File.open(currentConfigFile))
-  rescue ArgumentError => e
-     puts "Could not parse YAML: #{e.message}"
-end
-
-
-# banner for script
-opts = Trollop::options do
-  version "ceph5k 0.0.8 (c) 2015-16 Anirvan BASU, INRIA RBA"
-  banner <<-EOS
-cephHadoop is a script for deploying Apache Hadoop on a deployed Ceph cluster+clients.
-
-Usage:
-       cephHadoop [options]
-where [options] are:
-EOS
-
-  opt :ignore, "Ignore incorrect values"
-  opt :jobid, "Oarsub ID of the Hadoop nodes (Ceph clients) reservation", :default => 0
-
-  opt :'job-client', "Grid'5000 job name for Hadoop nodes (Ceph clients)", :type => String, :default => defaults["job-client"]
-  opt :site, "Grid'5000 site where Hadoop nodes (Ceph clients) are deployed", :type => String, :default => defaults["client-site"]
-  opt :'mnt-depl', "Mount point for RBD on dedicated cluster", :type => String, :default => defaults["mnt-depl"]
-  opt :'mnt-prod', "Mount point for RBD on managed cluster", :type => String, :default => defaults["mnt-prod"]
-  opt :'hadoop', "start, stop, restart Hadoop cluster", :type => String, :default => defaults["hadoop"]
-  opt :'hadoop-cluster', "Hadoop on Ceph cluster: deployed OR managed", :default => defaults["hadoop-cluster"]
-  opt :'hadoop-link', "URL link to download Hadoop binary", :type => String, :default => "http://apache.crihan.fr/dist/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz"
-end
-
-# Move CLI arguments into variables. Later change to class attributes.
-argJobID = opts[:jobid] # Oarsub ID of the Hadoop nodes (Ceph clients) reservation. 
-argJobClient = opts[:'job-client'] # Grid'5000 job name for Hadoop nodes (Ceph clients). 
-argClientSite = opts[:site] # G5K site for Ceph clients. 
-argMntDepl = opts[:'mnt-depl'] # Mount point for RBD in deployed cluster.
-argMntProd = opts[:'mnt-prod'] # Mount point for RBD in managed cluster.
-argHadoopCluster = opts[:'hadoop-cluster'] # Ceph cluster: 'deployed' OR 'managed'.
-argHadoop = opts[:'hadoop'] # start, stop, restart Hadoop cluster.
-argHadoopLink = opts[:'hadoop-link'] # URL link to download Hadoop binary.
-
+# Prepare logFile for logging all actions
+logger = logCreate(tempDir, "cephHadoop")
 
 # Get job for Ceph clients (for deployed or Managed cluster)
-jobCephClient = nil # Ceph client job
-puts "Hadoop link : #{argHadoopLink}"
-unless [nil, 0].include?(argJobID)
-   # If jobID is specified, get the specific job
-   jobCephClient = g5k.get_job(argClientSite, argJobClient)
-else
-   # Get all jobs submitted in a cluster
-   jobs = g5k.get_my_jobs(argClientSite, state = "running") 
-
-   # get the job with name "cephClient"
-   jobs.each do |job|
-
-      if job["name"] == argJobClient # if client job exists already, get nodes
-         jobCephClient = job
-      end # if job["name"] == argJobClient
-
-   end # jobs.each do |job|
-end # unless [nil, 0].include?(argJobID)
+jobCephClient = getJob(g5k, 0, opts[:'job-client'], opts[:'client-site'])
 
 # If no Ceph clients found, abort Hadoop deployment
 if jobCephClient.nil?
-   abort("No Ceph client(s) found. First run cephClient or cephManaged script, then run this script.")
+   logger.error "No Ceph client(s) found. First run cephClient or cephManaged script, then run this script."
+   abort()
 else
-   puts "Ceph client job details recovered. Using them to create Hadoop cluster."
+   logger.info "Ceph client job details recovered. Using them to create Hadoop cluster."
 end # if jobCephClient.nil?
 
 
@@ -129,11 +66,11 @@ master = ""
 slaves = []
 flagRestart = false
 # nodeID (master, slave1, slave2, ... ) is stored in this file
-nodeIDFile = argHadoopCluster == "managed" ? "/mnt/" + argMntProd + "/hadoop/node-id" : "/mnt/" + argMntDepl + "/hadoop/node-id" 
+nodeIDFile = opts[:'hadoop-cluster'] == "managed" ? "/mnt/" + opts[:'mnt-prod'] + "/hadoop/node-id" : "/mnt/" + opts[:'mnt-depl'] + "/hadoop/node-id" 
 
 # If "restart" then reorder the "nodes" array
-if argHadoopCluster == "managed"
-   unless argHadoop == "start"
+if opts[:'hadoop-cluster'] == "managed"
+   unless opts[:'hadoop'] == "start"
       nodeID = ""
       newNodes = []
       nodes.each do |node|
@@ -156,30 +93,29 @@ if argHadoopCluster == "managed"
          end
 
       end # nodes.each do |node|
-puts "new nodes: #{newNodes}"
       # Assign new ordering to "nodes" ONLY if exact no. of nodes in master-slave config
       newNodesCount = newNodes.count{|newNode| !newNode.empty?}
-puts "new nodes count: #{newNodesCount}"
       unless newNodes.empty? || nodes.count == newNodesCount
          nodes = newNodes
          flagRestart = true
       end
 
-   end # unless argHadoop == "start"
-end # if argHadoopCluster == "managed"
+   end # unless opts[:'hadoop'] == "start"
+end # if opts[:'hadoop-cluster'] == "managed"
 
 master = nodes[0] # The first node in the list becomes the master
 slaves = nodes - [master] # The rest of the nodes become slaves
 
 # At this point job was created / fetched
-puts "Deploying Hadoop cluster as follows:"
-puts " All nodes: #{nodes}" 
-puts "Master node on: #{master}"
-puts "Slave node(s) on: #{slaves}"
+logger.info "Deploying Hadoop cluster as follows:"
+logger.info " All nodes: #{nodes}" 
+logger.info "Master node on: #{master}"
+logger.info "Slave node(s) on: #{slaves}"
+logger.info "Hadoop binary download link : #{opts[:'hadoop-link']}"
 
 
 # ssh key-sharing for password-less access from master node.
-puts "ssh key-sharing for password-less access from master node ..."
+logger.info "ssh key-sharing for password-less access from master node ..."
 
 # Prepare .ssh/config file locally
 configFile = File.open("#{tempDir}/config/config", "w") do |file|
@@ -220,11 +156,11 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # ssh key-sharing completed.
-puts "ssh key-sharing completed."
+logger.info "ssh key-sharing completed."
 
 
 # Configuring Java path ...
-puts "Configuring Java path ..."
+logger.info "Configuring Java path ..."
 
 javaHome = "/usr/lib/jvm/java-7-openjdk-amd64" # read from defaults.yml later
 # Get /etc/profile file from master node
@@ -246,31 +182,31 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Java path configured.
-puts "Java path configured."
+logger.info "Java path configured."
 
 
 # Some important hadoop directories
 hadoopDir = "/opt/hadoop"
-if argHadoopCluster == "deployed"
-   hadoopTmpDir = "/mnt/" + argMntDepl + "/hadoop" # information to replace in .erb file
+if opts[:'hadoop-cluster'] == "deployed"
+   hadoopTmpDir = "/mnt/" + opts[:'mnt-depl'] + "/hadoop" # information to replace in .erb file
 else
-   hadoopTmpDir = "/mnt/" + argMntProd + "/hadoop" # information to replace in .erb file
-end # if argHadoopCluster == "managed"
+   hadoopTmpDir = "/mnt/" + opts[:'mnt-prod'] + "/hadoop" # information to replace in .erb file
+end # if opts[:'hadoop-cluster'] == "managed"
 
 
 # Stopping Hadoop
-puts "Stopping any Hadoop daemons from master node ..."
+logger.info "Stopping any Hadoop daemons from master node ..."
 Cute::TakTuk.start([master], :user => "root") do |tak|
 
      # Save namespace and tarzip file to managed Ceph mounted directory
-     if argHadoop == "stop" # save namespace
+     if opts[:'hadoop'] == "stop" # save namespace
         tak.exec!("#{hadoopDir}/bin/hdfs dfsadmin -safemode enter") # enter safemode
         tak.exec!("#{hadoopDir}/bin/hdfs dfsadmin -saveNamespace") # save Namespace
         tak.exec!("#{hadoopDir}/bin/hdfs dfsadmin -safemode leave") # leave safemode
 
-        tak.exec!("rm -f /mnt/#{argMntProd}/nameNode.tar.gz") 
-        tak.exec!("tar czfP nameNode.tar.gz -C /mnt/#{argMntProd}/ #{hadoopTmpDir}/dfs/nn && mv nameNode.tar.gz /mnt/#{argMntProd}/")
-     end # if argHadoop == "stop"
+        tak.exec!("rm -f /mnt/#{opts[:'mnt-prod']}/nameNode.tar.gz") 
+        tak.exec!("tar czfP nameNode.tar.gz -C /mnt/#{opts[:'mnt-prod']}/ #{hadoopTmpDir}/dfs/nn && mv nameNode.tar.gz /mnt/#{opts[:'mnt-prod']}/")
+     end # if opts[:'hadoop'] == "stop"
 
      # Stop previously running Hadoop daemons
      tak.exec!("#{hadoopDir}/sbin/stop-all.sh")
@@ -278,10 +214,10 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
 end
 
 # Abort script if option "stop" was chosen.
-abort("Hadoop cluster stopped. To recover data, please continue with option '--hadoop restart'") if argHadoop == "stop"
+abort("Hadoop cluster stopped. To recover data, please continue with option '--hadoop restart'") if opts[:'hadoop'] == "stop"
 
 # Cleaning up Hadoop config files & temp directories
-puts "Cleaning up Hadoop config files & temp directories ..."
+logger.info "Cleaning up Hadoop config files & temp directories ..."
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm -f #{hadoopDir}/etc/hadoop/core-site.xml #{hadoopDir}/etc/hadoop/hdfs-site.xml #{hadoopDir}/etc/hadoop/yarn-site.xml #{hadoopDir}/etc/hadoop/mapred-site.xml #{hadoopDir}/etc/hadoop/hadoop-env.sh")
      tak.exec!("mkdir -p #{hadoopTmpDir}/dfs #{hadoopTmpDir}/yarn #{hadoopTmpDir}/mapred")
@@ -291,31 +227,31 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # If Hadoop restart then restore Namenode directories
-if argHadoop == "restart" 
+if opts[:'hadoop'] == "restart" 
    Cute::TakTuk.start([master], :user => "root") do |tak|
-        tak.exec!("tar xzfP /mnt/#{argMntProd}/nameNode.tar.gz -C #{hadoopTmpDir} --strip-components=3")  # Note the level of subdir (3) has to coincide with tar archive
+        tak.exec!("tar xzfP /mnt/#{opts[:'mnt-prod']}/nameNode.tar.gz -C #{hadoopTmpDir} --strip-components=3")  # Note the level of subdir (3) has to coincide with tar archive
    end
-   puts "Hadoop Namenode directories reinstalled."
-end # if argHadoop == "restart"
+   logger.info "Hadoop Namenode directories reinstalled."
+end # if opts[:'hadoop'] == "restart"
 
 
 # Hadoop directory setup
-puts "Getting binary tar file and installing Hadoop ..."
+logger.info "Getting binary tar file and installing Hadoop ..."
 
 # Push hadoop tar file to all nodes & unpack
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm hadoop.tar.gz ; rm -rf #{hadoopDir} ; mkdir #{hadoopDir}")
-     tak.exec!("wget -O hadoop.tar.gz #{argHadoopLink}")
+     result = tak.exec!("wget -O hadoop.tar.gz #{opts[:'hadoop-link']}")
      tak.exec!("tar xzf hadoop.tar.gz -C #{hadoopDir} --strip-components=1")
      tak.loop()
 end
 
 # Hadoop directory setup completed
-puts "Hadoop directory setup completed."
+logger.info "Hadoop directory setup completed."
 
 
 # Configuring Hadoop path ...
-puts "Configuring Hadoop path ..."
+logger.info "Configuring Hadoop path ..."
 
 # Get /root/.bashrc file from master node
 Net::SFTP.start(master, 'root') do |sftp|
@@ -362,11 +298,11 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Hadoop path configured.
-puts "Hadoop path configured."
+logger.info "Hadoop path configured."
 
 
 # Listing master & slaves ...
-puts "Listing master & slaves ..."
+logger.info "Listing master & slaves ..."
 
 # Get /etc/hosts file from master node
 Net::SFTP.start(master, 'root') do |sftp|
@@ -393,7 +329,7 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Change master & slaves hostnames using hostnamectl
-unless argHadoop == "stop"
+unless opts[:'hadoop'] == "stop"
    Cute::TakTuk.start([master], :user => "root") do |tak|
         # First change hostname of master to same name as in /etc/hosts
         tak.exec!("hostnamectl set-hostname master")
@@ -411,7 +347,7 @@ unless argHadoop == "stop"
       end
    end # slaves.each do |slave, index|
 
-end # unless argHadoop == "stop"
+end # unless opts[:'hadoop'] == "stop"
 
 # In masters file add line for master
 configFile = File.open("#{hadoopConfDir}/masters", "w") do |file|
@@ -435,7 +371,7 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
 end
 
 # Master & Slaves registered.
-puts "Master & Slaves registered." 
+logger.info "Master & Slaves registered." 
 
 
 # Prepare file core-site.xml
@@ -501,11 +437,11 @@ Cute::TakTuk.start(nodes, :user => "root") do |tak|
 end
 
 # Hadoop config files copied
-puts "Hadoop config files copied."
+logger.info "Hadoop config files copied."
 
 # Additionally create a directory for saving details of Hadoop deployed
 jobID = jobCephClient["uid"]
-clientStateDir = tempDir + "/#{argClientSite}/#{jobID}"
+clientStateDir = tempDir + "/#{opts[:site]}/#{jobID}"
 FileUtils.mkpath(clientStateDir)
 
 # Copy Hadoop configuration files to Hadoop state directory
@@ -522,15 +458,15 @@ FileUtils.cp("#{hadoopConfDir}/slaves", "#{clientStateDir}/hadoop/slaves")
 
 # Starting Hadoop daemons 
 Cute::TakTuk.start([master], :user => "root") do |tak|
-     if argHadoop == "restart" && flagRestart == true
+     if opts[:'hadoop'] == "restart" && flagRestart == true
         # Do "restart" of Hadoop namenode ONLY if both conditions are true
-        puts "Preparing & restarting Hadoop daemons from master node ..."
+        logger.info "Preparing & restarting Hadoop daemons from master node ..."
         tak.exec!("#{hadoopDir}/bin/hdfs namenode --config $HADOOP_CONF_DIR") # start namenode
      else
         # Format namenode & start
-        puts "Preparing & starting Hadoop daemons from master node ..."
+        logger.info "Preparing & starting Hadoop daemons from master node ..."
         tak.exec!("#{hadoopDir}/bin/hdfs namenode -format -force") 
-     end # if argHadoop == "restart"
+     end # if opts[:'hadoop'] == "restart"
 
      tak.exec!("#{hadoopDir}/sbin/start-all.sh") # start all Hadoop daemons
 
@@ -540,8 +476,8 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
 end
 
 # Hadoop started
-puts "Hadoop cluster started with Master node: #{master}"
+logger.info "Hadoop cluster started with Master node: #{master}"
 # Next only if Hadoop restart
-puts "All previous data retained." if argHadoop == "restart"
-puts "Login to master node to submit jobs!"
+logger.info "All previous data retained." if opts[:'hadoop'] == "restart"
+logger.info "Login to master node to submit jobs!"
 
