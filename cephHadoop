@@ -49,7 +49,7 @@ opts = readOptions(scriptDir, currentConfigFile, "cephHadoop")
 logger = logCreate(tempDir, "cephHadoop")
 
 # Get job for Ceph clients (for deployed or Managed cluster)
-jobCephClient = getJob(g5k, 0, opts[:'job-client'], opts[:site])
+jobCephClient = getJob(g5k, 0, opts[:'job-client'], opts[:'client-site'])
 
 # If no Ceph clients found, abort Hadoop deployment
 if jobCephClient.nil?
