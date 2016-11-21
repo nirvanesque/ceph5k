@@ -125,7 +125,7 @@ def readOptions(scriptDir, currentConfigFile, scriptName)
   opt :'rbd-size', "RBD size on Ceph pool", :default => defaults["client-rbd-size"]
   opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
   opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
-  opt :'mnt-depl', "Mount point for RBD on deployed cluster", :type => String, :default => defaults["mnt-depl"]
+  opt :'mnt-depl', "Mount point for RBDs in deployed cluster", :type => String, :default => defaults["mnt-depl"]
 
 
         when "cephManaged" # options specific for script cephManaged
@@ -146,7 +146,16 @@ def readOptions(scriptDir, currentConfigFile, scriptName)
   opt :'file-system', "File System to be formatted on created RBDs", :type => String, :default => defaults["file-system"]
   opt :'rbd-list-file', "YAML file with RBD list. No. of RBDs must be same as no. of clients", :type => String, :default => nil
   opt :release, "Ceph Release name", :type => String, :default => defaults["release"]
-  opt :'mnt-prod', "Mount point for RBD on managed cluster", :type => String, :default => defaults["mnt-prod"]
+  opt :'mnt-prod', "Mount point for RBDs in managed cluster", :type => String, :default => defaults["mnt-prod"]
+
+
+        when "cephHadoop" # options specific for script cephHadoop
+  opt :'job-client', "Grid'5000 job name for Hadoop nodes (Ceph clients)", :type => String, :default => defaults["job-client"]
+  opt :'mnt-depl', "Mount point for RBDs in dedicated cluster", :type => String, :default => defaults["mnt-depl"]
+  opt :'mnt-prod', "Mount point for RBD in managed cluster", :type => String, :default => defaults["mnt-prod"]
+  opt :'hadoop', "start, stop, restart Hadoop cluster", :type => String, :default => defaults["hadoop"]
+  opt :'hadoop-cluster', "Hadoop on Ceph cluster: deployed OR managed", :default => defaults["hadoop-cluster"]
+  opt :'hadoop-link', "URL link to download Hadoop binary", :type => String, :default => "http://apache.crihan.fr/dist/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz"
 
 
      end # case scriptName
@@ -159,8 +168,9 @@ end # readOptions()
 
 
 
-# Class for abstracting simultaneous log writes to both logFile and stdout
 class MultiIO
+# Class for abstracting simultaneous log writes to both logFile and stdout
+# Can be extended to multiple outputs also
   def initialize(*targets)
      @targets = targets
   end
