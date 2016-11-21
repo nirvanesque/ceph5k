@@ -134,7 +134,7 @@ end
 
 # In ssh_config file (local) add a line to avoid StrictHostKeyChecking
 configFile = File.open("#{tempDir}/config/ssh_config", "a") do |file|
-   file.logger.info("    StrictHostKeyChecking no") # append only once
+   file.puts("    StrictHostKeyChecking no") # append only once
 end
 
 # Copy ssh keys & config for Ceph on master node
