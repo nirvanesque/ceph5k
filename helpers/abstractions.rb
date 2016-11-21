@@ -153,6 +153,7 @@ def readOptions(scriptDir, currentConfigFile, scriptName)
 
         when "cephHadoop" # options specific for script cephHadoop
   opt :'job-client', "Grid'5000 job name for Hadoop nodes (Ceph clients)", :type => String, :default => defaults["job-client"]
+  opt :'client-site', "Grid 5000 site where Ceph clients are deployed", :type => String, :default => defaults["client-site"]
   opt :'mnt-depl', "Mount point for RBDs in dedicated cluster", :type => String, :default => defaults["mnt-depl"]
   opt :'mnt-prod', "Mount point for RBD in managed cluster", :type => String, :default => defaults["mnt-prod"]
   opt :'hadoop', "start, stop, restart Hadoop cluster", :type => String, :default => defaults["hadoop"]
