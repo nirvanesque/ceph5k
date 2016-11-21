@@ -91,11 +91,11 @@ def readOptions(scriptDir, currentConfigFile, scriptName)
 
   opt :ignore, "Ignore incorrect values"
   opt :jobid, "Oarsub ID of the client job", :default => 0
-  opt :walltime, "Wall time for reservation", :type => String, :default => defaults["walltime"]
 
      case scriptName
 
         when "cephDeploy" # options specific for script cephDeploy
+  opt :walltime, "Wall time for reservation", :type => String, :default => defaults["walltime"]
      opt :'job-name', "Name of Grid'5000 job if already created", :type =>    String, :default => defaults["job-name"]
      opt :site, "Grid 5000 site for deploying Ceph cluster", :type => String, :default => defaults["site"]
      opt :cluster, "Grid 5000 cluster in specified site", :type => String, :default => defaults["cluster"]
@@ -109,6 +109,7 @@ def readOptions(scriptDir, currentConfigFile, scriptName)
 
 
         when "cephClient" # options specific for script cephClient
+  opt :walltime, "Wall time for reservation", :type => String, :default => defaults["walltime"]
   opt :'job-name', "Grid'5000 job name for dedicated Ceph cluster", :type => String, :default => defaults["job-name"]
   opt :site, "Grid 5000 site where dedicated Ceph cluster is deployed", :type => String, :default => defaults["site"]
 
@@ -129,6 +130,7 @@ def readOptions(scriptDir, currentConfigFile, scriptName)
 
 
         when "cephManaged" # options specific for script cephManaged
+  opt :walltime, "Wall time for reservation", :type => String, :default => defaults["walltime"]
   opt :'job-client', "Grid'5000 job name for Ceph clients", :type => String, :default => defaults["job-client"]
   opt :'file', "File with clients list, same option as in kadeploy3", :type => String, :default => ""
   opt :'client-site', "Grid 5000 site for deploying Ceph clients", :type => String, :default => defaults["client-site"]
