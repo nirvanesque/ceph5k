@@ -242,7 +242,6 @@ logger.info "Getting binary tar file and installing Hadoop ..."
 Cute::TakTuk.start(nodes, :user => "root") do |tak|
      tak.exec!("rm hadoop.tar.gz ; rm -rf #{hadoopDir} ; mkdir #{hadoopDir}")
      result = tak.exec!("wget -O hadoop.tar.gz #{opts[:'hadoop-link']}")
-puts result
      tak.exec!("tar xzf hadoop.tar.gz -C #{hadoopDir} --strip-components=1")
      tak.loop()
 end
