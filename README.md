@@ -65,7 +65,7 @@ Subsequently, at the CLI on a frontend:
         # Prepare 4 Ceph clients, create RBD on managed Ceph as per names in YAML file
         # Mount an RBD on each Ceph client
         ./ceph5k/cephManaged --site nancy --cluster graphite \
-        --multi-client true --num-client 4 --managed-cluster rennes \
+        --num-client 4 --managed-cluster rennes \
         --rbd-list-file ./ceph5k/config/rbd-list.yml.example             
 
 After successful execution of the script, you will have 4 Ceph clients on nodes in the 'graphite' cluster in nancy site, accessing the managed Ceph cluster at rennes, with pool and RBD mounted as file systems as follows:
@@ -273,7 +273,6 @@ Following are options related to reserving resources on Grid'5000:
 Following are options related to Ceph cluster characteristics:
 
         -m, --managed-cluster=string     site for managed Ceph cluster: 'rennes' or 'nantes' (default: rennes)
-        -u, --multi-client=bool          Multiple clients to access Ceph Managed cluster (default: true)
         -d, --no-deployed=bool           Not using any dedicated Ceph cluster (default: false = not using dedicated cluster)
         -p, --pool-name=string           Pool name on Ceph cluster ("userid_" prepended) (default: pool)
         -r, --rbd-name=string            RBD name for Ceph pool ("userid_" prepended) (default: image)

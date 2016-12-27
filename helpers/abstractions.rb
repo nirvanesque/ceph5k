@@ -138,7 +138,6 @@ def readOptions(scriptDir, currentConfigFile, scriptName)
   opt :'env-client', "G5K environment for client", :type => String, :default => defaults["env-client"]
 
   opt :'managed-cluster', "site for managed Ceph cluster: 'rennes' or 'nantes'", :type => String, :default => defaults["managed-cluster"]
-  opt :'multi-client', "Multiple clients to access Ceph Managed cluster", :default => defaults["multi-client"]
   opt :'num-client', "Nodes in Ceph Client cluster", :default => defaults["num-client"]
   opt :'no-deployed', "Not using any deployed Ceph cluster", :default => defaults["no-deployed"]
 
