@@ -43,7 +43,6 @@ client-rbd-size: 14400        # RBD size for each Ceph client (~ rbd-size/num-cl
 mnt-depl: "ceph-depl"         # Mount point for RBD on dedicated cluster
 mnt-prod: "ceph-prod"         # Mount point for RBD on production cluster
 
-multi-client: true            # Multiple clients to access Ceph Managed cluster
 no-deployed: false            # Not using any deployed Ceph cluster
 
 hadoop: start                 # start, stop, restart a Hadoop cluster

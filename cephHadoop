@@ -213,8 +213,12 @@ Cute::TakTuk.start([master], :user => "root") do |tak|
 
 end
 
-# Abort script if option "stop" was chosen.
-abort("Hadoop cluster stopped. To recover data, please continue with option '--hadoop restart'") if opts[:'hadoop'] == "stop"
+# End the execution here if option "stop" was chosen. Nothing more to do.
+if opts[:'hadoop'] == "stop"
+   logger.info "Hadoop cluster stopped. To recover data, please continue with option '--hadoop restart'"
+   abort()
+end # if opts[:'hadoop'] == "stop"
+
 
 # Cleaning up Hadoop config files & temp directories
 logger.info "Cleaning up Hadoop config files & temp directories ..."

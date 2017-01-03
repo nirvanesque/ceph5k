@@ -138,7 +138,6 @@ def readOptions(scriptDir, currentConfigFile, scriptName)
   opt :'env-client', "G5K environment for client", :type => String, :default => defaults["env-client"]
 
   opt :'managed-cluster', "site for managed Ceph cluster: 'rennes' or 'nantes'", :type => String, :default => defaults["managed-cluster"]
-  opt :'multi-client', "Multiple clients to access Ceph Managed cluster", :default => defaults["multi-client"]
   opt :'num-client', "Nodes in Ceph Client cluster", :default => defaults["num-client"]
   opt :'no-deployed', "Not using any deployed Ceph cluster", :default => defaults["no-deployed"]
 
@@ -153,7 +152,7 @@ def readOptions(scriptDir, currentConfigFile, scriptName)
 
         when "cephHadoop" # options specific for script cephHadoop
   opt :'job-client', "Grid'5000 job name for Hadoop nodes (Ceph clients)", :type => String, :default => defaults["job-client"]
-  opt :'client-site', "Grid 5000 site where Ceph clients are deployed", :type => String, :default => defaults["client-site"]
+  opt :'client-site', "Grid 5000 site where Ceph clients are deployed. Will fetch nodes by searching by jobname or jobid", :type => String, :default => defaults["client-site"]
   opt :'mnt-depl', "Mount point for RBDs in dedicated cluster", :type => String, :default => defaults["mnt-depl"]
   opt :'mnt-prod', "Mount point for RBD in managed cluster", :type => String, :default => defaults["mnt-prod"]
   opt :'hadoop', "start, stop, restart Hadoop cluster", :type => String, :default => defaults["hadoop"]
